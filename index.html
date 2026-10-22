@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f172a" />
 <title>Print at the counter</title>
 <style>
-:root{--bg:#f8fafc;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--brand:#2563eb;--err:#dc2626}
+:root{--bg:#f8fafc;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--brand:#2563eb;--ok:#16a34a;--err:#dc2626}
 *{box-sizing:border-box}
 body{margin:0;font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
 header{background:var(--ink);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:5}
@@ -29,7 +29,7 @@ input[type=number]{width:76px}
 .seg input{accent-color:var(--brand)}
 .seg label.on{border-color:var(--brand);background:#eff6ff}
 .total{display:flex;justify-content:space-between;font-size:18px;font-weight:700;margin-top:12px}
-button.main{width:100%;margin-top:14px;padding:15px;border:0;border-radius:12px;background:var(--brand);color:#fff;font:inherit;font-weight:600;font-size:16px;cursor:pointer}
+button.main,.btnmain{width:100%;margin-top:14px;padding:15px;border:0;border-radius:12px;background:var(--brand);color:#fff;font:inherit;font-weight:600;font-size:16px;cursor:pointer;display:block;text-align:center;text-decoration:none;box-sizing:border-box}
 button.main:disabled{background:#94a3b8;cursor:not-allowed}
 .filemeta{display:flex;gap:10px;align-items:center}
 .filemeta .ic{width:38px;height:38px;border-radius:9px;background:#eff6ff;color:var(--brand);display:grid;place-items:center;font-weight:700;font-size:12px}
@@ -39,12 +39,15 @@ button.main:disabled{background:#94a3b8;cursor:not-allowed}
 .err{color:var(--err);font-size:14px;margin-top:8px}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid #fff6;border-top-color:#fff;border-radius:50%;animation:s .7s linear infinite;vertical-align:-3px;margin-right:8px}
 @keyframes s{to{transform:rotate(360deg)}}
+.qrbox{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;display:inline-block;margin:6px auto}
+.qrbox img{display:block;width:220px;height:220px}
+.amt{font-size:30px;font-weight:800;color:var(--ok);margin:2px 0 6px}
 </style>
 </head>
 <body>
 <header>
   <h1 id="shop">Print here</h1>
-  <p>Upload &rarr; get a job number &rarr; pay at the counter</p>
+  <p>Upload &rarr; pay &rarr; the operator prints it</p>
 </header>
 <main>
   <section id="s1" class="card">
@@ -54,7 +57,7 @@ button.main:disabled{background:#94a3b8;cursor:not-allowed}
       <span class="hint">PDF or photo (JPG / PNG) &middot; up to 20 MB</span>
     </div>
     <input id="file" type="file" accept="application/pdf,image/jpeg,image/png" hidden />
-    <p class="hint" style="margin-top:12px">Your file is deleted automatically 10 minutes after upload, or as soon as the operator approves or rejects your job.</p>
+    <p class="hint" style="margin-top:12px">Your file is deleted automatically 10 minutes after upload.</p>
     <div id="s1err" class="err" hidden></div>
   </section>
 
@@ -89,24 +92,34 @@ button.main:disabled{background:#94a3b8;cursor:not-allowed}
   </section>
 
   <section id="s3" class="card center" hidden>
-    <h2>Done &mdash; show this at the counter</h2>
+    <h2>3. Pay &amp; collect</h2>
+    <p class="hint">Your job number</p>
     <div class="big" id="jobno">&mdash;&mdash;</div>
     <p class="hint">Job #<span id="jobid"></span></p>
-    <p style="margin-top:14px">Pay by cash or UPI. Printing starts after the operator approves your job.</p>
-    <p class="hint" style="margin-top:10px">Your file is removed once the operator reviews your job.</p>
+
+    <div style="margin-top:14px">
+      <div class="hint">Amount to pay</div>
+      <div class="amt" id="payamt">&rupee;0</div>
+    </div>
+
+    <div class="qrbox"><img id="qr" alt="UPI QR code" /></div>
+
+    <a class="btnmain" id="paybtn" href="#">Pay with UPI app</a>
+    <p class="hint" style="margin-top:10px">Scan the QR, or tap the button to pay in GPay / PhonePe / Paytm. Paying to <b id="payname">Ankit Singh</b> (<span id="payvpa"></span>).</p>
+    <p class="hint" style="margin-top:8px">Then show your payment to the operator &mdash; the job prints once they confirm it.</p>
+
     <button class="main" id="again" style="background:#0f172a">Print another file</button>
   </section>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="config.js"></script>
 <script>
 (function(){
   var C = window.CYBERPRINT_CONFIG || {};
   document.getElementById('shop').textContent = C.SHOP_NAME || 'Print here';
-  // persistSession:false keeps this page from ever inheriting an operator
-  // login that is still open in the same browser.
   var sb = supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
   });
@@ -159,8 +172,9 @@ button.main:disabled{background:#94a3b8;cursor:not-allowed}
       eff = Math.min(unitPages, Math.max(1, t-f+1));
     }
     var rate = mode==='color' ? (C.PRICE_COLOR||10) : (C.PRICE_BW||5);
-    $('total').textContent = money(eff*copies*rate);
-    return {copies:copies, mode:mode, eff:eff, rate:rate};
+    var amount = eff*copies*rate;
+    $('total').textContent = money(amount);
+    return {copies:copies, mode:mode, eff:eff, rate:rate, amount:amount};
   }
 
   $('drop').onclick = function(){ $('file').click(); };
@@ -181,6 +195,18 @@ button.main:disabled{background:#94a3b8;cursor:not-allowed}
   $('from').oninput = recalc; $('to').oninput = recalc;
   $('paper').onchange = recalc; $('orient').onchange = recalc;
 
+  // Build the UPI intent link (works in GPay / PhonePe / Paytm on a phone).
+  function upiLink(amount, note, ref){
+    var vpa  = C.UPI_ID || '';
+    var name = C.UPI_NAME || C.SHOP_NAME || '';
+    return 'upi://pay?pa='+encodeURIComponent(vpa)
+      + '&pn='+encodeURIComponent(name)
+      + '&am='+encodeURIComponent(amount)
+      + '&cu=INR'
+      + '&tn='+encodeURIComponent(note)
+      + '&tr='+encodeURIComponent(ref);
+  }
+
   $('submit').onclick = async function(){
     if(!file) return;
     var btn=$('submit'); var s=recalc();
@@ -198,9 +224,22 @@ button.main:disabled{background:#94a3b8;cursor:not-allowed}
         paper_size:$('paper').value, orientation:$('orient').value, status:'pending'
       });
       if(ins.error) throw ins.error;
+
       var code = id.replace(/-/g,'').slice(0,6).toUpperCase();
+      var link = upiLink(s.amount, 'Job '+code, id);
+
       $('jobno').textContent = code;
       $('jobid').textContent = code;
+      $('payamt').textContent = money(s.amount);
+      $('payname').textContent = C.UPI_NAME || C.SHOP_NAME || '';
+      $('payvpa').textContent = C.UPI_ID || '';
+      $('paybtn').href = link;
+      if(window.QRCode){
+        QRCode.toDataURL(link, {width:440, margin:1}, function(err,url){
+          if(!err){ $('qr').src = url; }
+        });
+      }
+
       $('s2').hidden=true; $('s3').hidden=false;
       window.scrollTo(0,0);
     }catch(e){
