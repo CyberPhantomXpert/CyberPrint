@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f172a"/>
 <title>CyberPrint Pay &mdash; Operator</title>
 <style>
-:root{--bg:#f1f5f9;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--brand:#2563eb;--ok:#16a34a;--err:#dc2626}
+:root{--bg:#f1f5f9;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--brand:#2563eb;--ok:#16a34a;--warn:#d97706;--err:#dc2626}
 *{box-sizing:border-box}
 body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
 header{background:var(--ink);color:#fff;padding:12px 18px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:9;flex-wrap:wrap}
@@ -30,7 +30,10 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
 .job .fn{font-size:13px;color:var(--muted);word-break:break-all;margin-top:2px}
 .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase}
 .b-pending{background:#fef3c7;color:#92400e}
-.b-approved{background:#dcfce7;color:#166534}
+.b-approved{background:#dbeafe;color:#1e40af}
+.b-printing{background:#e0e7ff;color:#3730a3}
+.b-printed{background:#dcfce7;color:#166534}
+.b-failed{background:#fee2e2;color:#991b1b}
 .b-rejected{background:#fee2e2;color:#991b1b}
 .specs{margin:10px 0;font-size:13px;color:#334155;display:flex;flex-wrap:wrap;gap:6px 14px}
 .specs b{color:var(--ink)}
@@ -50,22 +53,13 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
 .sum span{font-size:12px;color:var(--muted)}
 .err{color:var(--err);font-size:13px;margin-top:8px}
 .note{font-size:12px;color:var(--muted);margin-top:10px}
-/* print area: hidden on screen, shown only while printing */
-#printarea{display:none}
-@media print{
-  header,main{display:none !important}
-  body{background:#fff}
-  #printarea{display:block !important}
-  .printpage{display:block;width:100%;height:auto;margin:0;page-break-after:always;break-after:page}
-  .printpage:last-child{page-break-after:auto;break-after:auto}
-}
+.agentbar{display:flex;align-items:center;gap:8px;font-size:13px;color:#cbd5e1}
 </style>
-<style id="pagestyle">@page{ size:A4 portrait; margin:8mm; }</style>
 </head>
 <body>
 <header>
   <h1 id="title">CyberPrint Pay &mdash; Operator</h1>
-  <span><span id="conn" class="dot"></span><span id="conntxt" style="font-size:12px">checking&hellip;</span></span>
+  <span class="agentbar"><span id="conn" class="dot"></span><span id="agenttxt">agent: checking&hellip;</span></span>
   <button id="refresh" hidden>Refresh</button>
   <button id="logout" hidden>Log out</button>
 </header>
@@ -82,33 +76,35 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
     <div class="card">
       <h2>Today</h2>
       <div class="sum" id="summary"></div>
-      <div class="note">Click <b>Approve &amp; print</b> to send a job to the printer: the browser print dialog opens (your default printer is preselected), you print, and the job is marked approved. Every uploaded file is deleted automatically <b>10 minutes after upload</b> &mdash; approving or rejecting does not delete it, so use <b>Open</b> or <b>Download</b> before then if you need the file.</div>
+      <div class="note">Jobs print automatically as soon as a customer submits them &mdash; the print agent on this PC handles them. This panel is for watching the queue and for <b>Open</b> / <b>Download</b> / <b>Reject</b>. Every uploaded file is deleted automatically <b>10 minutes after upload</b>.</div>
     </div>
     <div class="tabs" id="tabs"></div>
     <div class="grid" id="list"></div>
   </section>
 </main>
 
-<!-- hidden; filled with the document and shown only during printing -->
-<div id="printarea"></div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="config.js"></script>
 <script>
 (function(){
   var C = window.CYBERPRINT_CONFIG||{};
   document.getElementById('title').textContent = (C.SHOP_NAME||'CyberPrint Pay')+' \u2014 Operator';
   var sb = supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY);
-  if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
   var B = C.BUCKET||'jobs';
   var $=function(id){return document.getElementById(id);};
   var money=function(n){return '\u20b9'+(n||0);};
   var RETAIN = (C.RETENTION_MINUTES||10);
-  var jobs=[], filter='pending', timer=null;
-  var TABS=[['pending','Queue'],['approved','Approved'],['rejected','Rejected']];
+  var jobs=[], agent=null, filter='pending', timer=null;
 
-  function setConn(ok){ $('conn').className='dot'+(ok?' on':''); $('conntxt').textContent = ok?'live':'offline'; }
+  var TABS=[
+    {k:'pending',  label:'Queue',    test:function(j){return j.status==='pending';}},
+    {k:'printing', label:'Printing', test:function(j){return ['approved','printing','failed'].indexOf(j.status)>=0;}},
+    {k:'printed',  label:'Printed',  test:function(j){return j.status==='printed';}},
+    {k:'rejected', label:'Rejected', test:function(j){return j.status==='rejected';}}
+  ];
+
+  function agentOnline(){ return agent && agent.last_seen && (Date.now() - new Date(agent.last_seen).getTime() < 30000); }
+  function setConn(ok){ $('conn').className='dot'+(ok?' on':''); }
   function codeOf(j){ return (j.id||'').replace(/-/g,'').slice(0,6).toUpperCase(); }
   function find(id){ return jobs.filter(function(x){return x.id===id;})[0]; }
 
@@ -117,7 +113,7 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
     if(res && res.data && res.data.session) showDash(); else showLogin();
   }
   function showLogin(){ $('login').hidden=false; $('dash').hidden=true; $('logout').hidden=true; $('refresh').hidden=true; }
-  function showDash(){ $('login').hidden=true; $('dash').hidden=false; $('logout').hidden=false; $('refresh').hidden=false; load(); if(timer) clearInterval(timer); timer=setInterval(load,10000); }
+  function showDash(){ $('login').hidden=true; $('dash').hidden=false; $('logout').hidden=false; $('refresh').hidden=false; load(); if(timer) clearInterval(timer); timer=setInterval(load,5000); }
 
   $('signin').onclick = async function(){
     $('lerr').hidden=true; $('signin').disabled=true;
@@ -131,8 +127,7 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
 
   function fetchJobs(){ return sb.from('jobs').select('*').order('created_at',{ascending:false}).limit(300); }
 
-  // Delete every file that is older than the retention window, whatever its
-  // status. Approving or rejecting does NOT delete the file.
+  // Delete every file older than the retention window, whatever its status.
   async function cleanupExpired(){
     var cutoff = Date.now() - RETAIN*60000;
     var stale = jobs.filter(function(j){
@@ -143,7 +138,8 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
       var j=stale[i];
       try{ await sb.storage.from(B).remove([j.file_path]); }catch(e){}
       var patch = { file_path:null, file_deleted:true };
-      if(j.status==='pending') patch.status='cancelled';   // abandoned: drop out of the queue
+      if(j.status==='pending'){ patch.status='cancelled'; }
+      else if(j.status==='approved' || j.status==='printing'){ patch.status='failed'; patch.print_error='file expired before it could print'; }
       var u = await sb.from('jobs').update(patch).eq('id', j.id);
       if(!u.error) changed=true;
     }
@@ -151,19 +147,25 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
   }
 
   async function load(){
-    var res = await fetchJobs();
-    if(res.error){ setConn(false); return; }
-    setConn(true); jobs = res.data||[];
+    var rj = await fetchJobs();
+    if(rj.error){ setConn(false); $('agenttxt').textContent='agent: offline'; return; }
+    setConn(true); jobs = rj.data||[];
+    var ra = await sb.from('agent_status').select('*');
+    agent = (ra && ra.data && ra.data.length)
+      ? ra.data.slice().sort(function(a,b){ return new Date(b.last_seen)-new Date(a.last_seen); })[0]
+      : null;
     var cleaned = await cleanupExpired();
     if(cleaned){ var r2 = await fetchJobs(); if(!r2.error) jobs = r2.data||[]; }
+    $('agenttxt').textContent = agentOnline()
+      ? ('agent: online' + (agent.printer ? ' \u00b7 '+agent.printer : ''))
+      : 'agent: offline';
     render();
   }
 
   function renderTabs(){
     $('tabs').innerHTML = TABS.map(function(t){
-      var k=t[0], l=t[1];
-      var n = jobs.filter(function(j){return j.status===k;}).length;
-      return '<button data-k="'+k+'" class="'+(filter===k?'on':'')+'">'+l+' ('+n+')</button>';
+      var n = jobs.filter(t.test).length;
+      return '<button data-k="'+t.k+'" class="'+(filter===t.k?'on':'')+'">'+t.label+' ('+n+')</button>';
     }).join('');
     $('tabs').querySelectorAll('button').forEach(function(b){ b.onclick=function(){ filter=b.dataset.k; render(); }; });
   }
@@ -171,12 +173,12 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
   function summary(){
     var t=new Date(); var d0=new Date(t.getFullYear(),t.getMonth(),t.getDate()).getTime();
     var today=jobs.filter(function(j){return new Date(j.created_at).getTime()>=d0;});
-    var approved=today.filter(function(j){return j.status==='approved';});
-    var rev=approved.reduce(function(a,j){return a+(j.total_price||0);},0);
+    var printed=today.filter(function(j){return j.status==='printed';});
+    var rev=printed.reduce(function(a,j){return a+(j.total_price||0);},0);
     $('summary').innerHTML =
       '<div><b>'+today.length+'</b><span>jobs today</span></div>'+
-      '<div><b>'+approved.length+'</b><span>approved today</span></div>'+
-      '<div><b>'+money(rev)+'</b><span>amount approved</span></div>';
+      '<div><b>'+printed.length+'</b><span>printed today</span></div>'+
+      '<div><b>'+money(rev)+'</b><span>amount printed</span></div>';
   }
 
   function time(iso){ return new Date(iso).toLocaleString(); }
@@ -193,15 +195,16 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
   function card(j){
     var colorLbl = j.color_mode==='color'?'Colour':'B&W';
     var acts=[];
-    if(j.status==='pending' && j.file_path){
-      acts.push('<button class="ok" data-print="'+j.id+'">Approve &amp; print</button>');
+    // Retry only appears for jobs the agent could not print, or old 'approved' ones.
+    if((j.status==='failed' || j.status==='approved') && j.file_path){
+      acts.push('<button class="ok" data-requeue="'+j.id+'">Retry</button>');
     }
     if(j.file_path){
       acts.push('<button class="op" data-open="'+j.id+'">Open</button>');
       acts.push('<button data-dl="'+j.id+'">Download</button>');
     }
-    if(j.status==='pending'){
-      acts.push('<button class="no" data-a="rejected" data-id="'+j.id+'">Reject</button>');
+    if(j.status==='pending' || j.status==='failed' || j.status==='approved'){
+      acts.push('<button class="no" data-reject="'+j.id+'">Reject</button>');
     }
     return '<div class="job">'+
       '<div class="top"><div><div class="code">#'+codeOf(j)+'</div><div class="fn">'+esc(j.file_name)+'</div></div>'+
@@ -215,6 +218,7 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
         '<span>'+time(j.created_at)+'</span>'+
       '</div>'+
       '<div class="price">'+money(j.total_price)+'</div>'+
+      (j.print_error ? '<div class="err">'+esc(j.print_error)+'</div>' : '')+
       expiryLine(j)+
       '<div class="acts">'+acts.join('')+'</div>'+
     '</div>';
@@ -222,13 +226,14 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
 
   function render(){
     renderTabs(); summary();
-    var list = jobs.filter(function(j){return j.status===filter;});
-    if(!list.length){ $('list').innerHTML='<div class="empty">No '+filter+' jobs right now.</div>'; return; }
+    var tab = TABS.filter(function(t){return t.k===filter;})[0];
+    var list = jobs.filter(tab.test);
+    if(!list.length){ $('list').innerHTML='<div class="empty">Nothing in '+tab.label+' right now.</div>'; return; }
     $('list').innerHTML = list.map(card).join('');
-    $('list').querySelectorAll('[data-print]').forEach(function(b){ b.onclick=function(){ approveAndPrint(b.dataset.print, b); }; });
+    $('list').querySelectorAll('[data-requeue]').forEach(function(b){ b.onclick=function(){ requeue(b.dataset.requeue); }; });
     $('list').querySelectorAll('[data-open]').forEach(function(b){ b.onclick=function(){ openFile(b.dataset.open); }; });
     $('list').querySelectorAll('[data-dl]').forEach(function(b){ b.onclick=function(){ downloadFile(b.dataset.dl); }; });
-    $('list').querySelectorAll('[data-a]').forEach(function(b){ b.onclick=function(){ reject(b.dataset.id); }; });
+    $('list').querySelectorAll('[data-reject]').forEach(function(b){ b.onclick=function(){ reject(b.dataset.reject); }; });
   }
 
   async function signedUrl(j, download){
@@ -238,14 +243,12 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
     return res.data.signedUrl;
   }
 
-  // Open the file in a new tab (review only).
   async function openFile(id){
     var j=find(id); if(!j || !j.file_path) return;
     try{ window.open(await signedUrl(j,false), '_blank'); }
     catch(e){ alert('Could not open file: '+(e.message||e)); }
   }
 
-  // Save the file to the PC.
   async function downloadFile(id){
     var j=find(id); if(!j || !j.file_path) return;
     try{
@@ -255,62 +258,15 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
     }catch(e){ alert('Could not download file: '+(e.message||e)); }
   }
 
-  function setPageStyle(j){
-    var size=(j.paper_size||'A4')+' '+(j.orientation==='landscape'?'landscape':'portrait');
-    $('pagestyle').textContent = '@page{ size:'+size+'; margin:8mm; }';
-  }
-
-  // Render the document into the hidden print area (PDF pages to canvases, image as-is).
-  async function renderForPrint(j){
-    var area=$('printarea'); area.innerHTML='';
-    setPageStyle(j);
-    var url = await signedUrl(j, false);
-    if(j.file_type === 'application/pdf'){
-      var resp = await fetch(url);
-      var buf = await resp.arrayBuffer();
-      var pdf = await pdfjsLib.getDocument({data:buf}).promise;
-      for(var p=1;p<=pdf.numPages;p++){
-        var page = await pdf.getPage(p);
-        var vp = page.getViewport({scale:2});
-        var c = document.createElement('canvas');
-        c.width = vp.width; c.height = vp.height; c.className='printpage';
-        await page.render({canvasContext:c.getContext('2d'), viewport:vp}).promise;
-        area.appendChild(c);
-      }
-    }else{
-      await new Promise(function(res, rej){
-        var img=document.createElement('img'); img.className='printpage';
-        img.onload=res; img.onerror=function(){ rej(new Error('image failed to load')); };
-        img.src=url; area.appendChild(img);
-      });
-    }
-  }
-
-  // Approve + send to the printer via the browser. The file is NOT deleted here;
-  // it is removed automatically 10 minutes after upload.
-  async function approveAndPrint(id, btn){
-    var j=find(id); if(!j || !j.file_path) return;
-    if(!confirm('Approve and print job #'+codeOf(j)+'?\n\nA print dialog will open — choose your printer and print. The file is kept and removed automatically 10 minutes after upload.')) return;
-    if(btn) btn.disabled=true;
-    try{
-      await renderForPrint(j);
-    }catch(e){
-      if(btn) btn.disabled=false;
-      alert('Could not prepare the file for printing: '+(e.message||e));
-      return;
-    }
-    await new Promise(function(r){ setTimeout(r, 150); });
-    window.print();  // Chrome: blocks until the dialog is closed
-    try{
-      await sb.from('jobs').update({status:'approved'}).eq('id', id);
-    }catch(e){
-      alert('Printed, but could not update the record: '+(e.message||e));
-    }
-    $('printarea').innerHTML='';
+  // Send a failed/old job back to the queue so the agent picks it up again.
+  async function requeue(id){
+    var j=find(id); if(!j) return;
+    if(!confirm('Send job #'+codeOf(j)+' to the printer again?')) return;
+    var u = await sb.from('jobs').update({status:'pending', print_error:null}).eq('id', id);
+    if(u.error){ alert('Update failed: '+u.error.message); return; }
     load();
   }
 
-  // Reject: change the status only. The file is NOT deleted here either.
   async function reject(id){
     var j=find(id); if(!j) return;
     if(!confirm('Reject job #'+codeOf(j)+'?\n\nThe file is kept and removed automatically 10 minutes after upload.')) return;
