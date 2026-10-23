@@ -1,8 +1,8 @@
 // CyberPrint Pay - configuration
 // Fill the two Supabase values from your project: Settings -> API
 window.CYBERPRINT_CONFIG = {
-  SUPABASE_URL: "https://lyspjwfnupbumzlnrhuz.supabase.co",
-  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5c3Bqd2ZudXBidW16bG5yaHV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNzM0NDYsImV4cCI6MjEwNzY0OTQ0Nn0.0I-o3p5BYktNDgl0oUH4W1FI79fcYWbnaLAfiEQXjtQ",
+  SUPABASE_URL: "https://ejpepwflluoyqwfcheyn.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqcGVwd2ZsbHVveXF3ZmNoZXluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3Mjk3MTUsImV4cCI6MjEwODMwNTcxNX0.fq6KW4wITCZDvI-AfgmGZJbFxntGzBWYbB-KX7AI2OI",
 
   SHOP_NAME: "Aapka Apna Cyber-café",
 
