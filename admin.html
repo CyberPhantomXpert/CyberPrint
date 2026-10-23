@@ -84,7 +84,7 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
+<script src="config.js?v=2"></script>
 <script>
 (function(){
   var C = window.CYBERPRINT_CONFIG||{};
@@ -100,7 +100,7 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
     {k:'pending',  label:'Queue',    test:function(j){return j.status==='pending';}},
     {k:'printing', label:'Printing', test:function(j){return ['approved','printing','failed'].indexOf(j.status)>=0;}},
     {k:'printed',  label:'Printed',  test:function(j){return j.status==='printed';}},
-    {k:'rejected', label:'Rejected', test:function(j){return j.status==='rejected';}}
+    {k:'rejected', label:'Rejected / Cancelled', test:function(j){return ['rejected','cancelled'].indexOf(j.status)>=0;}}
   ];
 
   function agentOnline(){ return agent && agent.last_seen && (Date.now() - new Date(agent.last_seen).getTime() < 30000); }
@@ -149,14 +149,16 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
   async function load(){
     var rj = await fetchJobs();
     if(rj.error){ setConn(false); $('agenttxt').textContent='agent: offline'; return; }
-    setConn(true); jobs = rj.data||[];
+    jobs = rj.data||[];
     var ra = await sb.from('agent_status').select('*');
     agent = (ra && ra.data && ra.data.length)
       ? ra.data.slice().sort(function(a,b){ return new Date(b.last_seen)-new Date(a.last_seen); })[0]
       : null;
     var cleaned = await cleanupExpired();
     if(cleaned){ var r2 = await fetchJobs(); if(!r2.error) jobs = r2.data||[]; }
-    $('agenttxt').textContent = agentOnline()
+    var online = agentOnline();
+    setConn(online);
+    $('agenttxt').textContent = online
       ? ('agent: online' + (agent.printer ? ' \u00b7 '+agent.printer : ''))
       : 'agent: offline';
     render();
@@ -195,7 +197,6 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
   function card(j){
     var colorLbl = j.color_mode==='color'?'Colour':'B&W';
     var acts=[];
-    // Retry only appears for jobs the agent could not print, or old 'approved' ones.
     if((j.status==='failed' || j.status==='approved') && j.file_path){
       acts.push('<button class="ok" data-requeue="'+j.id+'">Retry</button>');
     }
@@ -210,7 +211,7 @@ button.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:10
       '<div class="top"><div><div class="code">#'+codeOf(j)+'</div><div class="fn">'+esc(j.file_name)+'</div></div>'+
       '<span class="badge b-'+j.status+'">'+j.status+'</span></div>'+
       '<div class="specs">'+
-        '<span><b>'+j.page_count+'</b> page'+(j.page_count>1?'s':'')+'</span>'+
+        '<span><b>'+j.page_count+'</b> page'+(j.page_count>1?'s':'')+(j.page_range?' (pages '+esc(j.page_range)+')':'')+'</span>'+
         '<span><b>'+j.copies+'</b> '+(j.copies>1?'copies':'copy')+'</span>'+
         '<span><b>'+colorLbl+'</b></span>'+
         '<span><b>'+j.paper_size+'</b></span>'+
