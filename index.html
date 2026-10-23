@@ -102,7 +102,7 @@ button.main:disabled{background:#94a3b8;cursor:not-allowed}
       <div class="amt" id="payamt">&rupee;0</div>
     </div>
 
-    <div class="qrbox"><img id="qr" alt="UPI QR code" /></div>
+    <div class="qrbox" id="qrimg"></div>
 
     <a class="btnmain" id="paybtn" href="#">Pay with UPI app</a>
     <p class="hint" style="margin-top:10px">Scan the QR, or tap the button to pay in GPay / PhonePe / Paytm. Paying to <b id="payname">Ankit Singh</b> (<span id="payvpa"></span>).</p>
@@ -114,7 +114,7 @@ button.main:disabled{background:#94a3b8;cursor:not-allowed}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script src="config.js"></script>
 <script>
 (function(){
@@ -196,15 +196,16 @@ button.main:disabled{background:#94a3b8;cursor:not-allowed}
   $('paper').onchange = recalc; $('orient').onchange = recalc;
 
   // Build the UPI intent link (works in GPay / PhonePe / Paytm on a phone).
-  function upiLink(amount, note, ref){
-    var vpa  = C.UPI_ID || '';
-    var name = C.UPI_NAME || C.SHOP_NAME || '';
-    return 'upi://pay?pa='+encodeURIComponent(vpa)
-      + '&pn='+encodeURIComponent(name)
-      + '&am='+encodeURIComponent(amount)
-      + '&cu=INR'
-      + '&tn='+encodeURIComponent(note)
-      + '&tr='+encodeURIComponent(ref);
+  // Keep it minimal: pa + pn + am + tn. The VPA is NOT url-encoded, because
+  // some UPI apps reject pa=name%40bank (they expect the literal @).
+  function upiLink(amount, note){
+    var vpa  = (C.UPI_ID || '').trim();
+    var name = (C.UPI_NAME || C.SHOP_NAME || '').trim();
+    var parts = ['pa=' + vpa];
+    if(name) parts.push('pn=' + encodeURIComponent(name));
+    parts.push('am=' + amount);
+    parts.push('tn=' + encodeURIComponent(note || ''));
+    return 'upi://pay?' + parts.join('&');
   }
 
   $('submit').onclick = async function(){
@@ -226,7 +227,7 @@ button.main:disabled{background:#94a3b8;cursor:not-allowed}
       if(ins.error) throw ins.error;
 
       var code = id.replace(/-/g,'').slice(0,6).toUpperCase();
-      var link = upiLink(s.amount, 'Job '+code, id);
+      var link = upiLink(s.amount, 'Job'+code);
 
       $('jobno').textContent = code;
       $('jobid').textContent = code;
@@ -234,10 +235,15 @@ button.main:disabled{background:#94a3b8;cursor:not-allowed}
       $('payname').textContent = C.UPI_NAME || C.SHOP_NAME || '';
       $('payvpa').textContent = C.UPI_ID || '';
       $('paybtn').href = link;
-      if(window.QRCode){
-        QRCode.toDataURL(link, {width:440, margin:1}, function(err,url){
-          if(!err){ $('qr').src = url; }
-        });
+
+      // Draw the QR locally (no data leaves the phone).
+      try{
+        var qr = qrcode(0, 'M');
+        qr.addData(link);
+        qr.make();
+        $('qrimg').innerHTML = qr.createImgTag(4, 8);
+      }catch(err){
+        $('qrimg').innerHTML = '<div class="hint">QR could not be drawn &mdash; use the button below.</div>';
       }
 
       $('s2').hidden=true; $('s3').hidden=false;
