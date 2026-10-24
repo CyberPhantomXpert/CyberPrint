@@ -7,7 +7,7 @@ window.CYBERPRINT_CONFIG = {
   SHOP_NAME: "Aapka Apna Cyber-café",
 
   // UPI payment details - used to build the payment QR and the "Pay" button.
-  UPI_ID: "ankitsingh953431@okaxis",
+  UPI_ID: "ankitsingh953431@oksbi",
   UPI_NAME: "Ankit Singh",
 
   // Pricing in rupees per printed side. Keep these the same as the
