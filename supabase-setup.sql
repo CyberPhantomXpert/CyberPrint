@@ -25,6 +25,9 @@ create table if not exists public.jobs (
   paper_size   text not null default 'A4',
   orientation  text not null default 'portrait' check (orientation in ('portrait','landscape')),
   status       text not null default 'pending',
+  printed_at   timestamptz,              -- set by the print agent when it finishes
+  print_error  text,                     -- set by the print agent on failure
+  page_range   text,                     -- e.g. '2-5', set if customer selected a range
   note         text,
   -- Price is calculated by the database, not the browser.
   -- Keep the 5 and 10 here in sync with config.js (PRICE_BW / PRICE_COLOR).
@@ -35,6 +38,9 @@ create table if not exists public.jobs (
 
 -- upgrades, in case you already ran an earlier version of this file
 alter table public.jobs add column if not exists file_deleted boolean not null default false;
+alter table public.jobs add column if not exists printed_at   timestamptz;
+alter table public.jobs add column if not exists print_error  text;
+alter table public.jobs add column if not exists page_range   text;
 alter table public.jobs alter column file_path drop not null;
 
 -- 2. Keep updated_at fresh on every change -----------------------------------
@@ -45,11 +51,19 @@ drop trigger if exists trg_jobs_touch on public.jobs;
 create trigger trg_jobs_touch before update on public.jobs
 for each row execute function public.touch_updated_at();
 
--- 3. Access rules on the jobs table (Row Level Security) ---------------------
-alter table public.jobs enable row level security;
+-- 3. Print-agent status (one row per agent; the panel reads it for a live badge)
+create table if not exists public.agent_status (
+  id         text primary key,           -- e.g. 'counter-pc'
+  last_seen  timestamptz,
+  printer    text,
+  note       text
+);
+
+-- 4. Access rules (Row Level Security) ---------------------------------------
+alter table public.jobs          enable row level security;
+alter table public.agent_status  enable row level security;
 
 -- allow a signed-out customer (anon) and, harmlessly, a signed-in browser too
--- (the customer page can otherwise inherit an operator login on the same browser)
 drop policy if exists "anon can create jobs" on public.jobs;
 create policy "anon can create jobs" on public.jobs
   for insert to anon, authenticated with check (status = 'pending');
@@ -62,7 +76,20 @@ drop policy if exists "operator can update jobs" on public.jobs;
 create policy "operator can update jobs" on public.jobs
   for update to authenticated using (true) with check (true);
 
--- 4. Private storage bucket and its access rules -----------------------------
+-- the agent signs in as the operator, so it is 'authenticated' too
+drop policy if exists "operator can read agent status" on public.agent_status;
+create policy "operator can read agent status" on public.agent_status
+  for select to authenticated using (true);
+
+drop policy if exists "agent can insert status" on public.agent_status;
+create policy "agent can insert status" on public.agent_status
+  for insert to authenticated with check (true);
+
+drop policy if exists "agent can update status" on public.agent_status;
+create policy "agent can update status" on public.agent_status
+  for update to authenticated using (true) with check (true);
+
+-- 5. Private storage bucket and its access rules -----------------------------
 insert into storage.buckets (id, name, public)
 values ('jobs','jobs', false)
 on conflict (id) do nothing;
@@ -75,19 +102,20 @@ drop policy if exists "operator can read job files" on storage.objects;
 create policy "operator can read job files" on storage.objects
   for select to authenticated using (bucket_id = 'jobs');
 
--- The operator panel deletes files (on approve/print, on reject, and after 10 min).
+-- the operator panel deletes files after the retention window
 drop policy if exists "operator can delete job files" on storage.objects;
 create policy "operator can delete job files" on storage.objects
   for delete to authenticated using (bucket_id = 'jobs');
 
--- 5. Tidy old status values, then lock the status rule -----------------------
+-- 6. Tidy old status values, then lock the status rule -----------------------
 -- Kept LAST on purpose: this is the only step that can fail on an existing table.
-update public.jobs set status = 'approved' where status not in ('pending','approved','rejected','cancelled');
+update public.jobs set status = 'approved'
+  where status not in ('pending','approved','printing','printed','rejected','cancelled','failed');
 
 alter table public.jobs drop constraint if exists jobs_status_check;
 alter table public.jobs add  constraint jobs_status_check
-  check (status in ('pending','approved','rejected','cancelled'));
+  check (status in ('pending','approved','printing','printed','rejected','cancelled','failed'));
 
--- 6. Optional: clear old job records -----------------------------------------
+-- 7. Optional: clear old job records -----------------------------------------
 -- Files are removed by the panel; the row (amount, time) stays as a record.
 -- delete from public.jobs where created_at < now() - interval '30 days';
