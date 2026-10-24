@@ -1,0 +1,5 @@
+# Never commit secrets.
+# The agent folder holds the operator password - keep it local.
+agent/config.json
+agent/tmp/
+config.local.js
