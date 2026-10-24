@@ -1,5 +1,14 @@
-# Never commit secrets.
-# The agent folder holds the operator password - keep it local.
+# Secrets & local configuration
 agent/config.json
-agent/tmp/
 config.local.js
+
+# Runtime logs, PIDs and temporary files
+agent/agent.pid
+agent/agent.log
+agent/tmp/
+agent/__pycache__/
+*.pyc
+
+# OS generated files
+Thumbs.db
+.DS_Store

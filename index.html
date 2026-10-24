@@ -948,7 +948,6 @@ button.primary-btn:disabled {
         paper_size: $('paper').value,
         orientation: $('orient').value,
         page_range: s.pageRange,
-        total_price: s.amount,
         status: 'pending'
       });
       if(ins.error){
@@ -1011,7 +1010,7 @@ button.primary-btn:disabled {
   // PWA Service Worker & Install Prompt
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw.js').catch(function(){});
+      navigator.serviceWorker.register('sw.js?v=2').catch(function(){});
     });
   }
 

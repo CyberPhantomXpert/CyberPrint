@@ -767,7 +767,6 @@ button.primary:hover {
         color_mode: 'color',
         paper_size: 'A4',
         orientation: 'portrait',
-        total_price: 10,
         status: 'pending'
       };
       var inRes = await sb.from('jobs').insert(row);
@@ -786,7 +785,7 @@ button.primary:hover {
   // PWA Service Worker & Install Prompt for Admin Panel
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw.js').catch(function(){});
+      navigator.serviceWorker.register('sw.js?v=2').catch(function(){});
     });
   }
 
