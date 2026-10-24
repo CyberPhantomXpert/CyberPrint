@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#1e293b" />
+<title>CyberPrint Pay — Instant Print Counter</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="CyberPrint Pay" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --brand: #2563eb;
+  --brand-light: #eff6ff;
+  --brand-dark: #1d4ed8;
+  --ok: #16a34a;
+  --ok-light: #f0fdf4;
+  --warn: #d97706;
+  --warn-light: #fefce8;
+  --err: #dc2626;
+  --err-light: #fef2f2;
+  --radius: 16px;
+  --shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+  line-height: 1.5;
+}
+header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #fff;
+  padding: 18px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+header .inner {
+  max-width: 580px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+header p {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+.badge-live {
+  background: #22c55e22;
+  color: #4ade80;
+  border: 1px solid #22c55e44;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.badge-live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  display: inline-block;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+main {
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 18px 16px 48px;
+}
+
+/* Stepper tracker bar */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 6px 10px;
+  background: #e2e8f0;
+  border-radius: 30px;
+}
+.step-item {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+.step-item.active {
+  background: var(--ink);
+  color: #fff;
+}
+.step-item.done {
+  color: var(--ok);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.card-title span.num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--brand-light);
+  color: var(--brand);
+  font-size: 13px;
+  display: inline-grid;
+  place-items: center;
+}
+
+/* Step 1: Upload Box */
+.drop {
+  border: 2px dashed #94a3b8;
+  border-radius: 14px;
+  padding: 34px 18px;
+  text-align: center;
+  color: var(--muted);
+  cursor: pointer;
+  background: #fafbfc;
+  transition: all 0.2s ease;
+}
+.drop:hover, .drop.over {
+  border-color: var(--brand);
+  background: #eff6ff;
+  color: var(--brand);
+  transform: translateY(-1px);
+}
+.drop-icon {
+  font-size: 38px;
+  margin-bottom: 8px;
+}
+.drop b {
+  display: block;
+  color: var(--ink);
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+.drop .sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+.privacy-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #475569;
+}
+
+/* Step 2: Settings Rows */
+.filemeta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: var(--brand-light);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.filemeta .ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--brand);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(37,99,235,0.12);
+}
+.filemeta .fn {
+  font-weight: 700;
+  font-size: 14px;
+  word-break: break-all;
+  color: var(--ink);
+}
+.filemeta .fm {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.setting-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.setting-row:last-child {
+  border-bottom: 0;
+}
+.setting-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.setting-sub {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.seg-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.seg-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.seg-card:hover {
+  border-color: #cbd5e1;
+}
+.seg-card.active {
+  border-color: var(--brand);
+  background: var(--brand-light);
+  color: var(--brand-dark);
+}
+.seg-card input {
+  accent-color: var(--brand);
+}
+
+.counter-stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+.counter-stepper button {
+  border: 0;
+  background: #f1f5f9;
+  width: 36px;
+  height: 38px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.counter-stepper button:hover {
+  background: #e2e8f0;
+}
+.counter-stepper input {
+  width: 48px;
+  height: 38px;
+  border: 0;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+select, input[type=number] {
+  font: inherit;
+  padding: 9px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+}
+
+/* Calculation summary bill */
+.bill-box {
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 16px;
+}
+.bill-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.bill-row.grand {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+button.primary-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--brand);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+  transition: all 0.2s ease;
+}
+button.primary-btn:hover:not(:disabled) {
+  background: var(--brand-dark);
+  transform: translateY(-1px);
+}
+button.primary-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Step 3: Token & Payment Screen */
+.token-hero {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 2px solid #93c5fd;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 18px;
+}
+.token-sub {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.token-code {
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: #1e3a8a;
+  margin: 4px 0 6px;
+}
+.token-hint {
+  font-size: 13px;
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+/* Real-time Status Banner */
+.live-tracker {
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.tracker-pending {
+  background: var(--warn-light);
+  border: 1px solid #fde047;
+  color: #854d0e;
+}
+.tracker-printing {
+  background: var(--brand-light);
+  border: 1px solid #93c5fd;
+  color: #1e40af;
+}
+.tracker-printed {
+  background: var(--ok-light);
+  border: 1px solid #86efac;
+  color: #166534;
+}
+.tracker-rejected {
+  background: var(--err-light);
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+}
+
+.qr-container {
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  display: inline-block;
+  margin: 10px auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+}
+.qr-container img {
+  display: block;
+  width: 220px;
+  height: 220px;
+}
+
+.pay-cta-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 15px;
+  border: 0;
+  border-radius: 12px;
+  background: #16a34a;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(22,163,74,0.25);
+}
+.pay-cta-btn:hover {
+  background: #15803d;
+}
+
+.upi-details-card {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+.upi-copy-btn {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.upi-copy-btn:hover {
+  background: #f1f5f9;
+}
+
+.spin {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid #ffffff55;
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.err-banner {
+  background: var(--err-light);
+  border: 1px solid #fecaca;
+  color: var(--err);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-top: 12px;
+  font-weight: 500;
+}
+.pwa-install-btn {
+  background: #22c55e;
+  color: #fff;
+  border: 0;
+  border-radius: 20px;
+  padding: 6px 13px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 6px rgba(34,197,94,0.3);
+  transition: all 0.15s ease;
+}
+.pwa-install-btn:hover {
+  background: #16a34a;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <div>
+      <h1 id="shop">CyberPrint Pay</h1>
+      <p>File upload karein ➔ UPI se pay karein ➔ Print paayein ⚡</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button id="installAppBtn" class="pwa-install-btn" title="Apne mobile mein app install karein">📲 Install App</button>
+      <span class="badge-live">Live</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Stepper Indicator -->
+  <div class="stepper">
+    <div class="step-item active" id="stp1"><span>1</span> File Chuney</div>
+    <div class="step-item" id="stp2"><span>2</span> Print Setting</div>
+    <div class="step-item" id="stp3"><span>3</span> Pay &amp; Token</div>
+  </div>
+
+  <!-- STEP 1: CHOOSE FILE -->
+  <section id="s1" class="card">
+    <div class="card-title">
+      <span class="num">1</span>
+      <span>Apni file chuney (Select Document or Photo)</span>
+    </div>
+
+    <div id="drop" class="drop">
+      <div class="drop-icon">📄</div>
+      <b>Yahan tap karke file select karein</b>
+      <div class="sub">PDF ya Photo (JPG / PNG) &middot; Max 20 MB tak</div>
+    </div>
+    <input id="file" type="file" accept="application/pdf,image/jpeg,image/png" hidden />
+
+    <div class="privacy-badge">
+      <span>🔒</span>
+      <span><b>100% Privacy &amp; Suraksha:</b> Aapki file print hone ke 10 minute baad automatically delete ho jayegi.</span>
+    </div>
+
+    <div id="s1err" class="err-banner" hidden></div>
+  </section>
+
+  <!-- STEP 2: PRINT SETTINGS -->
+  <section id="s2" class="card" hidden>
+    <div class="card-title">
+      <span class="num">2</span>
+      <span>Print ki setting karein</span>
+    </div>
+
+    <!-- File badge -->
+    <div class="filemeta">
+      <div class="ic" id="fic">PDF</div>
+      <div>
+        <div class="fn" id="fname">file.pdf</div>
+        <div class="fm" id="fmeta"></div>
+      </div>
+    </div>
+
+    <!-- Setting: Copies -->
+    <div class="setting-row">
+      <div>
+        <span class="setting-label">Kitni copies chahiye?</span>
+        <span class="setting-sub">Number of copies to print</span>
+      </div>
+      <div class="counter-stepper">
+        <button type="button" id="copyMinus">&minus;</button>
+        <input id="copies" type="number" min="1" max="50" value="1" />
+        <button type="button" id="copyPlus">&plus;</button>
+      </div>
+    </div>
+
+    <!-- Setting: Color Mode -->
+    <div class="setting-row">
+      <div>
+        <span class="setting-label">Print Type</span>
+        <span class="setting-sub">Kala-Safed ya Rangeen?</span>
+      </div>
+      <div class="seg-group" id="mode">
+        <label class="seg-card active" id="modeBw">
+          <input type="radio" name="mode" value="bw" checked />
+          <span>⚫ B&amp;W (Kala-Safed)</span>
+        </label>
+        <label class="seg-card" id="modeColor">
+          <input type="radio" name="mode" value="color" />
+          <span>🎨 Color (Rangeen)</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Setting: Pages -->
+    <div class="setting-row">
+      <div>
+        <span class="setting-label">Kaunse pages chahiye?</span>
+        <span class="setting-sub">Select pages to print</span>
+      </div>
+      <div class="seg-group">
+        <label class="seg-card active" id="allpages">Saare Pages <span id="ptot"></span></label>
+        <label class="seg-card" id="rangeLbl">
+          <span>Range:</span>
+          <input id="from" type="number" min="1" style="width:48px;padding:3px 6px" />
+          <span>se</span>
+          <input id="to" type="number" min="1" style="width:48px;padding:3px 6px" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Setting: Paper & Orientation -->
+    <div class="setting-row">
+      <div>
+        <span class="setting-label">Paper &amp; Orientation</span>
+        <span class="setting-sub">Size aur angle</span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <select id="paper">
+          <option value="A4">A4 Paper</option>
+          <option value="Letter">Letter</option>
+          <option value="A3">A3 Paper</option>
+        </select>
+        <select id="orient">
+          <option value="portrait">Portrait (Seedha)</option>
+          <option value="landscape">Landscape (Aadha)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Live calculation bill -->
+    <div class="bill-box">
+      <div class="bill-row">
+        <span id="billFormula">1 page &times; 1 copy &times; &#8377;5</span>
+        <span id="billRate">&#8377;5</span>
+      </div>
+      <div class="bill-row grand">
+        <span>Kul Rakam (Total)</span>
+        <span id="total" style="color:var(--brand)">&#8377;0</span>
+      </div>
+    </div>
+
+    <button class="primary-btn" id="submit">
+      <span>Print Request Bhejo 🚀</span>
+    </button>
+    <div id="s2err" class="err-banner" hidden></div>
+  </section>
+
+  <!-- STEP 3: PAY & TOKEN -->
+  <section id="s3" class="card" style="text-align:center" hidden>
+    <!-- Highlighted Token Hero -->
+    <div class="token-hero">
+      <div class="token-sub">Aapka Print Token Code</div>
+      <div class="token-code" id="jobno">&mdash;&mdash;</div>
+      <div class="token-hint">Counter par ye Token Code batayein ya screen dikhayein</div>
+    </div>
+
+    <!-- Live Status Tracker Pulse -->
+    <div class="live-tracker tracker-pending" id="statusTracker">
+      <div class="spin" id="trackerSpin" style="border-top-color:#854d0e;width:14px;height:14px;border-width:2px"></div>
+      <span id="trackerMsg">Counter verification ka intezaar hai... (Payment check ho rahi hai)</span>
+    </div>
+
+    <!-- Amount Card -->
+    <div style="margin:16px 0 10px">
+      <div style="font-size:13px;color:var(--muted);font-weight:600">UPI se Pay karein</div>
+      <div style="font-size:36px;font-weight:900;color:var(--ok);letter-spacing:-0.5px" id="payamt">&#8377;0</div>
+    </div>
+
+    <!-- QR Code Container -->
+    <div class="qr-container" id="qrimg"></div>
+
+    <!-- One-tap UPI Button for Phone -->
+    <a class="pay-cta-btn" id="paybtn" href="#">
+      <span>📱 GPay / PhonePe / Paytm se Pay karein</span>
+    </a>
+
+    <!-- UPI VPA details -->
+    <div class="upi-details-card">
+      <div style="text-align:left">
+        <div style="font-size:11px;color:var(--muted)">UPI ID (GPay, PhonePe, Paytm, BHIM):</div>
+        <div style="font-weight:700;color:var(--ink)" id="payvpa"></div>
+      </div>
+      <button type="button" class="upi-copy-btn" id="copyUpiBtn">Copy ID</button>
+    </div>
+
+    <p style="font-size:12px;color:var(--muted);margin:16px 0 18px">
+      Pay karne ke baad counter operator ko batayein &mdash; payment verify hote hi aapka print nikal aayega.
+    </p>
+
+    <button type="button" class="primary-btn" id="again" style="background:#0f172a">
+      <span>+ Ek aur file print karni hai</span>
+    </button>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="config.js?v=2"></script>
+<script>
+(function(){
+  var C = window.CYBERPRINT_CONFIG || {};
+  document.getElementById('shop').textContent = C.SHOP_NAME || 'CyberPrint Pay';
+  var sb = supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  });
+  if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+  var file = null, unitPages = 1;
+  var currentJobId = null, pollTimer = null;
+  var $ = function(id){ return document.getElementById(id); };
+  var money = function(n){ return '\u20b9' + (n || 0); };
+
+  function setStep(num){
+    ['stp1','stp2','stp3'].forEach(function(id, idx){
+      var el = $(id);
+      if(idx + 1 === num){ el.className = 'step-item active'; }
+      else if(idx + 1 < num){ el.className = 'step-item done'; }
+      else { el.className = 'step-item'; }
+    });
+  }
+
+  function allowed(f){
+    if(f.size > (C.MAX_FILE_MB || 20) * 1024 * 1024) return 'File bahut badi hai (Max ' + (C.MAX_FILE_MB || 20) + ' MB allow hai).';
+    if((C.ALLOWED_TYPES || []).indexOf(f.type) === -1) return 'Kewal PDF, JPG ya PNG files support hoti hain.';
+    return null;
+  }
+
+  async function pageCount(f){
+    if(f.type === 'application/pdf'){
+      try{
+        var buf = await f.arrayBuffer();
+        var pdf = await pdfjsLib.getDocument({data:buf}).promise;
+        return pdf.numPages || 1;
+      }catch(e){ return 1; }
+    }
+    return 1;
+  }
+
+  async function pick(f){
+    var err = allowed(f);
+    if(err){ $('s1err').hidden=false; $('s1err').textContent=err; return; }
+    $('s1err').hidden=true;
+    file = f;
+    unitPages = await pageCount(f);
+    $('fic').textContent = f.type==='application/pdf' ? 'PDF' : (f.name.split('.').pop()||'IMG').toUpperCase();
+    $('fname').textContent = f.name;
+    $('fmeta').textContent = (f.size/1024/1024).toFixed(2) + ' MB \u00b7 ' + unitPages + ' page' + (unitPages > 1 ? 's' : '');
+    $('ptot').textContent = '(' + unitPages + ')';
+    $('from').max = unitPages; $('to').max = unitPages; $('to').value = unitPages;
+    $('s1').hidden = true; $('s2').hidden = false;
+    setStep(2);
+    recalc();
+  }
+
+  function genUUID(){
+    if(window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+      var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+    });
+  }
+
+  function recalc(){
+    var copies = Math.max(1, parseInt($('copies').value || '1', 10));
+    var mode = document.querySelector('input[name=mode]:checked').value;
+    var usingRange = $('rangeLbl').classList.contains('active');
+    var eff = unitPages;
+    var pageRange = null;
+
+    if(usingRange){
+      var f = Math.max(1, Math.min(unitPages, parseInt($('from').value || '1', 10)));
+      var t = Math.max(1, Math.min(unitPages, parseInt($('to').value || String(unitPages), 10)));
+      if(f > t){ var tmp = f; f = t; t = tmp; }
+      $('from').value = f;
+      $('to').value = t;
+      eff = (t - f + 1);
+      pageRange = f + '-' + t;
+    }
+
+    var rate = mode === 'color' ? (C.PRICE_COLOR || 10) : (C.PRICE_BW || 5);
+    var amount = eff * copies * rate;
+
+    $('total').textContent = money(amount);
+    $('billFormula').textContent = eff + ' page' + (eff > 1 ? 's' : '') + ' \u00d7 ' + copies + ' copy \u00d7 \u20b9' + rate + (mode === 'color' ? ' (Color)' : ' (B&W)');
+    $('billRate').textContent = money(amount);
+
+    return { copies: copies, mode: mode, eff: eff, pageRange: pageRange, rate: rate, amount: amount };
+  }
+
+  $('drop').onclick = function(){ $('file').click(); };
+  $('file').onchange = function(e){ if(e.target.files[0]) pick(e.target.files[0]); };
+  ['dragover','dragenter'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.add('over'); }); });
+  ['dragleave','drop'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.remove('over'); }); });
+  $('drop').addEventListener('drop', function(e){ if(e.dataTransfer.files[0]) pick(e.dataTransfer.files[0]); });
+
+  $('copyMinus').onclick = function(){
+    var val = Math.max(1, parseInt($('copies').value || '1', 10) - 1);
+    $('copies').value = val; recalc();
+  };
+  $('copyPlus').onclick = function(){
+    var val = Math.min(50, parseInt($('copies').value || '1', 10) + 1);
+    $('copies').value = val; recalc();
+  };
+  $('copies').oninput = recalc;
+
+  document.querySelectorAll('input[name=mode]').forEach(function(r){
+    r.onchange = function(){
+      document.querySelectorAll('#mode .seg-card').forEach(function(l){ l.classList.remove('active'); });
+      r.closest('.seg-card').classList.add('active');
+      recalc();
+    };
+  });
+
+  $('allpages').onclick = function(){
+    $('allpages').classList.add('active');
+    $('rangeLbl').classList.remove('active');
+    recalc();
+  };
+  $('rangeLbl').onclick = function(e){
+    $('rangeLbl').classList.add('active');
+    $('allpages').classList.remove('active');
+    recalc();
+  };
+  $('from').oninput = recalc; $('to').oninput = recalc;
+  $('paper').onchange = recalc; $('orient').onchange = recalc;
+
+  function upiLink(amount, note){
+    var vpa = (C.UPI_ID || '').trim();
+    var name = (C.UPI_NAME || C.SHOP_NAME || '').trim();
+    if(!vpa) return '';
+    var parts = ['pa=' + vpa];
+    if(name) parts.push('pn=' + encodeURIComponent(name));
+    parts.push('am=' + amount);
+    parts.push('tn=' + encodeURIComponent(note || ''));
+    return 'upi://pay?' + parts.join('&');
+  }
+
+  // Real-time job status polling
+  async function pollStatus(){
+    if(!currentJobId) return;
+    try {
+      var res = await sb.from('jobs').select('status, print_error').eq('id', currentJobId).single();
+      if(res && res.data){
+        var st = res.data.status;
+        var tracker = $('statusTracker');
+        var spin = $('trackerSpin');
+        var msg = $('trackerMsg');
+
+        if(st === 'printing'){
+          tracker.className = 'live-tracker tracker-printing';
+          spin.style.display = 'inline-block';
+          spin.style.borderTopColor = '#1e40af';
+          msg.textContent = 'Machine mein print nikal raha hai... \uD83D\uDDA8\uFE0F';
+        } else if(st === 'printed'){
+          tracker.className = 'live-tracker tracker-printed';
+          spin.style.display = 'none';
+          msg.textContent = '\uD83C\uDF89 Badhai ho! Print taiyaar hai, counter se collect karein!';
+          if(pollTimer) clearInterval(pollTimer);
+        } else if(st === 'rejected' || st === 'failed'){
+          tracker.className = 'live-tracker tracker-rejected';
+          spin.style.display = 'none';
+          msg.textContent = '\u274C Job reject ho gaya: ' + (res.data.print_error || 'Counter par poochhein');
+          if(pollTimer) clearInterval(pollTimer);
+        }
+      }
+    } catch(e){}
+  }
+
+  $('submit').onclick = async function(){
+    if(!file) return;
+    var btn = $('submit'); var s = recalc();
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> File upload ho rahi hai\u2026';
+    $('s2err').hidden = true;
+    try {
+      var id = genUUID();
+      var safe = file.name.replace(/[^\w.\-]+/g, '_');
+      var path = id + '/' + safe;
+      var up = await sb.storage.from(C.BUCKET || 'jobs').upload(path, file, { contentType: file.type, upsert: false });
+      if(up.error) throw up.error;
+
+      var ins = await sb.from('jobs').insert({
+        id: id,
+        file_name: file.name,
+        file_path: path,
+        file_type: file.type,
+        page_count: s.eff,
+        copies: s.copies,
+        color_mode: s.mode,
+        paper_size: $('paper').value,
+        orientation: $('orient').value,
+        page_range: s.pageRange,
+        total_price: s.amount,
+        status: 'pending'
+      });
+      if(ins.error){
+        try{ await sb.storage.from(C.BUCKET || 'jobs').remove([path]); }catch(_){}
+        throw ins.error;
+      }
+
+      currentJobId = id;
+      var code = id.replace(/-/g, '').slice(0, 6).toUpperCase();
+      var link = upiLink(s.amount, 'Job#' + code);
+
+      $('jobno').textContent = '#' + code;
+      $('payamt').textContent = money(s.amount);
+      $('payvpa').textContent = C.UPI_ID || '(Not configured)';
+
+      if(!link){
+        $('paybtn').style.display = 'none';
+        $('qrimg').innerHTML = '<div class="err-banner">UPI ID config.js mein set nahi hai &mdash; counter par cash de dijiye.</div>';
+      } else {
+        $('paybtn').style.display = 'flex';
+        $('paybtn').href = link;
+        try {
+          var qr = qrcode(0, 'M');
+          qr.addData(link);
+          qr.make();
+          $('qrimg').innerHTML = qr.createImgTag(4, 8);
+        } catch(err){
+          $('qrimg').innerHTML = '<div style="font-size:12px;color:var(--muted)">QR draw nahi ho saka &mdash; neeche button se pay karein.</div>';
+        }
+      }
+
+      $('s2').hidden = true;
+      $('s3').hidden = false;
+      setStep(3);
+      window.scrollTo(0, 0);
+
+      // Start live polling status
+      if(pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(pollStatus, 2500);
+
+    } catch(e){
+      $('s2err').hidden = false;
+      $('s2err').textContent = 'Upload nahi ho saka: ' + (e.message || e);
+      btn.disabled = false;
+      btn.innerHTML = '<span>Print Request Bhejo 🚀</span>';
+    }
+  };
+
+  $('copyUpiBtn').onclick = function(){
+    if(!C.UPI_ID) return;
+    navigator.clipboard.writeText(C.UPI_ID).then(function(){
+      var btn = $('copyUpiBtn');
+      btn.textContent = 'Copied! \u2705';
+      setTimeout(function(){ btn.textContent = 'Copy ID'; }, 2000);
+    });
+  };
+
+  $('again').onclick = function(){ location.reload(); };
+
+  // PWA Service Worker & Install Prompt
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+
+  var deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  var installBtn = $('installAppBtn');
+  if(installBtn){
+    installBtn.onclick = async function(){
+      if(deferredPrompt){
+        deferredPrompt.prompt();
+        var choice = await deferredPrompt.userChoice;
+        if(choice.outcome === 'accepted'){
+          installBtn.style.display = 'none';
+        }
+        deferredPrompt = null;
+      } else {
+        alert('Mobile mein App install karne ke liye:\n\n1. Browser ke 3-dots (⋮) ya Share button par click karein.\n2. "Add to Home screen" ya "Install app" chunein.');
+      }
+    };
+  }
+})();
+</script>
+</body>
+</html>

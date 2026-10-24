@@ -1,153 +1,155 @@
 # CyberPrint Pay — simple, free version
 
-A tiny two-page website for a cybercafé:
+A walk-in customer scans a QR code, uploads a file from their phone, pays by UPI, and gets a
+job number. A small print agent on the café's Windows PC beeps, you check the payment and press
+**Y**, and it prints — silently, no dialog.
 
-- **Customer page** (`index.html`) — the customer scans a QR code, opens the page on their phone, uploads a file, picks print settings, and gets a job number.
-- **Operator panel** (`admin.html`) — the operator opens this on the café's Windows PC, sees incoming jobs, and **approves and prints** them (or rejects them). Each job also has **Open** and **Download** buttons.
-
-No build step, no framework to install, no paid service.
-
----
-
-## How printing works
-
-The operator panel prints **from the browser**. When the operator clicks **Approve & print**, the panel renders the document and opens the browser's print dialog. The printer installed on the PC is shown there (Windows' default printer is preselected) and the operator clicks Print. The job is then marked approved; the file is removed separately, 10 minutes after upload.
-
-A web page cannot list the PC's printers on its own — no browser exposes that to a site — so the print dialog is where the printer is chosen. Set the café printer as the Windows default once, and **Approve & print** then goes straight to it.
-
-The loop is:
-
-1. The printer is installed on the café's Windows PC (USB or Wi-Fi) and set as the default — Windows sees it as a normal printer.
-2. The operator opens `admin.html` in Chrome on that PC.
-3. A new job appears in **Queue**.
-4. The operator clicks **Approve & print** — a print dialog opens with the printer preselected. They print.
-5. The job moves to **Approved**. (The file is removed automatically 10 minutes after upload, not on approval.)
-
-Each pending job also has **Open** (view the file in a new tab), **Download** (save it to the PC — handy if you want to print by another route), and **Reject**.
+Everything runs on free tiers. No build step, no framework to install.
 
 ---
 
-## When files are deleted
+## The three pieces
 
-Every uploaded file is removed **10 minutes after upload**, no matter what the operator does. Approving or rejecting a job does *not* delete the file.
+| Piece | Where it runs | What it does |
+|-------|---------------|--------------|
+| `index.html` | Customer's phone | Upload, choose settings, get a job number, see the UPI QR |
+| `admin.html` | Café Windows PC (Chrome) | Watch the queue, open/download/reject, see the agent status |
+| `agent/` | Café Windows PC (background) | Notifies you of new jobs and prints them on **Y** |
 
-- A job nobody has acted on within 10 minutes is marked `cancelled` and drops out of the queue.
-- Approving or rejecting only changes the job's status. The file stays until the 10-minute mark, so you can still **Open** or **Download** an approved job during that window.
+All three talk to one free **Supabase** project (database + private file storage + operator login).
 
-The job *record* (job number, pages, amount, time, status) is always kept for the daily summary; only the uploaded file is deleted.
+---
 
-**One thing to know:** the 10-minute cleanup is carried out by the operator panel itself (it checks every few seconds while it is open). During business hours the panel is open on the café PC, so this works. If the panel is closed — say overnight — any leftover file is cleaned up the next time the panel opens.
+## How a job flows
+
+1. Customer uploads a file and picks pages/copies/colour → taps **Submit**.
+2. They see their **job number**, the **amount**, and a **UPI QR** to pay.
+3. The **print agent** on the café PC beeps and shows the job (file, pages, amount).
+4. You check your UPI app / the cash, then press **Y** in the agent window to print, or **N** to reject.
+5. The agent prints silently and marks the job **printed**. The panel updates.
 
 ---
 
 ## Files
 
-| File | What it is |
-|------|------------|
-| `index.html` | Customer upload page |
-| `admin.html` | Operator panel |
-| `config.js` | Your settings (Supabase keys, shop name, prices, retention) |
-| `supabase-setup.sql` | Database + storage setup (run once) |
-| `README.md` | This file |
+```
+index.html            customer page
+admin.html            operator panel
+config.js             website settings (Supabase URL + anon key, UPI ID, prices)
+supabase-setup.sql    database + storage setup (run once)
+README.md             this file
+.gitignore            keeps secrets out of git
+agent/
+  agent.py            the Python print agent
+  config.json         agent settings (secrets - never host this)
+  run-agent.bat       double-click to start the agent
+  README.txt          agent setup notes
+```
 
 ---
 
-## Setup (about 15 minutes, all free)
+## Setup
 
-**1. Create a Supabase project**
-Go to supabase.com, sign up (free), and create a new project. Pick any region close to you. Wait for it to finish starting.
+### A. Supabase (once)
 
-**2. Create the database and storage**
-In the project, open **SQL Editor → New query**, paste the entire contents of `supabase-setup.sql`, and click **Run**. It should say success. (Re-running it later is safe.)
+1. Create a free project at supabase.com.
+2. SQL Editor → New query → paste the whole `supabase-setup.sql` → Run. (Safe to re-run.)
+3. Authentication → Users → Add user: create the operator email + password. Turn off public sign-ups.
+4. Settings → API: copy the **Project URL** and the **anon public** key.
 
-**3. Create the operator login**
-Go to **Authentication → Users → Add user**, and create one user with your own email and a password. This is the login for the operator panel. Turn off public sign-ups under Authentication → Providers if it is on, so only you can make accounts.
+### B. The website
 
-**4. Fill in `config.js`**
-In the project, open **Settings → API**. Copy:
-- **Project URL** → paste into `SUPABASE_URL`
-- **anon public key** → paste into `SUPABASE_ANON_KEY`
+5. Put those two values into `config.js` (`SUPABASE_URL`, `SUPABASE_ANON_KEY`).
+6. Deploy the folder to any free static host — **Netlify Drop** (drag the folder in),
+   **Cloudflare Pages**, or **Vercel**. You get a free URL.
+   - Local test: `python -m http.server 8000` in the folder, then open `http://localhost:8000`.
+7. Make a QR code for the customer URL and put it at the counter.
 
-Set `SHOP_NAME` to your shop's name if you like. `RETENTION_MINUTES` is 10 by default.
+### C. The print agent (on the café PC)
 
-**5. Put the site online (free)**
-Any of these work; pick one:
-- **Netlify Drop** — go to app.netlify.com/drop and drag the whole folder in. You get a free URL.
-- **Cloudflare Pages** — create a project, upload the folder.
-- **Vercel** — import as a static site.
+8. Download **SumatraPDF** (free, portable) from sumatrapdfreader.org and put `SumatraPDF.exe`
+   in the `agent/` folder.
+9. Edit `agent/config.json`: `supabase_url`, `anon_key` (same as `config.js`), the operator
+   `email`/`password`, the `printer` (exact Windows name, or `""` for the default).
+10. Set the café printer as the Windows default.
+11. Double-click `agent/run-agent.bat`. Leave the window open. (For auto-start, put a shortcut
+    in `shell:startup`.)
 
-(To test locally first: open a terminal in the folder, run `python -m http.server 8000`, and visit `http://localhost:8000`.)
+### Test
 
-**6. Make the QR code**
-Turn the customer page URL into a QR code with any free generator, print it, and stick it at the counter. Point it at the deployed address (the one that opens `index.html`), e.g. `https://your-site.netlify.app`.
-
-**7. Test it end to end**
-- On your phone, open the site, upload a PDF, choose settings, submit. Note the job number.
-- On the Windows PC, open `admin.html` in Chrome, sign in with the operator account you made.
-- The job appears under **Queue**. Click **Approve & print** — the print dialog opens with your printer preselected; print it. The file then disappears from storage and the job moves to **Approved**.
+- Upload a PDF from your phone → the agent beeps with the job details.
+- Check the amount, press **Y** → it prints and the job shows as **Printed** in the panel.
 
 ---
 
-## Day-to-day use
+## Payment
 
-- Keep the operator page open in Chrome on the café PC. It refreshes itself every 10 seconds (the little dot top-right turns green when connected).
-- When a job arrives, check the amount, take payment in cash or UPI, then click **Approve & print** — the print dialog opens, choose your printer and print.
-- Use **Download** if you'd rather print the file another way, **Open** to just view it, or **Reject** to decline.
-- The file is deleted 10 minutes after the customer uploaded it, whatever you do — so **Download** it if you might need it later.
-- The card shows a countdown ("file auto-deletes in ~N min") so you know how long you have before an untouched job expires.
+There is **no automatic payment verification** — that needs a paid gateway. The free flow is:
+the customer pays by UPI (QR or the "Pay with UPI app" button), and **you** confirm it before
+pressing **Y**. The amount in the QR is locked, so the customer can't change it.
+
+---
+
+## When files are deleted
+
+Every uploaded file is removed **10 minutes after upload**, whatever the operator does. The job
+*record* (number, pages, amount, times, status) is always kept. A job nobody acts on within
+10 minutes is marked `cancelled`. The sweep runs from the operator panel while it's open.
 
 ---
 
 ## Supported files
 
-- **PDF** — any number of pages.
-- **JPG / PNG** — single page.
-- Up to 20 MB each.
-
-**Not supported directly:** DOCX, XLSX, PPTX, and other office formats. Ask the customer to "Save as PDF" before uploading, or open it on the counter PC and export to PDF there.
+**PDF** (any pages), **JPG / PNG** (single page), up to 20 MB. Office formats (DOCX/XLSX/PPTX)
+need the customer to "Save as PDF" first.
 
 ---
 
 ## Changing prices
 
-Prices are ₹5 per side for B&W and ₹10 per side for colour. If you change them, change them in **both** places so the display and the stored amount agree:
-- `config.js` → `PRICE_BW` and `PRICE_COLOR`
-- `supabase-setup.sql` → the `5` and `10` in the `total_price` line (re-run the SQL after editing)
+₹5 per side B&W, ₹10 per side colour. Change them in **both** `config.js` (`PRICE_BW`,
+`PRICE_COLOR`) and the `total_price` line in `supabase-setup.sql` (re-run the SQL after editing).
 
 ---
 
-## Security and limits (worth knowing)
+## Security — read this before hosting
 
-- Uploaded files are **private**. Only the signed-in operator can open or delete them; customers cannot see anyone else's files. The panel opens them with a short-lived link (5 minutes).
-- Prices are calculated by the database, not the browser, so a tampered phone can't change the amount.
-- **Free-tier limits:** roughly 1 GB of file storage. Because files are deleted quickly this is rarely an issue, but job *records* accumulate — see the optional delete statement at the bottom of the SQL file if you want to clear old rows.
-- Free projects can pause after long inactivity; normal daily use keeps it awake.
-
----
-
-## What this deliberately leaves out
-
-To stay simple and free, this version has no payment records, no automatic file conversion, no background print agent, and no real-time push (it polls instead). Any of those can be added later without rebuilding what is here.
-
-If you ever want the 10-minute deletion to happen even when the panel is closed, that needs a small scheduled job on the server (a Supabase Edge Function on a timer) — a later upgrade, not needed for normal use.
+- **The `anon` key in `config.js` is meant to be public.** It is the "public" key; your data is
+  protected by row-level security, not by hiding it. It is safe to host.
+- **Never put the `service_role` key in `config.js`** or anywhere in the website. It bypasses all
+  security. Only the `anon` key belongs there.
+- **`agent/config.json` holds the operator password in plain text.** It is in `.gitignore` — keep
+  it local, never host or commit the `agent/` folder.
+- Uploaded files are private; only the signed-in operator (and the agent) can read or delete them.
+- Prices are calculated by the database, so a tampered phone can't change the amount.
 
 ---
 
 ## Troubleshooting
 
-**"check constraint jobs_status_check ... is violated by some row"** — you are re-running the SQL on a database that still has jobs with an old status (usually `printed`, from an earlier version of this file). The updated `supabase-setup.sql` now fixes this by itself: it re-labels those rows to `approved` just before tightening the rule. Either re-run the whole file, or run this one line first and then the rest:
+**Agent: `TABLE MISSING: jobs` or `agent_status`** — run `supabase-setup.sql` in the project's SQL
+Editor, then restart the agent.
 
-```sql
-update public.jobs set status = 'approved' where status not in ('pending','approved','rejected','cancelled');
-```
+**Agent: `WRONG ANON KEY`** — the `anon_key` in `agent/config.json` doesn't match the project. Copy
+the current key from Supabase → Settings → API into **both** `config.js` and `agent/config.json`,
+then restart.
 
-**"Could not submit: new row violates row-level security policy" when a customer uploads** — the SQL did not finish running, so the access rules near the end of the file were never created (the usual cause is an earlier statement erroring, which makes the editor skip everything after it). Run the whole `supabase-setup.sql` again — it now completes, and the access rules are placed early in the file so this is much less likely to recur. To check whether the rules exist, run:
+**Agent: `Initial sign-in failed`** — wrong operator email/password, or the user doesn't exist in
+that project (creating a new project starts with an empty Auth list).
 
-```sql
-select policyname, tablename from pg_policies where tablename in ('jobs','objects');
-```
+**Job lands in `failed`** — the card shows the reason. Common causes: SumatraPDF.exe missing from
+`agent/`; wrong printer name; printer offline.
 
-You should see six policies (three on `jobs`, three on `objects`).
+**Nothing prints on Y** — set `printer` in `agent/config.json` to the exact printer name
+(`Get-Printer | Format-Table Name` in PowerShell). With `""` it uses the Windows *default*
+printer, which is often "Microsoft Print to PDF".
 
-**Same error again even after that** — check where you are testing. If you open the customer page in the *same browser* where you signed into the operator panel, the customer page can inherit that login and try to insert as a signed-in user. The updated files prevent this (the customer page no longer loads any stored login), and the create/upload rules now accept both signed-out and signed-in browsers. If you are testing by hand, use your phone, or a private/incognito window, for the customer page.
+**QR not showing / dead link** — `UPI_ID` must be filled in `config.js`. The page will say so
+plainly if it's empty.
 
+---
+
+## What this deliberately leaves out
+
+No payment-gateway integration, no automatic office-document conversion, no customer accounts,
+and no server-side retention job (the panel does the 10-minute sweep).

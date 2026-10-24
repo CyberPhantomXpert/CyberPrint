@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#0f172a"/>
+<title>CyberPrint Pay &mdash; Counter Operator Desk</title>
+<link rel="manifest" href="manifest-admin.json" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="CyberPrint Desk" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --brand: #2563eb;
+  --brand-light: #eff6ff;
+  --ok: #16a34a;
+  --ok-light: #dcfce7;
+  --warn: #d97706;
+  --warn-light: #fef3c7;
+  --err: #dc2626;
+  --err-light: #fee2e2;
+  --radius: 14px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+}
+header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #fff;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+header h1 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+header .agentbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  background: #ffffff14;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #ffffff22;
+}
+header .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--err);
+  display: inline-block;
+}
+header .dot.on {
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+}
+header button {
+  background: #ffffff18;
+  color: #fff;
+  border: 1px solid #ffffff33;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+header button:hover {
+  background: #ffffff28;
+}
+
+main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 14px rgba(15,23,42,0.05);
+}
+h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 10px 0 4px;
+}
+input {
+  width: 100%;
+  font: inherit;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+}
+input:focus {
+  outline: none;
+  border-color: var(--brand);
+}
+button.primary {
+  width: 100%;
+  margin-top: 14px;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--brand);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+button.primary:hover {
+  background: #1d4ed8;
+}
+
+.sum {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.sum div {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 18px;
+  min-width: 140px;
+  flex: 1;
+}
+.sum b {
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.sum span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.note {
+  font-size: 13px;
+  color: #475569;
+  margin-top: 14px;
+  background: #f1f5f9;
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+  border-radius: 10px;
+  line-height: 1.5;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.tabs button {
+  border: 1.5px solid var(--line);
+  background: #fff;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.15s ease;
+}
+.tabs button.on {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+.grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+.job {
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.job .top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.job .code {
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: 1px;
+  color: var(--brand);
+}
+.job .fn {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  word-break: break-all;
+  margin-top: 2px;
+}
+.badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.b-pending { background: var(--warn-light); color: var(--warn); border: 1px solid #fde047; }
+.b-approved, .b-printing { background: var(--brand-light); color: var(--brand); border: 1px solid #bfdbfe; }
+.b-printed { background: var(--ok-light); color: var(--ok); border: 1px solid #86efac; }
+.b-failed, .b-rejected, .b-cancelled { background: var(--err-light); color: var(--err); border: 1px solid #fca5a5; }
+
+.specs {
+  margin: 12px 0;
+  font-size: 13px;
+  color: #475569;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  background: #f8fafc;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.specs b { color: var(--ink); }
+.price {
+  font-size: 22px;
+  font-weight: 900;
+  margin: 8px 0;
+  color: var(--ok);
+}
+.expiry {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.expiry.soon { color: var(--err); font-weight: 600; }
+
+.acts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.acts button {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 9px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.acts .ok { background: var(--ok); color: #fff; border-color: var(--ok); }
+.acts .no { background: #fff; color: var(--err); border-color: #fecaca; }
+.acts .no:hover { background: #fef2f2; }
+.acts .op { background: #fff; color: var(--brand); border-color: #bfdbfe; }
+.acts .op:hover { background: #eff6ff; }
+.empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 40px;
+  font-size: 14px;
+}
+.err {
+  color: var(--err);
+  font-size: 13px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="title">CyberPrint Pay &mdash; Counter Desk</h1>
+  <span class="agentbar">
+    <span id="conn" class="dot"></span>
+    <span id="agenttxt">Agent: checking&hellip;</span>
+  </span>
+  <button id="installAdminBtn" style="background:#16a34a;color:#fff;border:0;border-radius:20px;padding:6px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer">📲 App Install</button>
+  <button id="soundToggle" title="Awaaz alert chalu ya band karein">🔊 Awaaz: ON</button>
+  <button id="refresh" hidden>Refresh 🔄</button>
+  <button id="logout" hidden>Log out 🚪</button>
+</header>
+
+<main>
+  <!-- Operator Login Form -->
+  <section id="login" class="card" style="max-width:380px;margin:50px auto">
+    <h2>Operator Sign-in (Counter Login)</h2>
+    <label>Email Address</label>
+    <input id="email" type="email" autocomplete="username" placeholder="operator@cyberprint.local" />
+    <label>Password</label>
+    <input id="pw" type="password" autocomplete="current-password" placeholder="••••••••" />
+    <button class="primary" id="signin">Sign In Karein</button>
+    <div id="lerr" class="err" hidden></div>
+  </section>
+
+  <!-- Operator Dashboard -->
+  <section id="dash" hidden>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <h2 style="margin:0">Aaj ka Kaam &amp; Kamai (Today's Performance)</h2>
+        <button id="testJobBtn" style="border:1.5px solid #bfdbfe;background:#eff6ff;color:var(--brand);border-radius:10px;padding:8px 16px;font:inherit;font-size:13px;font-weight:700;cursor:pointer">
+          🧪 Test Print Nikalo
+        </button>
+      </div>
+
+      <div class="sum" id="summary"></div>
+
+      <div class="note">
+        <b>Operator Hint:</b> Customer request bhejte hi agent console window mein prompt aayega &mdash; customer ka payment check karke console mein <b>Y</b> dabayein (print) ya <b>N</b> dabayein (reject). High-speed pigment black aur direct GDI spooling active hai. Customer files <b>10 minute</b> baad automatically delete ho jayengi.
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="tabs" id="tabs"></div>
+
+    <!-- Jobs Grid -->
+    <div class="grid" id="list"></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js?v=2"></script>
+<script>
+(function(){
+  var C = window.CYBERPRINT_CONFIG || {};
+  document.getElementById('title').textContent = (C.SHOP_NAME || 'CyberPrint Pay') + ' \u2014 Counter Desk';
+  var sb = supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY);
+  var B = C.BUCKET || 'jobs';
+  var $ = function(id){ return document.getElementById(id); };
+  var money = function(n){ return '\u20b9' + (n || 0); };
+  var RETAIN = (C.RETENTION_MINUTES || 10);
+  var jobs = [], agent = null, filter = 'pending', timer = null;
+  var lastPendingIds = null;
+  var audioCtx = null;
+  var soundEnabled = (localStorage.getItem('cyberprint_sound') !== 'off');
+
+  function updateSoundBtn(){
+    $('soundToggle').textContent = soundEnabled ? '🔊 Awaaz: ON' : '🔇 Awaaz: OFF';
+    $('soundToggle').style.opacity = soundEnabled ? '1' : '0.7';
+  }
+  updateSoundBtn();
+
+  $('soundToggle').onclick = function(){
+    soundEnabled = !soundEnabled;
+    localStorage.setItem('cyberprint_sound', soundEnabled ? 'on' : 'off');
+    updateSoundBtn();
+    if(soundEnabled) playChime();
+  };
+
+  function genUUID(){
+    if(window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+      var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+    });
+  }
+
+  function playChime(){
+    if(!soundEnabled) return;
+    try {
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      var now = audioCtx.currentTime;
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, now); // D5
+      osc.frequency.setValueAtTime(880, now + 0.12); // A5
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.45);
+    } catch(e) {}
+  }
+
+  var TABS = [
+    { k: 'pending',  label: 'Naye Aaye / Queue',     test: function(j){ return j.status === 'pending'; } },
+    { k: 'printing', label: 'Chhap Rahe / Printing', test: function(j){ return ['approved','printing','failed'].indexOf(j.status) >= 0; } },
+    { k: 'printed',  label: 'Print Ho Gaye / Done',  test: function(j){ return j.status === 'printed'; } },
+    { k: 'rejected', label: 'Reject / Cancelled',    test: function(j){ return ['rejected','cancelled'].indexOf(j.status) >= 0; } }
+  ];
+
+  function agentOnline(){ return agent && agent.last_seen && (Date.now() - new Date(agent.last_seen).getTime() < 30000); }
+  function setConn(ok){ $('conn').className = 'dot' + (ok ? ' on' : ''); }
+  function codeOf(j){ return (j.id || '').replace(/-/g, '').slice(0, 6).toUpperCase(); }
+  function find(id){ return jobs.filter(function(x){ return x.id === id; })[0]; }
+
+  async function boot(){
+    var res = await sb.auth.getSession();
+    if(res && res.data && res.data.session) showDash(); else showLogin();
+  }
+  function showLogin(){ $('login').hidden = false; $('dash').hidden = true; $('logout').hidden = true; $('refresh').hidden = true; }
+  function showDash(){ $('login').hidden = true; $('dash').hidden = false; $('logout').hidden = false; $('refresh').hidden = false; load(); if(timer) clearInterval(timer); timer = setInterval(load, 5000); }
+
+  $('signin').onclick = async function(){
+    $('lerr').hidden = true; $('signin').disabled = true;
+    var res = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('pw').value });
+    $('signin').disabled = false;
+    if(res.error){ $('lerr').hidden = false; $('lerr').textContent = res.error.message; return; }
+    showDash();
+  };
+  $('logout').onclick = async function(){ await sb.auth.signOut(); if(timer) clearInterval(timer); showLogin(); };
+  $('refresh').onclick = load;
+
+  function fetchJobs(){ return sb.from('jobs').select('*').order('created_at', { ascending: false }).limit(300); }
+
+  async function cleanupExpired(){
+    var cutoff = Date.now() - RETAIN * 60000;
+    var stale = jobs.filter(function(j){
+      return j.file_path && new Date(j.created_at).getTime() < cutoff;
+    });
+    var changed = false;
+    for(var i = 0; i < stale.length; i++){
+      var j = stale[i];
+      try { await sb.storage.from(B).remove([j.file_path]); } catch(e){}
+      var patch = { file_path: null, file_deleted: true };
+      if(j.status === 'pending'){ patch.status = 'cancelled'; }
+      else if(j.status === 'approved' || j.status === 'printing'){ patch.status = 'failed'; patch.print_error = 'file expired before printing'; }
+      var u = await sb.from('jobs').update(patch).eq('id', j.id);
+      if(!u.error) changed = true;
+    }
+    return changed;
+  }
+
+  async function load(){
+    var rj = await fetchJobs();
+    if(rj.error){ setConn(false); $('agenttxt').textContent = 'Agent: offline'; return; }
+    jobs = rj.data || [];
+    var ra = await sb.from('agent_status').select('*');
+    agent = (ra && ra.data && ra.data.length)
+      ? ra.data.slice().sort(function(a,b){ return new Date(b.last_seen) - new Date(a.last_seen); })[0]
+      : null;
+    var cleaned = await cleanupExpired();
+    if(cleaned){ var r2 = await fetchJobs(); if(!r2.error) jobs = r2.data || []; }
+    var online = agentOnline();
+    setConn(online);
+    $('agenttxt').textContent = online
+      ? ('Agent: Online' + (agent.printer ? ' \u00b7 ' + agent.printer : ''))
+      : 'Agent: Offline';
+
+    // Play chime on new pending arrivals
+    var currentPending = jobs.filter(function(j){ return j.status === 'pending'; });
+    if(lastPendingIds !== null){
+      var hasNew = currentPending.some(function(j){ return !lastPendingIds.has(j.id); });
+      if(hasNew) playChime();
+    }
+    lastPendingIds = new Set(currentPending.map(function(j){ return j.id; }));
+
+    render();
+  }
+
+  function renderTabs(){
+    $('tabs').innerHTML = TABS.map(function(t){
+      var n = jobs.filter(t.test).length;
+      return '<button data-k="' + t.k + '" class="' + (filter === t.k ? 'on' : '') + '">' + t.label + ' (' + n + ')</button>';
+    }).join('');
+    $('tabs').querySelectorAll('button').forEach(function(b){ b.onclick = function(){ filter = b.dataset.k; render(); }; });
+  }
+
+  function summary(){
+    var t = new Date(); var d0 = new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime();
+    var today = jobs.filter(function(j){ return new Date(j.created_at).getTime() >= d0; });
+    var printed = today.filter(function(j){ return j.status === 'printed'; });
+    var rev = printed.reduce(function(a, j){ return a + (j.total_price || 0); }, 0);
+    var bwPages = printed.filter(function(j){ return j.color_mode === 'bw'; }).reduce(function(a, j){ return a + ((j.page_count || 1) * (j.copies || 1)); }, 0);
+    var colorPages = printed.filter(function(j){ return j.color_mode === 'color'; }).reduce(function(a, j){ return a + ((j.page_count || 1) * (j.copies || 1)); }, 0);
+    $('summary').innerHTML =
+      '<div><b>' + today.length + '</b><span>Aaj ke Jobs</span></div>' +
+      '<div><b>' + printed.length + '</b><span>Print Ho Gaye</span></div>' +
+      '<div><b>' + money(rev) + '</b><span>Kul Kamai</span></div>' +
+      '<div><b>' + bwPages + ' B&amp;W / ' + colorPages + ' Color</b><span>Pages Printed</span></div>';
+  }
+
+  function time(iso){ return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+  function esc(s){ return String(s || '').replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  function expiryLine(j){
+    if(!j.file_path) return j.status === 'pending' ? '<div class="expiry soon">File removed</div>' : '';
+    var ends = new Date(j.created_at).getTime() + RETAIN * 60000;
+    var mins = Math.ceil((ends - Date.now()) / 60000);
+    if(mins <= 0) return '<div class="expiry soon">File delete ho rahi hai...</div>';
+    return '<div class="expiry' + (mins <= 3 ? ' soon' : '') + '">\u23F3 File ~' + mins + ' min mein auto-delete hogi</div>';
+  }
+
+  function card(j){
+    var colorLbl = j.color_mode === 'color' ? '🎨 Color (Rangeen)' : '⚫ B&W (Kala-Safed)';
+    var acts = [];
+    if(j.status === 'pending' && j.file_path){
+      acts.push('<button class="ok" data-approve="' + j.id + '" style="background:#16a34a;color:#fff;font-size:14px;padding:8px 16px;font-weight:700">🖨️ Print Nikalo</button>');
+    }
+    if((j.status === 'failed') && j.file_path){
+      acts.push('<button class="ok" data-requeue="' + j.id + '">Dobara Bhejo (Retry)</button>');
+    }
+    if(j.file_path){
+      acts.push('<button class="op" data-open="' + j.id + '">File Kholo</button>');
+      acts.push('<button data-dl="' + j.id + '">Download</button>');
+    }
+    if(j.status === 'pending' || j.status === 'failed' || j.status === 'approved'){
+      acts.push('<button class="no" data-reject="' + j.id + '">Reject (Mana Karo)</button>');
+    }
+    return '<div class="job">' +
+      '<div>' +
+        '<div class="top">' +
+          '<div><div class="code">#' + codeOf(j) + '</div><div class="fn">' + esc(j.file_name) + '</div></div>' +
+          '<span class="badge b-' + j.status + '">' + j.status + '</span>' +
+        '</div>' +
+        '<div class="specs">' +
+          '<span><b>' + j.page_count + '</b> page' + (j.page_count > 1 ? 's' : '') + (j.page_range ? ' (' + esc(j.page_range) + ')' : '') + '</span>' +
+          '<span><b>' + j.copies + '</b> ' + (j.copies > 1 ? 'copies' : 'copy') + '</span>' +
+          '<span><b>' + colorLbl + '</b></span>' +
+          '<span><b>' + j.paper_size + '</b></span>' +
+          '<span>' + j.orientation + '</span>' +
+          '<span>' + time(j.created_at) + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="price">COLLECT: ' + money(j.total_price) + '</div>' +
+        (j.print_error ? '<div class="err">' + esc(j.print_error) + '</div>' : '') +
+        expiryLine(j) +
+        '<div class="acts">' + acts.join('') + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function render(){
+    renderTabs(); summary();
+    var tab = TABS.filter(function(t){ return t.k === filter; })[0];
+    var list = jobs.filter(tab.test);
+    if(!list.length){ $('list').innerHTML = '<div class="empty">Abhi koi job nahi hai iss category mein.</div>'; return; }
+    $('list').innerHTML = list.map(card).join('');
+    $('list').querySelectorAll('[data-approve]').forEach(function(b){ b.onclick = function(){ approveJob(b.dataset.approve, b); }; });
+    $('list').querySelectorAll('[data-requeue]').forEach(function(b){ b.onclick = function(){ requeue(b.dataset.requeue); }; });
+    $('list').querySelectorAll('[data-open]').forEach(function(b){ b.onclick = function(){ openFile(b.dataset.open); }; });
+    $('list').querySelectorAll('[data-dl]').forEach(function(b){ b.onclick = function(){ downloadFile(b.dataset.dl); }; });
+    $('list').querySelectorAll('[data-reject]').forEach(function(b){ b.onclick = function(){ reject(b.dataset.reject); }; });
+  }
+
+  async function signedUrl(j, download){
+    var opts = download ? { download: j.file_name } : undefined;
+    var res = await sb.storage.from(B).createSignedUrl(j.file_path, 300, opts);
+    if(res.error) throw res.error;
+    return res.data.signedUrl;
+  }
+
+  async function openFile(id){
+    var j = find(id); if(!j || !j.file_path) return;
+    try { window.open(await signedUrl(j, false), '_blank'); }
+    catch(e){ alert('File nahi khuli: ' + (e.message || e)); }
+  }
+
+  async function downloadFile(id){
+    var j = find(id); if(!j || !j.file_path) return;
+    try {
+      var url = await signedUrl(j, true);
+      var a = document.createElement('a'); a.href = url; a.download = j.file_name || 'document';
+      document.body.appendChild(a); a.click(); a.remove();
+    } catch(e){ alert('Download nahi ho saka: ' + (e.message || e)); }
+  }
+
+  async function approveJob(id, btn){
+    var j = find(id); if(!j) return;
+    if(btn){ btn.disabled = true; btn.textContent = 'Spooling...'; }
+    var u = await sb.from('jobs').update({ status: 'approved' }).eq('id', id);
+    if(u.error){
+      alert('Print request error: ' + u.error.message);
+      if(btn){ btn.disabled = false; btn.textContent = '🖨️ Print Nikalo'; }
+      return;
+    }
+    load();
+  }
+
+  async function requeue(id){
+    var j = find(id); if(!j) return;
+    if(!confirm('Job #' + codeOf(j) + ' ko dobara printer par bhejna hai?')) return;
+    var u = await sb.from('jobs').update({ status: 'pending', print_error: null }).eq('id', id);
+    if(u.error){ alert('Update failed: ' + u.error.message); return; }
+    load();
+  }
+
+  async function reject(id){
+    var j = find(id); if(!j) return;
+    if(!confirm('Job #' + codeOf(j) + ' ko reject karna hai?')) return;
+    var u = await sb.from('jobs').update({ status: 'rejected' }).eq('id', id);
+    if(u.error){ alert('Reject failed: ' + u.error.message); return; }
+    load();
+  }
+
+  async function createTestJobBlob(){
+    var canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 1600;
+    var ctx = canvas.getContext('2d');
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 1200, 1600);
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(40, 40, 1120, 1520);
+    
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 36px system-ui, sans-serif';
+    ctx.fillText('CYBERPRINT PAY — HARDWARE TEST PAGE', 70, 110);
+    
+    ctx.fillStyle = '#64748b';
+    ctx.font = '18px system-ui, sans-serif';
+    ctx.fillText('Printer: ' + (agent && agent.printer ? agent.printer : 'Default Printer') + '  |  Date: ' + new Date().toLocaleString(), 70, 145);
+    
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(70, 175);
+    ctx.lineTo(1130, 175);
+    ctx.stroke();
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 20px system-ui, sans-serif';
+    ctx.fillText('1. COLOR SPECTRUM & DYE NOZZLE CHANNELS', 70, 220);
+    
+    var colors = [
+      { name: 'Cyan', hex: '#00e5ff' },
+      { name: 'Magenta', hex: '#e91e63' },
+      { name: 'Yellow', hex: '#ffeb3b' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Red', hex: '#ef4444' },
+      { name: 'Green', hex: '#10b981' },
+      { name: 'Blue', hex: '#3b82f6' }
+    ];
+    var barW = 135, barH = 65, startX = 70, startY = 240;
+    colors.forEach(function(c, i){
+      ctx.fillStyle = c.hex;
+      ctx.fillRect(startX + i * 150, startY, barW, barH);
+      ctx.fillStyle = '#334155';
+      ctx.font = '14px system-ui, sans-serif';
+      ctx.fillText(c.name, startX + i * 150 + 20, startY + 90);
+    });
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 20px system-ui, sans-serif';
+    ctx.fillText('2. GRAYSCALE DENSITY & PIGMENT GRADIENT (0% - 100%)', 70, 390);
+    
+    for(var g = 0; g <= 10; g++){
+      var val = Math.round(g * 25.5);
+      ctx.fillStyle = 'rgb(' + val + ',' + val + ',' + val + ')';
+      ctx.fillRect(startX + g * 96, 410, 90, 55);
+      ctx.fillStyle = '#64748b';
+      ctx.font = '12px monospace';
+      ctx.fillText((100 - g * 10) + '%', startX + g * 96 + 25, 485);
+    }
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 20px system-ui, sans-serif';
+    ctx.fillText('3. LINE ART & GDI SPOOLING RESOLUTION', 70, 550);
+
+    for(var l = 1; l <= 6; l++){
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = l * 0.75;
+      ctx.beginPath();
+      ctx.moveTo(70, 565 + l * 20);
+      ctx.lineTo(1130, 565 + l * 20);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(70, 730, 1060, 750);
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(70, 730, 1060, 750);
+
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 22px system-ui, sans-serif';
+    ctx.fillText('PIPELINE VERIFICATION STATUS', 100, 775);
+
+    ctx.font = '16px monospace';
+    ctx.fillStyle = '#334155';
+    var lines = [
+      'Engine       : CyberPrint Pay Native Windows GDI (pypdfium2 + Pillow + win32print)',
+      'Subsystem    : Direct Win32 Spooler (Zero Hangs, Pigment Fast-Black)',
+      'Job Type     : Synthetic Diagnostic Pattern (PNG format direct raster)',
+      'Color Mode   : Full Color (Dye Inks CMY Active)',
+      'Paper Size   : A4 (210 x 297 mm)',
+      'Copies       : 1 Copy',
+      '',
+      'Operator instructions:',
+      '  - Agar saare 7 color patches saaf dikh rahe hain, toh ink nozzles bilkul theek hain.',
+      '  - Agar text aur fine lines clear hain, toh driver scaling sahi hai.',
+      '  - B&W jobs mein Canon ka fast pigment black print head kaam karega.'
+    ];
+    lines.forEach(function(line, idx){
+      ctx.fillText(line, 100, 825 + idx * 34);
+    });
+
+    return new Promise(function(resolve){
+      canvas.toBlob(function(blob){ resolve(blob); }, 'image/png');
+    });
+  }
+
+  $('testJobBtn').onclick = async function(){
+    if(!confirm('Printer par ek diagnostic test page bhejna hai?')) return;
+    $('testJobBtn').disabled = true;
+    $('testJobBtn').textContent = 'Queuing...';
+    try {
+      var blob = await createTestJobBlob();
+      var id = genUUID();
+      var filePath = id + '.png';
+      var upRes = await sb.storage.from(B).upload(filePath, blob, { contentType: 'image/png' });
+      if(upRes.error) throw upRes.error;
+
+      var row = {
+        id: id,
+        file_path: filePath,
+        file_name: 'test-hardware-diagnostic.png',
+        file_size: blob.size,
+        page_count: 1,
+        page_range: '1',
+        copies: 1,
+        color_mode: 'color',
+        paper_size: 'A4',
+        orientation: 'portrait',
+        total_price: 10,
+        status: 'pending'
+      };
+      var inRes = await sb.from('jobs').insert(row);
+      if(inRes.error) throw inRes.error;
+
+      alert('Diagnostic test job queue mein jud gaya hai!\n\nAgent console window mein jaakar Y dabayein.');
+      await load();
+    } catch(err) {
+      alert('Test job bhejne mein dikkat hui: ' + (err.message || err));
+    } finally {
+      $('testJobBtn').disabled = false;
+      $('testJobBtn').textContent = '🧪 Test Print Nikalo';
+    }
+  };
+
+  // PWA Service Worker & Install Prompt for Admin Panel
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+
+  var deferredAdminPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredAdminPrompt = e;
+  });
+
+  var installAdminBtn = $('installAdminBtn');
+  if(installAdminBtn){
+    installAdminBtn.onclick = async function(){
+      if(deferredAdminPrompt){
+        deferredAdminPrompt.prompt();
+        var choice = await deferredAdminPrompt.userChoice;
+        if(choice.outcome === 'accepted'){
+          installAdminBtn.style.display = 'none';
+        }
+        deferredAdminPrompt = null;
+      } else {
+        alert('Admin Panel ko Mobile mein install karne ke liye:\n\n1. Mobile Browser ke Menu (⋮) ya Share button par click karein.\n2. "Add to Home Screen" ya "Install app" chunein.');
+      }
+    };
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
