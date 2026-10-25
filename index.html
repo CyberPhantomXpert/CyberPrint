@@ -535,6 +535,33 @@ button.primary-btn:disabled {
   margin-top: 12px;
   font-weight: 500;
 }
+.counter-fallback-card {
+  background: #f8fafc;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.copy-notice {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #166534;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 10px;
+  display: none;
+}
+.qr-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+  font-weight: 500;
+}
 .pwa-install-btn {
   background: #22c55e;
   color: #fff;
@@ -725,11 +752,15 @@ button.primary-btn:disabled {
 
     <!-- QR Code Container -->
     <div class="qr-container" id="qrimg"></div>
+    <div class="qr-hint">Kisi bhi UPI App (GPay / PhonePe / Paytm) se ye QR scan karein</div>
 
     <!-- One-tap UPI Button for Phone -->
-    <a class="pay-cta-btn" id="paybtn" href="#">
+    <a class="pay-cta-btn" id="paybtn" href="#" style="margin-top:12px">
       <span>📱 GPay / PhonePe / Paytm se Pay karein</span>
     </a>
+
+    <!-- Copy notification toast -->
+    <div class="copy-notice" id="copyNotice">✅ UPI ID copy ho gayi hai! Kisi bhi UPI app mein paste karke pay kar sakte hain.</div>
 
     <!-- UPI VPA details -->
     <div class="upi-details-card">
@@ -738,6 +769,17 @@ button.primary-btn:disabled {
         <div style="font-weight:700;color:var(--ink)" id="payvpa"></div>
       </div>
       <button type="button" class="upi-copy-btn" id="copyUpiBtn">Copy ID</button>
+    </div>
+
+    <!-- Physical Counter Stand / Cash Fallback -->
+    <div class="counter-fallback-card">
+      <div style="font-size:20px;line-height:1">🏪</div>
+      <div style="text-align:left;flex:1">
+        <div style="font-weight:700;font-size:13px;color:var(--ink)">Counter QR ya Cash se bhi Pay kar sakte hain</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">
+          Dukan ke counter par laga Paytm / PhonePe QR scan karein ya Cash de kar Token Code <b id="tokenRef" style="color:var(--brand)">#------</b> batayein.
+        </div>
+      </div>
     </div>
 
     <p style="font-size:12px;color:var(--muted);margin:16px 0 18px">
@@ -882,14 +924,20 @@ button.primary-btn:disabled {
   $('from').oninput = recalc; $('to').oninput = recalc;
   $('paper').onchange = recalc; $('orient').onchange = recalc;
 
-  function upiLink(amount, note){
+  function upiLink(amount, note, forIntent){
     var vpa = (C.UPI_ID || '').trim();
     var name = (C.UPI_NAME || C.SHOP_NAME || '').trim();
     if(!vpa) return '';
     var parts = ['pa=' + vpa];
     if(name) parts.push('pn=' + encodeURIComponent(name));
-    parts.push('am=' + amount);
-    parts.push('tn=' + encodeURIComponent(note || ''));
+    if(amount) parts.push('am=' + amount);
+    parts.push('cu=INR');
+    if(C.IS_MERCHANT){
+      if(C.MERCHANT_CODE) parts.push('mc=' + C.MERCHANT_CODE);
+      if(note) parts.push('tn=' + encodeURIComponent(note));
+    } else if(!forIntent && note){
+      parts.push('tn=' + encodeURIComponent(note));
+    }
     return 'upi://pay?' + parts.join('&');
   }
 
@@ -957,25 +1005,35 @@ button.primary-btn:disabled {
 
       currentJobId = id;
       var code = id.replace(/-/g, '').slice(0, 6).toUpperCase();
-      var link = upiLink(s.amount, 'Job#' + code);
+      var qrLink = upiLink(s.amount, 'Job#' + code, false);
+      var intentLink = upiLink(s.amount, 'Job#' + code, true);
 
       $('jobno').textContent = '#' + code;
+      $('tokenRef').textContent = '#' + code;
       $('payamt').textContent = money(s.amount);
       $('payvpa').textContent = C.UPI_ID || '(Not configured)';
 
-      if(!link){
+      if(!qrLink){
         $('paybtn').style.display = 'none';
         $('qrimg').innerHTML = '<div class="err-banner">UPI ID config.js mein set nahi hai &mdash; counter par cash de dijiye.</div>';
       } else {
         $('paybtn').style.display = 'flex';
-        $('paybtn').href = link;
+        $('paybtn').onclick = function(e){
+          e.preventDefault();
+          if(C.UPI_ID){
+            navigator.clipboard.writeText(C.UPI_ID).catch(function(){});
+          }
+          $('copyNotice').style.display = 'block';
+          window.location.href = intentLink;
+          setTimeout(function(){ $('copyNotice').style.display = 'none'; }, 6000);
+        };
         try {
           var qr = qrcode(0, 'M');
-          qr.addData(link);
+          qr.addData(qrLink);
           qr.make();
           $('qrimg').innerHTML = qr.createImgTag(4, 8);
         } catch(err){
-          $('qrimg').innerHTML = '<div style="font-size:12px;color:var(--muted)">QR draw nahi ho saka &mdash; neeche button se pay karein.</div>';
+          $('qrimg').innerHTML = '<div style="font-size:12px;color:var(--muted)">QR draw nahi ho saka &mdash; neeche UPI ID copy karein.</div>';
         }
       }
 
@@ -1001,7 +1059,11 @@ button.primary-btn:disabled {
     navigator.clipboard.writeText(C.UPI_ID).then(function(){
       var btn = $('copyUpiBtn');
       btn.textContent = 'Copied! \u2705';
-      setTimeout(function(){ btn.textContent = 'Copy ID'; }, 2000);
+      $('copyNotice').style.display = 'block';
+      setTimeout(function(){
+        btn.textContent = 'Copy ID';
+        $('copyNotice').style.display = 'none';
+      }, 3500);
     });
   };
 

@@ -7,8 +7,13 @@ window.CYBERPRINT_CONFIG = {
   SHOP_NAME: "Aapka Apna Cyber-café",
 
   // UPI payment details - used to build the payment QR and the "Pay" button.
-  UPI_ID: "ankitsingh953431@oksbi",
+  UPI_ID: "ankitsingh953431@okaxis",
   UPI_NAME: "Ankit Singh",
+
+  // Set to true only if UPI_ID is an official business/merchant account (PhonePe Business/Paytm QR).
+  // Leave false for personal accounts (P2P) so browser links don't trigger NPCI Z7/U16 errors.
+  IS_MERCHANT: false,
+  MERCHANT_CODE: "", // e.g. "7399" (optional)
 
   // Pricing in rupees per printed side. Keep these the same as the
   // numbers inside supabase-setup.sql (the total is calculated there too).
