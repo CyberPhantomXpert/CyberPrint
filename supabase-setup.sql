@@ -1,11 +1,6 @@
 -- CyberPrint Pay - Supabase setup (free tier)
 -- Run the WHOLE file at once: SQL Editor -> New query -> paste -> Run.
 -- Safe to re-run.
---
--- NOTE: if any single statement fails, the statements AFTER it do not run.
--- So if you ever see an error, fix the cause and run the whole file again.
--- The access rules are deliberately placed BEFORE the riskier table tweaks,
--- so a failure near the end can never leave the app unable to accept uploads.
 
 -- 1. Jobs table --------------------------------------------------------------
 create extension if not exists pgcrypto;
@@ -49,19 +44,19 @@ begin new.updated_at = now(); return new; end; $$ language plpgsql;
 
 drop trigger if exists trg_jobs_touch on public.jobs;
 create trigger trg_jobs_touch before update on public.jobs
-for each row execute function public.touch_updated_at();
+  for each row execute function public.touch_updated_at();
 
--- 3. Print-agent status (one row per agent; the panel reads it for a live badge)
+-- 3. Agent status table (heartbeat from the counter PC) -----------------------
 create table if not exists public.agent_status (
-  id         text primary key,           -- e.g. 'counter-pc'
-  last_seen  timestamptz,
+  id         text primary key,
+  last_seen  timestamptz not null default now(),
   printer    text,
   note       text
 );
 
--- 4. Access rules (Row Level Security) ---------------------------------------
-alter table public.jobs          enable row level security;
-alter table public.agent_status  enable row level security;
+-- 4. Enable Row Level Security (RLS) -----------------------------------------
+alter table public.jobs enable row level security;
+alter table public.agent_status enable row level security;
 
 -- allow a signed-out customer (anon) and, harmlessly, a signed-in browser too
 drop policy if exists "anon can create jobs" on public.jobs;
@@ -108,14 +103,9 @@ create policy "operator can delete job files" on storage.objects
   for delete to authenticated using (bucket_id = 'jobs');
 
 -- 6. Tidy old status values, then lock the status rule -----------------------
--- Kept LAST on purpose: this is the only step that can fail on an existing table.
 update public.jobs set status = 'approved'
   where status not in ('pending','approved','printing','printed','rejected','cancelled','failed');
 
 alter table public.jobs drop constraint if exists jobs_status_check;
 alter table public.jobs add  constraint jobs_status_check
   check (status in ('pending','approved','printing','printed','rejected','cancelled','failed'));
-
--- 7. Optional: clear old job records -----------------------------------------
--- Files are removed by the panel; the row (amount, time) stays as a record.
--- delete from public.jobs where created_at < now() - interval '30 days';

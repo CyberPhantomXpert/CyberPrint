@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#0f172a"/>
+<title>Mobile-to-PC File Drop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --card-border: #334155;
+  --brand: #3b82f6;
+  --brand-hover: #2563eb;
+  --brand-glow: rgba(59, 130, 246, 0.35);
+  --ink: #f8fafc;
+  --muted: #94a3b8;
+  --ok: #22c55e;
+  --ok-bg: rgba(34, 197, 94, 0.15);
+  --err: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  line-height: 1.5;
+}
+.shell {
+  width: 100%;
+  max-width: 440px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 24px 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  text-align: center;
+}
+.header {
+  margin-bottom: 20px;
+}
+.badge-net {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.badge-net.wifi {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--ok);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+.badge-net .dot {
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+}
+h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+p.sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.dropzone {
+  border: 2px dashed #475569;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 16px;
+  padding: 34px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 18px;
+  position: relative;
+}
+.dropzone.dragover {
+  border-color: var(--brand);
+  background: rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 20px var(--brand-glow);
+}
+.drop-icon {
+  font-size: 42px;
+  margin-bottom: 10px;
+  display: inline-block;
+  animation: float 2.5s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.drop-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+.drop-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+input[type="file"] {
+  display: none;
+}
+
+.file-card {
+  margin-top: 14px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.file-card .icon {
+  font-size: 28px;
+}
+.file-card .info {
+  flex: 1;
+  overflow: hidden;
+}
+.file-card .name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-card .size {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.file-card .remove {
+  background: transparent;
+  border: 0;
+  color: #94a3b8;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+}
+.file-card .remove:hover {
+  color: var(--err);
+}
+
+.progress-box {
+  margin-top: 16px;
+  text-align: left;
+}
+.progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: #0f172a;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  transition: width 0.15s ease;
+}
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--brand);
+  color: #fff;
+  border: 0;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 18px;
+  box-shadow: 0 4px 15px var(--brand-glow);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn:hover {
+  background: var(--brand-hover);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.success-card {
+  margin-top: 18px;
+  background: var(--ok-bg);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 14px;
+  padding: 20px 16px;
+  text-align: center;
+}
+.success-card .s-icon {
+  font-size: 38px;
+  margin-bottom: 8px;
+}
+.success-card h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #4ade80;
+}
+.success-card p {
+  font-size: 13px;
+  color: #cbd5e1;
+  margin-top: 4px;
+}
+
+.footer-nav {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid #334155;
+  display: flex;
+  justify-content: space-around;
+  font-size: 12px;
+  color: var(--muted);
+}
+.footer-nav a {
+  color: #60a5fa;
+  text-decoration: none;
+  font-weight: 600;
+}
+.footer-nav a:hover {
+  text-decoration: underline;
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="header">
+    <div id="netBadge" class="badge-net">
+      <span class="dot"></span> <span id="netTxt">Checking network&hellip;</span>
+    </div>
+    <h1>Mobile &rarr; PC File Drop</h1>
+    <p class="sub">Direct counter PC ke download folder mein file bhejein bina WhatsApp ya wire ke.</p>
+  </div>
+
+  <div id="dropzone" class="dropzone">
+    <div class="drop-icon">📲 ➡️ 💻</div>
+    <div class="drop-title">Tap karke File Chunein</div>
+    <div class="drop-hint">PDF, Photo, Word, Excel, ZIP ya koi bhi document</div>
+    <input type="file" id="fileInput" multiple />
+  </div>
+
+  <div id="fileList"></div>
+
+  <div id="progressBox" class="progress-box" style="display:none">
+    <div class="progress-bar-bg">
+      <div id="progressFill" class="progress-bar-fill"></div>
+    </div>
+    <div class="progress-meta">
+      <span id="progressTxt">Uploading...</span>
+      <span id="progressPct">0%</span>
+    </div>
+  </div>
+
+  <button id="uploadBtn" class="btn" style="display:none">
+    🚀 PC Par Bhejein (Drop to PC)
+  </button>
+
+  <div id="successCard" class="success-card" style="display:none">
+    <div class="s-icon">✅</div>
+    <h3>File PC par pahunch gayi!</h3>
+    <p id="successDesc">Aapki file PC ke Downloads folder mein save ho chuki hai.</p>
+    <button id="sendMoreBtn" class="btn" style="background:#334155;margin-top:14px;padding:10px">
+      ➕ Aur File Bhejein
+    </button>
+  </div>
+
+  <div class="footer-nav">
+    <a href="index.html">🖨️ Print &amp; Pay Tool</a>
+    <span>&bull;</span>
+    <span id="statusTxt">Cloud &amp; Wi-Fi Ready</span>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js?v=2"></script>
+<script>
+(function(){
+  var C = window.CYBERPRINT_CONFIG || {};
+  var sb = (window.supabase && C.SUPABASE_URL && C.SUPABASE_ANON_KEY)
+    ? supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY)
+    : null;
+
+  var dropzone = document.getElementById('dropzone');
+  var fileInput = document.getElementById('fileInput');
+  var fileList = document.getElementById('fileList');
+  var uploadBtn = document.getElementById('uploadBtn');
+  var progressBox = document.getElementById('progressBox');
+  var progressFill = document.getElementById('progressFill');
+  var progressTxt = document.getElementById('progressTxt');
+  var progressPct = document.getElementById('progressPct');
+  var successCard = document.getElementById('successCard');
+  var successDesc = document.getElementById('successDesc');
+  var sendMoreBtn = document.getElementById('sendMoreBtn');
+  var netBadge = document.getElementById('netBadge');
+  var netTxt = document.getElementById('netTxt');
+
+  var selectedFiles = [];
+  var uploadMode = 'cloud'; // default: works on Mobile Data (Jio/Airtel/Vi 4G/5G) without operator Wi-Fi
+
+  function genUUID(){
+    if(window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+      var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+    });
+  }
+
+  function formatBytes(bytes){
+    if(bytes === 0) return '0 B';
+    var k = 1024, dm = 1;
+    var sizes = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  }
+
+  function getFileIcon(name){
+    var ext = name.split('.').pop().toLowerCase();
+    if(['jpg','jpeg','png','gif','webp','bmp'].indexOf(ext) >= 0) return '🖼️';
+    if(ext === 'pdf') return '📄';
+    if(['doc','docx'].indexOf(ext) >= 0) return '📝';
+    if(['xls','xlsx','csv'].indexOf(ext) >= 0) return '📊';
+    if(['zip','rar','7z'].indexOf(ext) >= 0) return '📦';
+    return '📁';
+  }
+
+  // Detect whether customer is on the operator's Wi-Fi or on Mobile Internet (4G/5G)
+  async function detectNetworkMode(){
+    netTxt.textContent = 'Network check ho raha hai...';
+    try {
+      var controller = new AbortController();
+      var timeoutId = setTimeout(function(){ controller.abort(); }, 1200);
+      var res = await fetch('/api/info', { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if(res.ok){
+        uploadMode = 'wifi';
+        netBadge.className = 'badge-net wifi';
+        netTxt.textContent = '🟢 Local Shop Wi-Fi Mode (Direct PC Transfer)';
+        return;
+      }
+    } catch(e){}
+
+    // Not on operator's local Wi-Fi -> Universal Cloud Mode (Mobile Data 4G/5G)
+    uploadMode = 'cloud';
+    netBadge.className = 'badge-net';
+    netTxt.textContent = '☁️ Mobile Data (4G/5G) &mdash; No Wi-Fi Needed';
+  }
+  detectNetworkMode();
+
+  dropzone.onclick = function(){ fileInput.click(); };
+
+  dropzone.ondragover = function(e){
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+  };
+  dropzone.ondragleave = function(){
+    dropzone.classList.remove('dragover');
+  };
+  dropzone.ondrop = function(e){
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    if(e.dataTransfer && e.dataTransfer.files.length){
+      addFiles(e.dataTransfer.files);
+    }
+  };
+
+  fileInput.onchange = function(){
+    if(fileInput.files.length){
+      addFiles(fileInput.files);
+    }
+  };
+
+  function addFiles(files){
+    for(var i = 0; i < files.length; i++){
+      selectedFiles.push(files[i]);
+    }
+    renderFiles();
+  }
+
+  function renderFiles(){
+    if(selectedFiles.length === 0){
+      fileList.innerHTML = '';
+      uploadBtn.style.display = 'none';
+      return;
+    }
+    var html = '';
+    selectedFiles.forEach(function(f, idx){
+      html += '<div class="file-card">' +
+        '<div class="icon">' + getFileIcon(f.name) + '</div>' +
+        '<div class="info">' +
+          '<div class="name">' + f.name + '</div>' +
+          '<div class="size">' + formatBytes(f.size) + '</div>' +
+        '</div>' +
+        '<button class="remove" data-idx="' + idx + '" title="Hatao">&times;</button>' +
+      '</div>';
+    });
+    fileList.innerHTML = html;
+    uploadBtn.style.display = 'flex';
+    uploadBtn.textContent = '🚀 PC Par Bhejein (' + selectedFiles.length + ' file' + (selectedFiles.length > 1 ? 's' : '') + ')';
+    successCard.style.display = 'none';
+
+    fileList.querySelectorAll('.remove').forEach(function(b){
+      b.onclick = function(){
+        var idx = parseInt(b.dataset.idx, 10);
+        selectedFiles.splice(idx, 1);
+        renderFiles();
+      };
+    });
+  }
+
+  sendMoreBtn.onclick = function(){
+    selectedFiles = [];
+    fileInput.value = '';
+    renderFiles();
+    successCard.style.display = 'none';
+    dropzone.style.display = 'block';
+  };
+
+  uploadBtn.onclick = async function(){
+    if(selectedFiles.length === 0) return;
+    uploadBtn.disabled = true;
+    progressBox.style.display = 'block';
+    progressFill.style.width = '10%';
+    progressPct.textContent = '10%';
+    progressTxt.textContent = 'Transfer shuru ho raha hai...';
+
+    if(uploadMode === 'wifi'){
+      uploadViaWifi(selectedFiles);
+    } else {
+      uploadViaCloud(selectedFiles);
+    }
+  };
+
+  // Upload via Local Wi-Fi (when customer is on same Wi-Fi)
+  function uploadViaWifi(files){
+    var formData = new FormData();
+    for(var i = 0; i < files.length; i++){
+      formData.append('files', files[i]);
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/upload', true);
+
+    xhr.upload.onprogress = function(e){
+      if(e.lengthComputable){
+        var pct = Math.round((e.loaded / e.total) * 100);
+        progressFill.style.width = pct + '%';
+        progressPct.textContent = pct + '%';
+        progressTxt.textContent = 'Bheja ja raha hai (Wi-Fi): ' + formatBytes(e.loaded) + ' / ' + formatBytes(e.total);
+      }
+    };
+
+    xhr.onload = function(){
+      if(xhr.status >= 200 && xhr.status < 300){
+        onUploadSuccess(files);
+      } else {
+        // Fallback to Cloud upload if Wi-Fi route fails
+        progressTxt.textContent = 'Wi-Fi se connection nahi bana, Cloud se bhej rahe hain...';
+        uploadViaCloud(files);
+      }
+    };
+
+    xhr.onerror = function(){
+      // Fallback to Cloud upload
+      progressTxt.textContent = 'Wi-Fi error &mdash; Cloud fallback active...';
+      uploadViaCloud(files);
+    };
+
+    xhr.send(formData);
+  }
+
+  // Upload via Supabase Cloud (works from Jio, Airtel, Vi 4G/5G, anywhere, without Wi-Fi)
+  async function uploadViaCloud(files){
+    if(!sb){
+      alert('Cloud configuration nahi mila. Kripya config.js check karein.');
+      uploadBtn.disabled = false;
+      progressBox.style.display = 'none';
+      return;
+    }
+
+    try {
+      var bucket = C.BUCKET || 'jobs';
+      var total = files.length;
+
+      for(var i = 0; i < total; i++){
+        var file = files[i];
+        var id = genUUID();
+        var safe = file.name.replace(/[^\w.\-]+/g, '_');
+        var path = 'drops/' + id + '/' + safe;
+
+        progressTxt.textContent = 'Uploading (' + (i + 1) + '/' + total + '): ' + file.name;
+        var pct = Math.round(((i + 0.5) / total) * 100);
+        progressFill.style.width = pct + '%';
+        progressPct.textContent = pct + '%';
+
+        // 1. Upload to Supabase Storage
+        var up = await sb.storage.from(bucket).upload(path, file, { contentType: file.type, upsert: false });
+        if(up.error) throw up.error;
+
+        // 2. Insert into jobs table with note = 'FILE_DROP' so Agent auto-downloads to PC
+        var ins = await sb.from('jobs').insert({
+          id: id,
+          file_name: file.name,
+          file_path: path,
+          file_type: file.type,
+          page_count: 1,
+          copies: 1,
+          color_mode: 'bw',
+          paper_size: 'A4',
+          orientation: 'portrait',
+          status: 'pending',
+          note: 'FILE_DROP',
+          customer_name: 'Mobile Drop'
+        });
+        if(ins.error) throw ins.error;
+      }
+
+      progressFill.style.width = '100%';
+      progressPct.textContent = '100%';
+      onUploadSuccess(files);
+
+    } catch(err){
+      uploadBtn.disabled = false;
+      progressBox.style.display = 'none';
+      alert('Upload fail hua: ' + (err.message || err));
+    }
+  }
+
+  function onUploadSuccess(files){
+    uploadBtn.disabled = false;
+    progressBox.style.display = 'none';
+    successDesc.textContent = (files.length === 1 ? files[0].name : (files.length + ' files')) + ' PC ke "agent/downloads" folder mein safaltapoorvak pahunch chuki hai.';
+    successCard.style.display = 'block';
+    dropzone.style.display = 'none';
+    fileList.innerHTML = '';
+    selectedFiles = [];
+    fileInput.value = '';
+    uploadBtn.style.display = 'none';
+  }
+})();
+</script>
+</body>
+</html>

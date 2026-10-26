@@ -6,6 +6,10 @@ window.CYBERPRINT_CONFIG = {
 
   SHOP_NAME: "Aapka Apna Cyber-café",
 
+  // Public URL for customers accessing from mobile data (e.g. GitHub Pages or custom domain)
+  // Customers can scan counter QR codes with 4G/5G mobile internet without needing shop Wi-Fi.
+  PUBLIC_URL: "https://ankit8556.github.io/cyberprint-pay",
+
   // UPI payment details - used to build the payment QR and the "Pay" button.
   UPI_ID: "ankitsingh953431@okaxis",
   UPI_NAME: "Ankit Singh",
@@ -30,4 +34,3 @@ window.CYBERPRINT_CONFIG = {
   MAX_FILE_MB: 20,
   ALLOWED_TYPES: ["application/pdf", "image/jpeg", "image/png"]
 };
-

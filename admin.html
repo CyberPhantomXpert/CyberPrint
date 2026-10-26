@@ -314,6 +314,84 @@ button.primary:hover {
   font-size: 13px;
   margin-top: 8px;
 }
+
+/* Storage & QR Box Styling */
+.pill-btn {
+  border: 0;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.pill-btn.active {
+  background: #fff;
+  color: var(--brand);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.qr-box {
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.qr-canvas-holder {
+  background: #fff;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 160px;
+  min-width: 160px;
+}
+.qr-canvas-holder img, .qr-canvas-holder canvas {
+  display: block;
+  margin: 0 auto;
+}
+.qr-url-txt {
+  font-size: 11px;
+  font-family: monospace;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-top: 10px;
+  word-break: break-all;
+  max-width: 100%;
+}
+.qr-act-btn {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.qr-act-btn:hover {
+  background: #e2e8f0;
+}
+.qr-act-btn.primary {
+  background: var(--brand-light);
+  color: var(--brand);
+  border-color: #bfdbfe;
+}
+.qr-act-btn.primary:hover {
+  background: #dbeafe;
+}
 </style>
 </head>
 <body>
@@ -355,7 +433,107 @@ button.primary:hover {
       <div class="sum" id="summary"></div>
 
       <div class="note">
-        <b>Operator Hint:</b> Customer request bhejte hi agent console window mein prompt aayega &mdash; customer ka payment check karke console mein <b>Y</b> dabayein (print) ya <b>N</b> dabayein (reject). High-speed pigment black aur direct GDI spooling active hai. Customer files <b>10 minute</b> baad automatically delete ho jayengi.
+        <b>Operator Hint:</b> Customer request bhejte hi agent console window ya floating card pop hoga &mdash; payment verify karke direct <b>Print Nikalo</b> dabayein. Mobile se bhi direct print command bhej sakte hain. Files <b>10 minute</b> baad automatically delete ho jayengi.
+      </div>
+    </div>
+
+    <!-- Storage Bucket & Counter Tools QR Card -->
+    <div class="card" style="background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px">
+        <div>
+          <h2 style="margin:0;display:flex;align-items:center;gap:8px">
+            <span>📱 Counter QR Codes &amp; Storage Bucket Switch</span>
+          </h2>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">
+            Grahak ke liye Print QR aur Mobile-to-PC File Drop tool
+          </div>
+        </div>
+
+        <!-- Storage Mode Switcher -->
+        <div style="display:flex;align-items:center;gap:6px;background:#f1f5f9;padding:4px;border-radius:12px;border:1px solid var(--line)">
+          <span style="font-size:12px;font-weight:700;color:var(--muted);padding-left:8px">Bucket:</span>
+          <button id="storeCloudBtn" class="pill-btn active" title="Files Supabase storage bucket mein save hongi">
+            ☁️ Supabase Bucket ('jobs')
+          </button>
+          <button id="storeLocalBtn" class="pill-btn" title="Files direct PC ke local disk par save hongi (zero cloud quota)">
+            💻 Local PC (Wi-Fi)
+          </button>
+        </div>
+      </div>
+
+      <!-- Storage Info Banner -->
+      <div id="storageNotice" style="font-size:12px;padding:8px 12px;border-radius:8px;background:#eff6ff;color:#1e40af;margin-bottom:16px;border:1px solid #bfdbfe">
+        <b>Active Bucket:</b> ☁️ <b>Supabase Cloud Bucket ('jobs')</b> &mdash; Customer kahi se bhi upload kar sakta hai. Files 10 min baad auto-delete hongi.
+      </div>
+
+      <!-- QR Access Mode Selection (Internet 4G/5G vs Local Wi-Fi) -->
+      <div style="background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div>
+            <b style="font-size:13px">🌐 Customer Access Mode (QR Kis Network Ke Liye Banayein?):</b>
+            <div style="font-size:11px;color:var(--muted)">Grahak bina Wi-Fi ke (4G/5G mobile internet) se scan karega ya shop ke Wi-Fi se?</div>
+          </div>
+          <div style="display:flex;gap:6px;background:#f1f5f9;padding:4px;border-radius:10px;border:1px solid var(--line)">
+            <button id="qrModePublicBtn" class="pill-btn active" title="Grahak apne phone ke mobile data (4G/5G) se scan karega - Wi-Fi ki zaroorat nahi">
+              🌐 Mobile Internet (4G/5G)
+            </button>
+            <button id="qrModeLanBtn" class="pill-btn" title="Grahak shop ke local Wi-Fi se connect hai">
+              📶 Shop Wi-Fi (LAN)
+            </button>
+          </div>
+        </div>
+
+        <div id="publicUrlBox" style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:700;color:#334155">Public Website Link:</span>
+          <input id="publicUrlInput" type="url" style="flex:1;min-width:240px;padding:6px 10px;font-size:12px;font-weight:700;border-radius:8px;border:1.5px solid var(--line)" placeholder="e.g. https://ankit8556.github.io/cyberprint-pay" />
+          <span style="font-size:11px;color:var(--muted)">Iss link ka QR banega jise customer kisi bhi SIM (Jio/Airtel/Vi) ke net se bina Wi-Fi ke khol sakta hai.</span>
+        </div>
+
+        <div id="lanIpBox" style="margin-top:10px;display:none;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:700;color:#334155">🖥️ Counter PC IP:</span>
+          <input id="lanIpInput" type="text" value="10.108.118.179" style="width:150px;padding:6px 10px;font-size:12px;font-weight:700;border-radius:8px;border:1.5px solid var(--line)" placeholder="e.g. 192.168.1.10" />
+          <button id="detectIpBtn" style="background:#f8fafc;border:1.5px solid var(--line);border-radius:8px;padding:5px 10px;font:inherit;font-size:11px;font-weight:700;cursor:pointer">🔄 Auto-Detect IP</button>
+          <span style="font-size:11px;color:var(--muted)">Sirf tab kaam karega jab customer aapke Wi-Fi se juda ho.</span>
+        </div>
+      </div>
+
+      <!-- QR Codes Grid -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(290px, 1fr));gap:16px">
+        
+        <!-- Tool 1: Print & Pay Tool -->
+        <div class="qr-box">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:22px">🖨️</span>
+            <div>
+              <div style="font-weight:800;font-size:14px">1. Customer Print &amp; Pay Tool</div>
+              <div style="font-size:11px;color:var(--muted)">Grahak phone se upload &amp; UPI pay karega</div>
+            </div>
+          </div>
+          <div id="printToolQR" class="qr-canvas-holder"></div>
+          <div id="printToolUrl" class="qr-url-txt"></div>
+          <div style="display:flex;gap:6px;margin-top:10px;width:100%">
+            <button id="copyPrintUrlBtn" class="qr-act-btn">📋 Copy Link</button>
+            <button id="printStandeeBtn" class="qr-act-btn primary">🖨️ Standee Flyer Print</button>
+          </div>
+        </div>
+
+        <!-- Tool 2: Local Mobile-to-PC File Drop -->
+        <div class="qr-box">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:22px">🚀</span>
+            <div>
+              <div style="font-weight:800;font-size:14px">2. Local Mobile-to-PC File Drop</div>
+              <div style="font-size:11px;color:var(--muted)">Direct PC ke Downloads folder mein file drop</div>
+            </div>
+          </div>
+          <div id="dropToolQR" class="qr-canvas-holder"></div>
+          <div id="dropToolUrl" class="qr-url-txt"></div>
+          <div style="display:flex;gap:6px;margin-top:10px;width:100%">
+            <button id="copyDropUrlBtn" class="qr-act-btn">📋 Copy Link</button>
+            <button id="openDropFolderBtn" class="qr-act-btn">📂 Open Downloads</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -368,6 +546,7 @@ button.primary:hover {
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="qrcode.min.js"></script>
 <script src="config.js?v=2"></script>
 <script>
 (function(){
@@ -424,10 +603,202 @@ button.primary:hover {
     } catch(e) {}
   }
 
+  // Storage Mode & QR Management
+  var storageMode = localStorage.getItem('cyberprint_storage_mode') || 'cloud';
+  var qrAccessMode = localStorage.getItem('cyberprint_qr_access') || 'public'; // 'public' (4G/5G) or 'lan' (Wi-Fi)
+  var publicBaseUrl = localStorage.getItem('cyberprint_public_url') || C.PUBLIC_URL || (window.location.protocol.startsWith('http') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') : 'https://ankit8556.github.io/cyberprint-pay');
+  var lanIp = '10.108.118.179';
+  var lanPort = 8085;
+
+  if($('publicUrlInput')) $('publicUrlInput').value = publicBaseUrl;
+
+  $('publicUrlInput').oninput = function(){
+    publicBaseUrl = $('publicUrlInput').value.trim().replace(/\/+$/, '');
+    localStorage.setItem('cyberprint_public_url', publicBaseUrl);
+    updateQRs();
+  };
+
+  function updateQrModeUI(){
+    if(qrAccessMode === 'lan'){
+      $('qrModeLanBtn').classList.add('active');
+      $('qrModePublicBtn').classList.remove('active');
+      $('publicUrlBox').style.display = 'none';
+      $('lanIpBox').style.display = 'flex';
+    } else {
+      $('qrModePublicBtn').classList.add('active');
+      $('qrModeLanBtn').classList.remove('active');
+      $('publicUrlBox').style.display = 'flex';
+      $('lanIpBox').style.display = 'none';
+    }
+    updateQRs();
+  }
+
+  $('qrModePublicBtn').onclick = function(){
+    qrAccessMode = 'public';
+    localStorage.setItem('cyberprint_qr_access', 'public');
+    updateQrModeUI();
+  };
+
+  $('qrModeLanBtn').onclick = function(){
+    qrAccessMode = 'lan';
+    localStorage.setItem('cyberprint_qr_access', 'lan');
+    updateQrModeUI();
+  };
+
+  function updateStorageUI(){
+    if(storageMode === 'local'){
+      $('storeLocalBtn').classList.add('active');
+      $('storeCloudBtn').classList.remove('active');
+      $('storageNotice').innerHTML = '<b>Active Bucket:</b> 💻 <b>Local PC Storage (Wi-Fi)</b> &mdash; Files direct PC par save hongi, Supabase storage quota bilkul kharch nahi hoga. Fast 100 Mbps Wi-Fi speed.';
+      $('storageNotice').style.background = '#f0fdf4';
+      $('storageNotice').style.color = '#15803d';
+      $('storageNotice').style.borderColor = '#86efac';
+    } else {
+      $('storeCloudBtn').classList.add('active');
+      $('storeLocalBtn').classList.remove('active');
+      $('storageNotice').innerHTML = '<b>Active Bucket:</b> ☁️ <b>Supabase Cloud Bucket (\'' + B + '\')</b> &mdash; Customer kahi se bhi upload kar sakta hai. Files ' + RETAIN + ' min baad auto-delete hongi.';
+      $('storageNotice').style.background = '#eff6ff';
+      $('storageNotice').style.color = '#1e40af';
+      $('storageNotice').style.borderColor = '#bfdbfe';
+    }
+    updateQrModeUI();
+  }
+
+  $('storeCloudBtn').onclick = function(){
+    storageMode = 'cloud';
+    localStorage.setItem('cyberprint_storage_mode', 'cloud');
+    updateStorageUI();
+  };
+
+  $('storeLocalBtn').onclick = function(){
+    storageMode = 'local';
+    localStorage.setItem('cyberprint_storage_mode', 'local');
+    updateStorageUI();
+  };
+
+  $('detectIpBtn').onclick = async function(){
+    try {
+      var r = await fetch('http://' + lanIp + ':' + lanPort + '/api/info');
+      var d = await r.json();
+      if(d && d.ip){
+        lanIp = d.ip;
+        $('lanIpInput').value = lanIp;
+        updateQRs();
+        alert('IP Detect ho gayi: ' + lanIp);
+      }
+    } catch(e){
+      alert('Local agent se IP detect nahi ho saki: ' + e.message);
+    }
+  };
+
+  $('lanIpInput').oninput = function(){
+    lanIp = $('lanIpInput').value.trim() || '127.0.0.1';
+    updateQRs();
+  };
+
+  function getPrintToolUrl(){
+    if(qrAccessMode === 'lan'){
+      var base = 'http://' + lanIp + ':' + lanPort + '/index.html';
+      if(storageMode === 'local'){
+        base += '?storage=local&agent=' + lanIp + ':' + lanPort;
+      }
+      return base;
+    }
+    var pBase = (publicBaseUrl || 'https://ankit8556.github.io/cyberprint-pay').replace(/\/+$/, '');
+    return pBase + '/index.html' + (storageMode === 'local' ? '?storage=local&agent=' + lanIp + ':' + lanPort : '');
+  }
+
+  function getDropToolUrl(){
+    if(qrAccessMode === 'lan'){
+      return 'http://' + lanIp + ':' + lanPort + '/drop.html';
+    }
+    var pBase = (publicBaseUrl || 'https://ankit8556.github.io/cyberprint-pay').replace(/\/+$/, '');
+    return pBase + '/drop.html';
+  }
+
+  function updateQRs(){
+    var pUrl = getPrintToolUrl();
+    var dUrl = getDropToolUrl();
+
+    $('printToolUrl').textContent = pUrl;
+    $('dropToolUrl').textContent = dUrl;
+
+    if(window.QRCode){
+      $('printToolQR').innerHTML = '';
+      $('dropToolQR').innerHTML = '';
+      try {
+        new QRCode($('printToolQR'), { text: pUrl, width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M });
+        new QRCode($('dropToolQR'), { text: dUrl, width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M });
+      } catch(e){}
+    }
+  }
+
+  $('copyPrintUrlBtn').onclick = function(){
+    navigator.clipboard.writeText(getPrintToolUrl()).then(function(){
+      alert('Print & Pay Tool ka link copy ho gaya!');
+    }).catch(function(){});
+  };
+
+  $('copyDropUrlBtn').onclick = function(){
+    navigator.clipboard.writeText(getDropToolUrl()).then(function(){
+      alert('Mobile File Drop Tool ka link copy ho gaya!');
+    }).catch(function(){});
+  };
+
+  window.openDownloadsFolder = async function(){
+    try {
+      var r = await fetch('http://' + lanIp + ':' + lanPort + '/api/open-downloads');
+      var d = await r.json();
+      if(!d.ok) alert('Folder nahi khul saka: ' + (d.error || 'unknown'));
+    } catch(e){
+      alert('Downloads folder PC par kholne ke liye Agent ka chalna zaroori hai.');
+    }
+  };
+
+  $('openDropFolderBtn').onclick = window.openDownloadsFolder;
+
+  $('printStandeeBtn').onclick = function(){
+    var shop = C.SHOP_NAME || 'CyberPrint Pay';
+    var qrImg = $('printToolQR').querySelector('img') || $('printToolQR').querySelector('canvas');
+    var qrSrc = qrImg ? (qrImg.src || qrImg.toDataURL()) : '';
+
+    var win = window.open('', '_blank', 'width=600,height=750');
+    win.document.write(
+      '<!doctype html><html><head><title>Print Standee - ' + shop + '</title>' +
+      '<style>' +
+      'body{font-family:system-ui,sans-serif;text-align:center;padding:30px;background:#fff;color:#0f172a}' +
+      '.box{border:3px dashed #2563eb;border-radius:24px;padding:30px;max-width:440px;margin:0 auto}' +
+      'h1{font-size:26px;color:#2563eb;margin:0 0 6px}' +
+      'p.sub{font-size:15px;color:#64748b;margin:0 0 20px}' +
+      '.qr{padding:14px;background:#f8fafc;border-radius:18px;display:inline-block;border:2px solid #e2e8f0}' +
+      '.qr img{width:200px;height:200px;display:block}' +
+      '.steps{text-align:left;margin-top:24px;background:#eff6ff;padding:16px 20px;border-radius:14px;font-size:14px;line-height:1.6}' +
+      '.price{font-size:18px;font-weight:800;color:#16a34a;margin-top:16px}' +
+      '@media print{button{display:none}}' +
+      '</style></head><body>' +
+      '<div class="box">' +
+        '<h1>🖨️ ' + shop + '</h1>' +
+        '<p class="sub">Self-Service Mobile Print &amp; Pay Counter</p>' +
+        '<div class="qr"><img src="' + qrSrc + '" /></div>' +
+        '<div class="steps">' +
+          '<b>Kaise Print Karein?</b><br/>' +
+          '1. Apne phone camera / Google Lens se QR scan karein.<br/>' +
+          '2. Document upload karke B&W ya Color chunein.<br/>' +
+          '3. UPI se pay karein aur counter se print lein!' +
+        '</div>' +
+        '<div class="price">B&W: \u20b9' + (C.PRICE_BW || 5) + '/page &nbsp;|&nbsp; Color: \u20b9' + (C.PRICE_COLOR || 10) + '/page</div>' +
+      '</div>' +
+      '<button onclick="window.print()" style="margin-top:20px;padding:12px 28px;background:#2563eb;color:#fff;border:0;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer">🖨️ Print Standee Page</button>' +
+      '</body></html>'
+    );
+    win.document.close();
+  };
+
   var TABS = [
-    { k: 'pending',  label: 'Naye Aaye / Queue',     test: function(j){ return j.status === 'pending'; } },
-    { k: 'printing', label: 'Chhap Rahe / Printing', test: function(j){ return ['approved','printing','failed'].indexOf(j.status) >= 0; } },
-    { k: 'printed',  label: 'Print Ho Gaye / Done',  test: function(j){ return j.status === 'printed'; } },
+    { k: 'pending',  label: 'Naye Aaye / Queue',     test: function(j){ return j.status === 'pending' && (!j.note || j.note.indexOf('FILE_DROP') === -1); } },
+    { k: 'printing', label: 'Chhap Rahe / Printing', test: function(j){ return ['approved','printing','failed'].indexOf(j.status) >= 0 && (!j.note || j.note.indexOf('FILE_DROP') === -1); } },
+    { k: 'printed',  label: 'Print Ho Gaye / Done',  test: function(j){ return j.status === 'printed' && (!j.note || j.note.indexOf('FILE_DROP') === -1); } },
+    { k: 'drops',    label: '📥 File Drops',         test: function(j){ return j.note && j.note.indexOf('FILE_DROP') >= 0; } },
     { k: 'rejected', label: 'Reject / Cancelled',    test: function(j){ return ['rejected','cancelled'].indexOf(j.status) >= 0; } }
   ];
 
@@ -441,7 +812,7 @@ button.primary:hover {
     if(res && res.data && res.data.session) showDash(); else showLogin();
   }
   function showLogin(){ $('login').hidden = false; $('dash').hidden = true; $('logout').hidden = true; $('refresh').hidden = true; }
-  function showDash(){ $('login').hidden = true; $('dash').hidden = false; $('logout').hidden = false; $('refresh').hidden = false; load(); if(timer) clearInterval(timer); timer = setInterval(load, 5000); }
+  function showDash(){ $('login').hidden = true; $('dash').hidden = false; $('logout').hidden = false; $('refresh').hidden = false; updateStorageUI(); load(); if(timer) clearInterval(timer); timer = setInterval(load, 5000); }
 
   $('signin').onclick = async function(){
     $('lerr').hidden = true; $('signin').disabled = true;
@@ -489,6 +860,16 @@ button.primary:hover {
       ? ('Agent: Online' + (agent.printer ? ' \u00b7 ' + agent.printer : ''))
       : 'Agent: Offline';
 
+    if(agent && agent.note){
+      var m = agent.note.match(/http:\/\/([0-9.]+):([0-9]+)/);
+      if(m && m[1] && m[1] !== lanIp){
+        lanIp = m[1];
+        lanPort = parseInt(m[2], 10) || 8085;
+        if($('lanIpInput')) $('lanIpInput').value = lanIp;
+        updateQRs();
+      }
+    }
+
     // Play chime on new pending arrivals
     var currentPending = jobs.filter(function(j){ return j.status === 'pending'; });
     if(lastPendingIds !== null){
@@ -511,13 +892,15 @@ button.primary:hover {
   function summary(){
     var t = new Date(); var d0 = new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime();
     var today = jobs.filter(function(j){ return new Date(j.created_at).getTime() >= d0; });
-    var printed = today.filter(function(j){ return j.status === 'printed'; });
+    var printJobs = today.filter(function(j){ return !j.note || j.note.indexOf('FILE_DROP') === -1; });
+    var dropJobs = today.filter(function(j){ return j.note && j.note.indexOf('FILE_DROP') >= 0; });
+    var printed = printJobs.filter(function(j){ return j.status === 'printed'; });
     var rev = printed.reduce(function(a, j){ return a + (j.total_price || 0); }, 0);
     var bwPages = printed.filter(function(j){ return j.color_mode === 'bw'; }).reduce(function(a, j){ return a + ((j.page_count || 1) * (j.copies || 1)); }, 0);
     var colorPages = printed.filter(function(j){ return j.color_mode === 'color'; }).reduce(function(a, j){ return a + ((j.page_count || 1) * (j.copies || 1)); }, 0);
     $('summary').innerHTML =
-      '<div><b>' + today.length + '</b><span>Aaj ke Jobs</span></div>' +
-      '<div><b>' + printed.length + '</b><span>Print Ho Gaye</span></div>' +
+      '<div><b>' + printJobs.length + '</b><span>Print Orders</span></div>' +
+      '<div><b>' + dropJobs.length + '</b><span>File Drops 📥</span></div>' +
       '<div><b>' + money(rev) + '</b><span>Kul Kamai</span></div>' +
       '<div><b>' + bwPages + ' B&amp;W / ' + colorPages + ' Color</b><span>Pages Printed</span></div>';
   }
@@ -534,40 +917,57 @@ button.primary:hover {
   }
 
   function card(j){
+    var isDrop = j.note && j.note.indexOf('FILE_DROP') >= 0;
     var colorLbl = j.color_mode === 'color' ? '🎨 Color (Rangeen)' : '⚫ B&W (Kala-Safed)';
+    var isLocal = j.file_path && j.file_path.startsWith('local://');
+    var storageBadge = isDrop
+      ? '<span style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;margin-left:6px">📥 Mobile File Drop</span>'
+      : (isLocal
+        ? '<span style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;margin-left:6px">💻 Local Disk</span>'
+        : '<span style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;margin-left:6px">☁️ Cloud</span>');
     var acts = [];
-    if(j.status === 'pending' && j.file_path){
-      acts.push('<button class="ok" data-approve="' + j.id + '" style="background:#16a34a;color:#fff;font-size:14px;padding:8px 16px;font-weight:700">🖨️ Print Nikalo</button>');
-    }
-    if((j.status === 'failed') && j.file_path){
-      acts.push('<button class="ok" data-requeue="' + j.id + '">Dobara Bhejo (Retry)</button>');
-    }
-    if(j.file_path){
-      acts.push('<button class="op" data-open="' + j.id + '">File Kholo</button>');
-      acts.push('<button data-dl="' + j.id + '">Download</button>');
-    }
-    if(j.status === 'pending' || j.status === 'failed' || j.status === 'approved'){
-      acts.push('<button class="no" data-reject="' + j.id + '">Reject (Mana Karo)</button>');
+    if(isDrop){
+      acts.push('<button class="ok" onclick="openDownloadsFolder()" style="background:#2563eb;color:#fff;font-size:13px;padding:8px 14px;font-weight:700">📂 PC Downloads Mein Dekhein</button>');
+      if(j.file_path){
+        acts.push('<button class="op" data-open="' + j.id + '">File Kholo</button>');
+        acts.push('<button data-dl="' + j.id + '">Download</button>');
+      }
+    } else {
+      if(j.status === 'pending' && j.file_path){
+        acts.push('<button class="ok" data-approve="' + j.id + '" style="background:#16a34a;color:#fff;font-size:14px;padding:8px 16px;font-weight:700">🖨️ Print Nikalo</button>');
+      }
+      if((j.status === 'failed') && j.file_path){
+        acts.push('<button class="ok" data-requeue="' + j.id + '">Dobara Bhejo (Retry)</button>');
+      }
+      if(j.file_path){
+        acts.push('<button class="op" data-open="' + j.id + '">File Kholo</button>');
+        acts.push('<button data-dl="' + j.id + '">Download</button>');
+      }
+      if(j.status === 'pending' || j.status === 'failed' || j.status === 'approved'){
+        acts.push('<button class="no" data-reject="' + j.id + '">Reject (Mana Karo)</button>');
+      }
     }
     return '<div class="job">' +
       '<div>' +
         '<div class="top">' +
-          '<div><div class="code">#' + codeOf(j) + '</div><div class="fn">' + esc(j.file_name) + '</div></div>' +
+          '<div><div class="code">#' + codeOf(j) + ' ' + storageBadge + '</div><div class="fn">' + esc(j.file_name) + '</div></div>' +
           '<span class="badge b-' + j.status + '">' + j.status + '</span>' +
         '</div>' +
         '<div class="specs">' +
-          '<span><b>' + j.page_count + '</b> page' + (j.page_count > 1 ? 's' : '') + (j.page_range ? ' (' + esc(j.page_range) + ')' : '') + '</span>' +
-          '<span><b>' + j.copies + '</b> ' + (j.copies > 1 ? 'copies' : 'copy') + '</span>' +
-          '<span><b>' + colorLbl + '</b></span>' +
-          '<span><b>' + j.paper_size + '</b></span>' +
-          '<span>' + j.orientation + '</span>' +
-          '<span>' + time(j.created_at) + '</span>' +
+          (isDrop
+            ? '<span><b>📥 Direct Mobile Transfer</b></span><span>' + time(j.created_at) + '</span>'
+            : ('<span><b>' + j.page_count + '</b> page' + (j.page_count > 1 ? 's' : '') + (j.page_range ? ' (' + esc(j.page_range) + ')' : '') + '</span>' +
+               '<span><b>' + j.copies + '</b> ' + (j.copies > 1 ? 'copies' : 'copy') + '</span>' +
+               '<span><b>' + colorLbl + '</b></span>' +
+               '<span><b>' + j.paper_size + '</b></span>' +
+               '<span>' + j.orientation + '</span>' +
+               '<span>' + time(j.created_at) + '</span>')) +
         '</div>' +
       '</div>' +
       '<div>' +
-        '<div class="price">COLLECT: ' + money(j.total_price) + '</div>' +
+        (isDrop ? '<div class="price" style="color:#2563eb">FILE DROP: PC Saved</div>' : ('<div class="price">COLLECT: ' + money(j.total_price) + '</div>')) +
         (j.print_error ? '<div class="err">' + esc(j.print_error) + '</div>' : '') +
-        expiryLine(j) +
+        (isDrop ? '' : expiryLine(j)) +
         '<div class="acts">' + acts.join('') + '</div>' +
       '</div>' +
     '</div>';
@@ -587,6 +987,10 @@ button.primary:hover {
   }
 
   async function signedUrl(j, download){
+    if(j.file_path && j.file_path.startsWith('local://')){
+      var rel = j.file_path.replace('local://', '');
+      return 'http://' + lanIp + ':' + lanPort + '/api/open-downloads';
+    }
     var opts = download ? { download: j.file_name } : undefined;
     var res = await sb.storage.from(B).createSignedUrl(j.file_path, 300, opts);
     if(res.error) throw res.error;
@@ -752,9 +1156,23 @@ button.primary:hover {
     try {
       var blob = await createTestJobBlob();
       var id = genUUID();
-      var filePath = id + '.png';
-      var upRes = await sb.storage.from(B).upload(filePath, blob, { contentType: 'image/png' });
-      if(upRes.error) throw upRes.error;
+      var filePath = '';
+
+      if(storageMode === 'local'){
+        var fd = new FormData();
+        fd.append('file', blob, 'test-hardware-diagnostic.png');
+        var resLocal = await fetch('http://' + lanIp + ':' + lanPort + '/local-print-upload?id=' + id, {
+          method: 'POST',
+          body: fd
+        });
+        if(!resLocal.ok) throw new Error('Local upload failed (HTTP ' + resLocal.status + ')');
+        var jsonLocal = await resLocal.json();
+        filePath = jsonLocal.file_path;
+      } else {
+        filePath = id + '.png';
+        var upRes = await sb.storage.from(B).upload(filePath, blob, { contentType: 'image/png' });
+        if(upRes.error) throw upRes.error;
+      }
 
       var row = {
         id: id,
@@ -772,7 +1190,7 @@ button.primary:hover {
       var inRes = await sb.from('jobs').insert(row);
       if(inRes.error) throw inRes.error;
 
-      alert('Diagnostic test job queue mein jud gaya hai!\n\nAgent console window mein jaakar Y dabayein.');
+      alert('Diagnostic test job (' + (storageMode === 'local' ? 'Local PC Disk' : 'Supabase Cloud') + ') queue mein jud gaya hai!\n\nAgent notification card mein Y dabayein.');
       await load();
     } catch(err) {
       alert('Test job bhejne mein dikkat hui: ' + (err.message || err));

@@ -514,27 +514,6 @@ button.primary-btn:disabled {
   background: #f1f5f9;
 }
 
-.spin {
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  border: 2.5px solid #ffffff55;
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.err-banner {
-  background: var(--err-light);
-  border: 1px solid #fecaca;
-  color: var(--err);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 13px;
-  margin-top: 12px;
-  font-weight: 500;
-}
 .counter-fallback-card {
   background: #f8fafc;
   border: 1.5px solid var(--line);
@@ -560,6 +539,28 @@ button.primary-btn:disabled {
   font-size: 12px;
   color: var(--muted);
   margin-top: 6px;
+  font-weight: 500;
+}
+
+.spin {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid #ffffff55;
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.err-banner {
+  background: var(--err-light);
+  border: 1px solid #fecaca;
+  color: var(--err);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-top: 12px;
   font-weight: 500;
 }
 .pwa-install-btn {
@@ -979,11 +980,29 @@ button.primary-btn:disabled {
     btn.innerHTML = '<span class="spin"></span> File upload ho rahi hai\u2026';
     $('s2err').hidden = true;
     try {
+      var params = new URLSearchParams(window.location.search);
+      var isLocalStorage = params.get('storage') === 'local';
+      var agentHost = params.get('agent') || (window.location.port === '8085' ? window.location.host : '10.108.118.179:8085');
+
       var id = genUUID();
       var safe = file.name.replace(/[^\w.\-]+/g, '_');
-      var path = id + '/' + safe;
-      var up = await sb.storage.from(C.BUCKET || 'jobs').upload(path, file, { contentType: file.type, upsert: false });
-      if(up.error) throw up.error;
+      var path = '';
+
+      if(isLocalStorage){
+        var fd = new FormData();
+        fd.append('file', file, safe);
+        var upRes = await fetch('http://' + agentHost + '/local-print-upload?id=' + id, {
+          method: 'POST',
+          body: fd
+        });
+        if(!upRes.ok) throw new Error('Local PC transfer fail hua (HTTP ' + upRes.status + '). Check karein ki phone Wi-Fi se juda hai.');
+        var upJson = await upRes.json();
+        path = upJson.file_path || ('local://' + id + '_' + safe);
+      } else {
+        path = id + '/' + safe;
+        var up = await sb.storage.from(C.BUCKET || 'jobs').upload(path, file, { contentType: file.type, upsert: false });
+        if(up.error) throw up.error;
+      }
 
       var ins = await sb.from('jobs').insert({
         id: id,
@@ -999,7 +1018,9 @@ button.primary-btn:disabled {
         status: 'pending'
       });
       if(ins.error){
-        try{ await sb.storage.from(C.BUCKET || 'jobs').remove([path]); }catch(_){}
+        if(!isLocalStorage){
+          try{ await sb.storage.from(C.BUCKET || 'jobs').remove([path]); }catch(_){}
+        }
         throw ins.error;
       }
 
