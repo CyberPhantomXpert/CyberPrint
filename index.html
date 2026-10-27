@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#1e293b" />
-<title>CyberPrint Pay — Instant Print Counter</title>
+<meta name="theme-color" content="#0f172a" />
+<title>CyberPrint Pay — Instant Self-Service Print Counter</title>
 <link rel="manifest" href="manifest.json" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -12,870 +12,427 @@
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace']
+      },
+      colors: {
+        brand: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          900: '#1e3a8a',
+        }
+      }
+    }
+  }
+}
+</script>
 <style>
-:root {
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --brand: #2563eb;
-  --brand-light: #eff6ff;
-  --brand-dark: #1d4ed8;
-  --ok: #16a34a;
-  --ok-light: #f0fdf4;
-  --warn: #d97706;
-  --warn-light: #fefce8;
-  --err: #dc2626;
-  --err-light: #fef2f2;
-  --radius: 16px;
-  --shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--ink);
-  -webkit-text-size-adjust: 100%;
-  line-height: 1.5;
-}
-header {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: #fff;
-  padding: 18px 20px;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-}
-header .inner {
-  max-width: 580px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-header h1 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-header p {
-  margin: 3px 0 0;
-  font-size: 12px;
-  color: #94a3b8;
-}
-.badge-live {
-  background: #22c55e22;
-  color: #4ade80;
-  border: 1px solid #22c55e44;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.badge-live::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #4ade80;
-  display: inline-block;
-  animation: pulse 1.5s infinite;
-}
-@keyframes pulse {
-  0% { transform: scale(0.95); opacity: 0.8; }
-  50% { transform: scale(1.3); opacity: 1; }
-  100% { transform: scale(0.95); opacity: 0.8; }
-}
-
-main {
-  max-width: 580px;
-  margin: 0 auto;
-  padding: 18px 16px 48px;
-}
-
-/* Stepper tracker bar */
-.stepper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  padding: 6px 10px;
-  background: #e2e8f0;
-  border-radius: 30px;
-}
-.step-item {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: 20px;
-  transition: all 0.2s ease;
-}
-.step-item.active {
-  background: var(--ink);
-  color: #fff;
-}
-.step-item.done {
-  color: var(--ok);
-}
-
-.card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow);
-}
-.card-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 14px;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.card-title span.num {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--brand-light);
-  color: var(--brand);
-  font-size: 13px;
-  display: inline-grid;
-  place-items: center;
-}
-
-/* Step 1: Upload Box */
-.drop {
-  border: 2px dashed #94a3b8;
-  border-radius: 14px;
-  padding: 34px 18px;
-  text-align: center;
-  color: var(--muted);
-  cursor: pointer;
-  background: #fafbfc;
-  transition: all 0.2s ease;
-}
-.drop:hover, .drop.over {
-  border-color: var(--brand);
-  background: #eff6ff;
-  color: var(--brand);
-  transform: translateY(-1px);
-}
-.drop-icon {
-  font-size: 38px;
-  margin-bottom: 8px;
-}
-.drop b {
-  display: block;
-  color: var(--ink);
-  font-size: 16px;
-  margin-bottom: 4px;
-}
-.drop .sub {
-  font-size: 13px;
-  color: var(--muted);
-}
-.privacy-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #f1f5f9;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-top: 14px;
-  font-size: 12px;
-  color: #475569;
-}
-
-/* Step 2: Settings Rows */
-.filemeta {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  background: var(--brand-light);
-  border: 1px solid #bfdbfe;
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-bottom: 16px;
-}
-.filemeta .ic {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: #fff;
-  color: var(--brand);
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  font-size: 13px;
-  box-shadow: 0 2px 4px rgba(37,99,235,0.12);
-}
-.filemeta .fn {
-  font-weight: 700;
-  font-size: 14px;
-  word-break: break-all;
-  color: var(--ink);
-}
-.filemeta .fm {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 2px;
-}
-
-.setting-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
-  flex-wrap: wrap;
-}
-.setting-row:last-child {
-  border-bottom: 0;
-}
-.setting-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink);
-}
-.setting-sub {
-  display: block;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--muted);
-}
-
-.seg-group {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.seg-card {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border: 1.5px solid var(--line);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  user-select: none;
-}
-.seg-card:hover {
-  border-color: #cbd5e1;
-}
-.seg-card.active {
-  border-color: var(--brand);
-  background: var(--brand-light);
-  color: var(--brand-dark);
-}
-.seg-card input {
-  accent-color: var(--brand);
-}
-
-.counter-stepper {
-  display: flex;
-  align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  overflow: hidden;
-  background: #fff;
-}
-.counter-stepper button {
-  border: 0;
-  background: #f1f5f9;
-  width: 36px;
-  height: 38px;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--ink);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
-.counter-stepper button:hover {
-  background: #e2e8f0;
-}
-.counter-stepper input {
-  width: 48px;
-  height: 38px;
-  border: 0;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--ink);
-}
-select, input[type=number] {
-  font: inherit;
-  padding: 9px 12px;
-  border: 1.5px solid var(--line);
-  border-radius: 10px;
-  background: #fff;
-  color: var(--ink);
-}
-
-/* Calculation summary bill */
-.bill-box {
-  background: #f8fafc;
-  border: 1.5px dashed #cbd5e1;
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-top: 16px;
-}
-.bill-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-.bill-row.grand {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--ink);
-}
-
-button.primary-btn {
-  width: 100%;
-  margin-top: 16px;
-  padding: 16px;
-  border: 0;
-  border-radius: 12px;
-  background: var(--brand);
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
-  transition: all 0.2s ease;
-}
-button.primary-btn:hover:not(:disabled) {
-  background: var(--brand-dark);
-  transform: translateY(-1px);
-}
-button.primary-btn:disabled {
-  background: #94a3b8;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-/* Step 3: Token & Payment Screen */
-.token-hero {
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  border: 2px solid #93c5fd;
-  border-radius: 16px;
-  padding: 20px;
-  text-align: center;
-  margin-bottom: 18px;
-}
-.token-sub {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--brand);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-.token-code {
-  font-size: 44px;
-  font-weight: 900;
-  letter-spacing: 3px;
-  color: #1e3a8a;
-  margin: 4px 0 6px;
-}
-.token-hint {
-  font-size: 13px;
-  color: #3b82f6;
-  font-weight: 500;
-}
-
-/* Real-time Status Banner */
-.live-tracker {
-  border-radius: 12px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-  font-size: 14px;
-  font-weight: 600;
-}
-.tracker-pending {
-  background: var(--warn-light);
-  border: 1px solid #fde047;
-  color: #854d0e;
-}
-.tracker-printing {
-  background: var(--brand-light);
-  border: 1px solid #93c5fd;
-  color: #1e40af;
-}
-.tracker-printed {
-  background: var(--ok-light);
-  border: 1px solid #86efac;
-  color: #166534;
-}
-.tracker-rejected {
-  background: var(--err-light);
-  border: 1px solid #fca5a5;
-  color: #991b1b;
-}
-
-.qr-container {
-  background: #fff;
-  border: 1.5px solid var(--line);
-  border-radius: 16px;
-  padding: 16px;
-  display: inline-block;
-  margin: 10px auto;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
-}
-.qr-container img {
-  display: block;
-  width: 220px;
-  height: 220px;
-}
-
-.pay-cta-btn {
-  width: 100%;
-  margin-top: 14px;
-  padding: 15px;
-  border: 0;
-  border-radius: 12px;
-  background: #16a34a;
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  text-decoration: none;
-  box-sizing: border-box;
-  box-shadow: 0 4px 12px rgba(22,163,74,0.25);
-}
-.pay-cta-btn:hover {
-  background: #15803d;
-}
-
-.upi-details-card {
-  background: #f8fafc;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 13px;
-}
-.upi-copy-btn {
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  border-radius: 8px;
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.upi-copy-btn:hover {
-  background: #f1f5f9;
-}
-
-.counter-fallback-card {
-  background: #f8fafc;
-  border: 1.5px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-top: 14px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-.copy-notice {
-  background: #f0fdf4;
-  border: 1px solid #86efac;
-  color: #166534;
-  border-radius: 10px;
-  padding: 9px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  margin-top: 10px;
-  display: none;
-}
-.qr-hint {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 6px;
-  font-weight: 500;
-}
-
-.spin {
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  border: 2.5px solid #ffffff55;
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.err-banner {
-  background: var(--err-light);
-  border: 1px solid #fecaca;
-  color: var(--err);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 13px;
-  margin-top: 12px;
-  font-weight: 500;
-}
-.pwa-install-btn {
-  background: #22c55e;
-  color: #fff;
-  border: 0;
-  border-radius: 20px;
-  padding: 6px 13px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  box-shadow: 0 2px 6px rgba(34,197,94,0.3);
-  transition: all 0.15s ease;
-}
-.pwa-install-btn:hover {
-  background: #16a34a;
-}
-
-/* Tool Switcher Bar */
-.tool-switch-container {
-  display: flex;
-  background: #e2e8f0;
-  padding: 4px;
-  border-radius: 14px;
-  margin-bottom: 16px;
-  gap: 4px;
-}
-.tool-switch-tab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-  color: #64748b;
-  border-radius: 10px;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-.tool-switch-tab:hover {
-  color: #0f172a;
-}
-.tool-switch-tab.active {
-  background: #ffffff;
-  color: #2563eb;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-}
-.drop-alt-card {
-  margin-top: 14px;
-  background: #eff6ff;
-  border: 1.5px solid #bfdbfe;
-  border-radius: 12px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.drop-alt-card span {
-  font-size: 12px;
-  color: #1e40af;
-  font-weight: 600;
-}
-.drop-alt-btn {
-  background: #2563eb;
-  color: #fff;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 14px;
-  border-radius: 8px;
-  transition: background 0.15s ease;
-  white-space: nowrap;
-}
-.drop-alt-btn:hover {
-  background: #1d4ed8;
-}
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .glass-header {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .spin {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin-anim 0.8s linear infinite;
+  }
+  @keyframes spin-anim {
+    to { transform: rotate(360deg); }
+  }
 </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans pb-12 antialiased selection:bg-brand-500 selection:text-white">
 
-<header>
-  <div class="inner">
-    <div>
-      <h1 id="shop">CyberPrint Pay</h1>
-      <p>File upload karein ➔ UPI se pay karein ➔ Print paayein ⚡</p>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <button id="installAppBtn" class="pwa-install-btn" title="Apne mobile mein app install karein">📲 Install App</button>
-      <span class="badge-live">Live</span>
-    </div>
-  </div>
-</header>
-
-<main>
-  <!-- Tool Switcher: Print & Pay vs Mobile-to-PC Drop -->
-  <div class="tool-switch-container">
-    <a href="index.html" class="tool-switch-tab active" title="Print nikalne ke liye UPI payment tool">
-      <span>🖨️</span> Print &amp; Pay Tool
-    </a>
-    <a href="drop.html" class="tool-switch-tab" title="Direct PC par file transfer karein">
-      <span>📲</span> Mobile to PC File Drop
-    </a>
-  </div>
-
-  <!-- Stepper Indicator -->
-  <div class="stepper">
-    <div class="step-item active" id="stp1"><span>1</span> File Chuney</div>
-    <div class="step-item" id="stp2"><span>2</span> Print Setting</div>
-    <div class="step-item" id="stp3"><span>3</span> Pay &amp; Token</div>
-  </div>
-
-  <!-- STEP 1: CHOOSE FILE -->
-  <section id="s1" class="card">
-    <div class="card-title">
-      <span class="num">1</span>
-      <span>Apni file chuney (Select Document or Photo)</span>
-    </div>
-
-    <div id="drop" class="drop">
-      <div class="drop-icon">📄</div>
-      <b>Yahan tap karke file select karein</b>
-      <div class="sub">PDF ya Photo (JPG / PNG) &middot; Max 20 MB tak</div>
-    </div>
-    <input id="file" type="file" accept="application/pdf,image/jpeg,image/png" hidden />
-
-    <div class="privacy-badge">
-      <span>🔒</span>
-      <span><b>100% Privacy &amp; Suraksha:</b> Aapki file print hone ke 10 minute baad automatically delete ho jayegi.</span>
-    </div>
-
-    <!-- Quick Switch to File Drop -->
-    <div class="drop-alt-card">
-      <div>
-        <span>💡 <b>Print nahi karna, sirf file bhejni hai?</b></span>
-        <div style="font-size:11px;color:#3b82f6;margin-top:2px">Direct counter PC ke downloads folder mein transfer karein</div>
-      </div>
-      <a href="drop.html" class="drop-alt-btn">📲 File Drop Kholein &rarr;</a>
-    </div>
-
-    <div id="s1err" class="err-banner" hidden></div>
-  </section>
-
-  <!-- STEP 2: PRINT SETTINGS -->
-  <section id="s2" class="card" hidden>
-    <div class="card-title">
-      <span class="num">2</span>
-      <span>Print ki setting karein</span>
-    </div>
-
-    <!-- File badge -->
-    <div class="filemeta">
-      <div class="ic" id="fic">PDF</div>
-      <div>
-        <div class="fn" id="fname">file.pdf</div>
-        <div class="fm" id="fmeta"></div>
-      </div>
-    </div>
-
-    <!-- Setting: Copies -->
-    <div class="setting-row">
-      <div>
-        <span class="setting-label">Kitni copies chahiye?</span>
-        <span class="setting-sub">Number of copies to print</span>
-      </div>
-      <div class="counter-stepper">
-        <button type="button" id="copyMinus">&minus;</button>
-        <input id="copies" type="number" min="1" max="50" value="1" />
-        <button type="button" id="copyPlus">&plus;</button>
-      </div>
-    </div>
-
-    <!-- Setting: Color Mode -->
-    <div class="setting-row">
-      <div>
-        <span class="setting-label">Print Type</span>
-        <span class="setting-sub">Kala-Safed ya Rangeen?</span>
-      </div>
-      <div class="seg-group" id="mode">
-        <label class="seg-card active" id="modeBw">
-          <input type="radio" name="mode" value="bw" checked />
-          <span>⚫ B&amp;W (Kala-Safed)</span>
-        </label>
-        <label class="seg-card" id="modeColor">
-          <input type="radio" name="mode" value="color" />
-          <span>🎨 Color (Rangeen)</span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Setting: Pages -->
-    <div class="setting-row">
-      <div>
-        <span class="setting-label">Kaunse pages chahiye?</span>
-        <span class="setting-sub">Select pages to print</span>
-      </div>
-      <div class="seg-group">
-        <label class="seg-card active" id="allpages">Saare Pages <span id="ptot"></span></label>
-        <label class="seg-card" id="rangeLbl">
-          <span>Range:</span>
-          <input id="from" type="number" min="1" style="width:48px;padding:3px 6px" />
-          <span>se</span>
-          <input id="to" type="number" min="1" style="width:48px;padding:3px 6px" />
-        </label>
-      </div>
-    </div>
-
-    <!-- Setting: Paper & Orientation -->
-    <div class="setting-row">
-      <div>
-        <span class="setting-label">Paper &amp; Orientation</span>
-        <span class="setting-sub">Size aur angle</span>
-      </div>
-      <div style="display:flex;gap:8px">
-        <select id="paper">
-          <option value="A4">A4 Paper</option>
-          <option value="Letter">Letter</option>
-          <option value="A3">A3 Paper</option>
-        </select>
-        <select id="orient">
-          <option value="portrait">Portrait (Seedha)</option>
-          <option value="landscape">Landscape (Aadha)</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Live calculation bill -->
-    <div class="bill-box">
-      <div class="bill-row">
-        <span id="billFormula">1 page &times; 1 copy &times; &#8377;5</span>
-        <span id="billRate">&#8377;5</span>
-      </div>
-      <div class="bill-row grand">
-        <span>Kul Rakam (Total)</span>
-        <span id="total" style="color:var(--brand)">&#8377;0</span>
-      </div>
-    </div>
-
-    <button class="primary-btn" id="submit">
-      <span>Print Request Bhejo 🚀</span>
-    </button>
-    <div id="s2err" class="err-banner" hidden></div>
-  </section>
-
-  <!-- STEP 3: PAY & TOKEN -->
-  <section id="s3" class="card" style="text-align:center" hidden>
-    <!-- Highlighted Token Hero -->
-    <div class="token-hero">
-      <div class="token-sub">Aapka Print Token Code</div>
-      <div class="token-code" id="jobno">&mdash;&mdash;</div>
-      <div class="token-hint">Counter par ye Token Code batayein ya screen dikhayein</div>
-    </div>
-
-    <!-- Live Status Tracker Pulse -->
-    <div class="live-tracker tracker-pending" id="statusTracker">
-      <div class="spin" id="trackerSpin" style="border-top-color:#854d0e;width:14px;height:14px;border-width:2px"></div>
-      <span id="trackerMsg">Counter verification ka intezaar hai... (Payment check ho rahi hai)</span>
-    </div>
-
-    <!-- Amount Card -->
-    <div style="margin:16px 0 10px">
-      <div style="font-size:13px;color:var(--muted);font-weight:600">UPI se Pay karein</div>
-      <div style="font-size:36px;font-weight:900;color:var(--ok);letter-spacing:-0.5px" id="payamt">&#8377;0</div>
-    </div>
-
-    <!-- QR Code Container -->
-    <div class="qr-container" id="qrimg"></div>
-    <div class="qr-hint">Kisi bhi UPI App (GPay / PhonePe / Paytm) se ye QR scan karein</div>
-
-    <!-- One-tap UPI Button for Phone -->
-    <a class="pay-cta-btn" id="paybtn" href="#" style="margin-top:12px">
-      <span>📱 GPay / PhonePe / Paytm se Pay karein</span>
-    </a>
-
-    <!-- Copy notification toast -->
-    <div class="copy-notice" id="copyNotice">✅ UPI ID copy ho gayi hai! Kisi bhi UPI app mein paste karke pay kar sakte hain.</div>
-
-    <!-- UPI VPA details -->
-    <div class="upi-details-card">
-      <div style="text-align:left">
-        <div style="font-size:11px;color:var(--muted)">UPI ID (GPay, PhonePe, Paytm, BHIM):</div>
-        <div style="font-weight:700;color:var(--ink)" id="payvpa"></div>
-      </div>
-      <button type="button" class="upi-copy-btn" id="copyUpiBtn">Copy ID</button>
-    </div>
-
-    <!-- Physical Counter Stand / Cash Fallback -->
-    <div class="counter-fallback-card">
-      <div style="font-size:20px;line-height:1">🏪</div>
-      <div style="text-align:left;flex:1">
-        <div style="font-weight:700;font-size:13px;color:var(--ink)">Counter QR ya Cash se bhi Pay kar sakte hain</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">
-          Dukan ke counter par laga Paytm / PhonePe QR scan karein ya Cash de kar Token Code <b id="tokenRef" style="color:var(--brand)">#------</b> batayein.
+  <!-- Top Clean Header -->
+  <header class="glass-header sticky top-0 z-30 border-b border-slate-800 text-white shadow-md">
+    <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-blue-400 flex items-center justify-center shadow-md shadow-brand-600/30">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 id="shop" class="text-base font-extrabold tracking-tight">CyberPrint Pay</h1>
+            <span class="inline-flex items-center gap-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live Counter
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Self-Service Counter Print</p>
         </div>
       </div>
+      <div class="flex items-center gap-2">
+        <button id="installAppBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition active:scale-95">
+          <svg class="w-3.5 h-3.5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Install App
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- App Body Container -->
+  <main class="max-w-md mx-auto px-4 pt-3.5">
+
+    <!-- Mode Selector Pills (Print & Pay vs Mobile to PC Drop) -->
+    <div class="bg-slate-200/80 p-1 rounded-xl flex gap-1 mb-3.5 shadow-inner">
+      <button type="button" class="flex-1 py-2 px-3 bg-white text-brand-600 rounded-lg text-xs font-extrabold shadow-sm flex items-center justify-center gap-1.5 transition">
+        <span>🖨️</span> Print &amp; Pay Counter
+      </button>
+      <a href="drop.html" class="flex-1 py-2 px-3 text-slate-600 hover:text-slate-900 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition text-center no-underline">
+        <span>📲</span> Mobile &rarr; PC Drop
+      </a>
     </div>
 
-    <p style="font-size:12px;color:var(--muted);margin:16px 0 18px">
-      Pay karne ke baad counter operator ko batayein &mdash; payment verify hote hi aapka print nikal aayega.
-    </p>
+    <!-- Stepper Navigation (3 Simple Steps) -->
+    <nav class="bg-white border border-slate-200/90 rounded-2xl p-2.5 shadow-xs mb-3.5">
+      <div class="grid grid-cols-3 gap-1 relative text-center">
+        <!-- Step 1 -->
+        <div id="stp1" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-brand-700 bg-brand-50 font-bold text-xs ring-1 ring-brand-200 transition-all">
+          <span class="step-num w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[11px]">1</span>
+          <span>Upload</span>
+        </div>
+        <!-- Step 2 -->
+        <div id="stp2" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-slate-400 font-medium text-xs transition-all">
+          <span class="step-num w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[11px]">2</span>
+          <span>Settings</span>
+        </div>
+        <!-- Step 3 -->
+        <div id="stp3" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-slate-400 font-medium text-xs transition-all">
+          <span class="step-num w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[11px]">3</span>
+          <span>Pay &amp; Token</span>
+        </div>
+      </div>
+    </nav>
 
-    <button type="button" class="primary-btn" id="again" style="background:#0f172a">
-      <span>+ Ek aur file print karni hai</span>
-    </button>
-  </section>
-</main>
+    <!-- ================= STEP 1: UPLOAD (Minimal & Direct) ================= -->
+    <section id="s1" class="space-y-3.5">
+      <div id="drop" class="border-2 border-dashed border-slate-300 hover:border-brand-500 bg-white hover:bg-brand-50/30 rounded-2xl p-7 text-center cursor-pointer transition shadow-xs flex flex-col items-center justify-center group">
+        <div class="w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-100/80 text-brand-600 flex items-center justify-center mb-3 transition shadow-xs">
+          <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+        </div>
+        <div class="text-base font-extrabold text-slate-800">Apni File Chunein</div>
+        <p class="text-xs text-slate-500 mt-1">PDF document ya Photo (JPG / PNG)</p>
+        <span class="mt-3.5 inline-flex items-center gap-1.5 bg-brand-600 group-hover:bg-brand-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition">
+          <span>📁</span> Browse File
+        </span>
+        <span class="text-[11px] text-slate-400 mt-2 font-medium">Max 20 MB size allow hai</span>
+      </div>
+      <input id="file" type="file" accept="application/pdf,image/jpeg,image/png" class="hidden" />
 
+      <!-- Error Alert -->
+      <div id="s1err" class="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-xl text-xs font-medium" hidden></div>
+
+      <!-- Quick Switch to File Drop Card -->
+      <div class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-lg">📲</span>
+          <div>
+            <div class="text-xs font-bold text-slate-800">Sirf PC par file bhejni hai?</div>
+            <div class="text-[11px] text-slate-500">Bina print ke direct counter PC mein bhejein</div>
+          </div>
+        </div>
+        <a href="drop.html" class="bg-white hover:bg-slate-50 border border-blue-300 text-blue-600 text-xs font-bold px-3 py-1.5 rounded-lg shrink-0 transition no-underline">
+          File Drop &rarr;
+        </a>
+      </div>
+
+      <!-- Privacy Info -->
+      <div class="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-medium">
+        <span>🔒</span>
+        <span>Aapki privacy surakshit hai &bull; File print hote hi delete ho jaati hai</span>
+      </div>
+    </section>
+
+    <!-- ================= STEP 2: SETTINGS (Clean & Easy) ================= -->
+    <section id="s2" class="space-y-3.5" hidden>
+      
+      <!-- Loaded File Card -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div id="fic" class="w-10 h-10 rounded-xl bg-red-50 border border-red-200 text-red-600 font-black text-xs flex items-center justify-center shrink-0">
+            PDF
+          </div>
+          <div class="min-w-0">
+            <div id="fname" class="text-xs font-bold text-slate-800 truncate">document.pdf</div>
+            <div id="fmeta" class="text-[11px] text-slate-500 font-medium">2 Pages &bull; 0.45 MB</div>
+          </div>
+        </div>
+        <button type="button" onclick="location.reload()" class="text-xs text-brand-600 hover:text-brand-700 font-bold shrink-0 px-2 py-1 bg-brand-50 rounded-lg">
+          Change
+        </button>
+      </div>
+
+      <!-- Document Live Preview Card -->
+      <div id="previewCard" class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs">
+        <div class="flex items-center justify-between mb-2.5">
+          <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Live Print Preview
+          </span>
+          <span id="previewPageIndicator" class="text-[10px] font-bold text-brand-600 bg-brand-50 border border-brand-200 px-2.5 py-0.5 rounded-full">
+            Page 1 of 1
+          </span>
+        </div>
+
+        <!-- Preview Viewport / Desk Simulation -->
+        <div id="previewViewport" class="bg-slate-200/80 rounded-2xl p-3 flex flex-col items-center justify-center min-h-[220px] max-h-80 overflow-hidden border border-slate-300/70 relative shadow-inner">
+          <div id="previewLoading" class="text-xs text-slate-500 font-medium flex items-center gap-2">
+            <span class="spin border-slate-400 border-t-brand-600"></span> Document preview taiyaar ho raha hai...
+          </div>
+          
+          <!-- Realistic Simulated Paper Sheet -->
+          <div id="paperSheet" class="relative bg-white rounded-md shadow-lg border border-slate-300 flex items-center justify-center overflow-hidden transition-all duration-300 max-h-72 max-w-full" style="aspect-ratio: 210/297; display:none">
+            <!-- Image Element (JPG / PNG) -->
+            <img id="imgPreviewEl" class="max-h-full max-w-full object-contain transition-all duration-200" alt="Live Preview" />
+            <!-- PDF Canvas Element (PDF) -->
+            <canvas id="pdfCanvasEl" class="max-h-full max-w-full object-contain transition-all duration-200"></canvas>
+
+            <!-- Sheet Bottom Info Pill -->
+            <div id="sheetStatusBadge" class="absolute bottom-1.5 right-1.5 bg-slate-900/85 backdrop-blur-xs text-white text-[9px] font-mono font-bold px-2 py-0.5 rounded shadow pointer-events-none">
+              A4 · B&amp;W · Portrait
+            </div>
+
+            <!-- Warning if excluded from page range -->
+            <div id="excludedWarning" class="absolute inset-0 bg-slate-900/75 backdrop-blur-xs flex flex-col items-center justify-center text-white p-3 text-center" style="display:none">
+              <span class="text-2xl mb-1">🚫</span>
+              <span class="text-xs font-black">Ye Page Print Nahi Hoga</span>
+              <span class="text-[10px] text-slate-300 mt-0.5">Selected range se bahar hai</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Multi-page PDF Page Selector Strip -->
+        <div id="pdfPagesStrip" class="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto pb-1" style="display:none">
+          <span class="text-[11px] font-bold text-slate-500 shrink-0">Pages:</span>
+          <div id="pdfPagePills" class="flex items-center gap-1.5"></div>
+        </div>
+      </div>
+
+      <!-- Print Mode: B&W vs Color (Large Friendly Buttons) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">
+          1. Print Type Chunein
+        </label>
+        <div class="grid grid-cols-2 gap-2.5" id="modeGroup">
+          <label class="mode-card relative flex flex-col p-3 border-2 border-brand-500 bg-brand-50/50 rounded-xl cursor-pointer transition">
+            <input type="radio" name="mode" value="bw" checked class="hidden" />
+            <div class="flex items-center justify-between">
+              <span class="text-base">🖤</span>
+              <span class="text-xs font-extrabold text-slate-900 bg-white border border-slate-200 px-2 py-0.5 rounded-full shadow-xs">₹5 / pg</span>
+            </div>
+            <span class="text-xs font-bold text-slate-900 mt-2">Black &amp; White</span>
+            <span class="text-[10px] text-slate-500">Regular document print</span>
+          </label>
+
+          <label class="mode-card relative flex flex-col p-3 border border-slate-200 bg-white hover:border-slate-300 rounded-xl cursor-pointer transition">
+            <input type="radio" name="mode" value="color" class="hidden" />
+            <div class="flex items-center justify-between">
+              <span class="text-base">🎨</span>
+              <span class="text-xs font-extrabold text-slate-900 bg-white border border-slate-200 px-2 py-0.5 rounded-full shadow-xs">₹10 / pg</span>
+            </div>
+            <span class="text-xs font-bold text-slate-900 mt-2">Colour Print</span>
+            <span class="text-[10px] text-slate-500">Photo ya color sheets</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Copies Counter -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex items-center justify-between">
+        <div>
+          <div class="text-xs font-bold text-slate-800">2. Kitni Copies Chahiyein?</div>
+          <div class="text-[11px] text-slate-500">Total number of sets</div>
+        </div>
+        <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <button type="button" id="copyMinus" class="w-8 h-8 rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-base flex items-center justify-center shadow-xs active:scale-95 transition">
+            &minus;
+          </button>
+          <input id="copies" type="number" min="1" max="50" value="1" class="w-10 text-center font-mono font-bold text-sm bg-transparent border-0 focus:outline-none" readonly />
+          <button type="button" id="copyPlus" class="w-8 h-8 rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-base flex items-center justify-center shadow-xs active:scale-95 transition">
+            +
+          </button>
+        </div>
+      </div>
+
+      <!-- Pages Selection: All vs Range -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+        <div class="flex items-center justify-between mb-2.5">
+          <div class="text-xs font-bold text-slate-800">3. Kaunse Pages Chahiyein?</div>
+          <span id="ptot" class="text-[11px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full"></span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="allpages" class="py-2.5 px-3 rounded-xl border-2 border-brand-500 bg-brand-50/50 text-brand-700 font-bold text-xs transition">
+            Saare Pages (All)
+          </button>
+          <button type="button" id="rangeLbl" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-xs hover:border-slate-300 transition">
+            Select Pages (Range)
+          </button>
+        </div>
+
+        <!-- Range Inputs (Hidden until Range clicked) -->
+        <div id="rangeInputsBox" class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2" hidden>
+          <span class="text-xs text-slate-600 font-medium">Page Range:</span>
+          <div class="flex items-center gap-1.5">
+            <input id="from" type="number" min="1" value="1" class="w-14 py-1 px-2 border border-slate-200 rounded-lg text-center font-mono text-xs font-bold" />
+            <span class="text-xs text-slate-400 font-medium">se</span>
+            <input id="to" type="number" min="1" value="1" class="w-14 py-1 px-2 border border-slate-200 rounded-lg text-center font-mono text-xs font-bold" />
+            <span class="text-xs text-slate-400 font-medium">tak</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Optional Settings (Collapsible or Simple) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs">
+        <details class="group">
+          <summary class="flex items-center justify-between text-xs font-bold text-slate-700 cursor-pointer list-none">
+            <span class="flex items-center gap-1.5">
+              <span>⚙️</span> Additional Settings (Paper / Sides)
+            </span>
+            <span class="text-slate-400 group-open:rotate-180 transition-transform">&darr;</span>
+          </summary>
+          <div class="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-100">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500 mb-1">Paper Size</label>
+              <select id="paper" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-medium">
+                <option value="A4" selected>A4 (Standard)</option>
+                <option value="A3">A3 (Large)</option>
+                <option value="Legal">Legal</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500 mb-1">Orientation</label>
+              <select id="orient" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-medium">
+                <option value="portrait" selected>Portrait (Sidha)</option>
+                <option value="landscape">Landscape (Aada)</option>
+              </select>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Bill & Total Summary Card -->
+      <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block">Kul Rashi (Total Bill)</span>
+            <div id="billFormula" class="text-xs text-slate-300 font-medium mt-0.5">1 page × 1 copy × ₹5 (B&W)</div>
+          </div>
+          <div class="text-right">
+            <span id="total" class="font-mono text-3xl font-black text-emerald-400">₹5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Alert -->
+      <div id="s2err" class="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-xl text-xs font-medium" hidden></div>
+
+      <!-- Submit Button -->
+      <button id="submit" type="button" class="w-full py-3.5 px-4 bg-brand-600 hover:bg-brand-500 active:scale-[0.99] text-white font-extrabold text-sm rounded-2xl shadow-md shadow-brand-600/30 transition flex items-center justify-center gap-2">
+        <span>Print Request Bhejo</span>
+        <span>&rarr;</span>
+      </button>
+
+      <div class="text-center">
+        <button type="button" onclick="location.reload()" class="text-xs text-slate-500 hover:text-slate-800 font-medium">
+          &larr; Cancel karke nayi file chunein
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= STEP 3: TOKEN & PAYMENT ================= -->
+    <section id="s3" class="space-y-4" hidden>
+      
+      <!-- Big Token Banner -->
+      <div class="bg-gradient-to-br from-brand-50 via-white to-blue-50 border-2 border-brand-300 rounded-3xl p-5 text-center shadow-sm">
+        <div class="text-xs font-bold text-brand-700 uppercase tracking-wider">Aapka Print Token Number</div>
+        <div id="jobno" class="font-mono text-5xl font-black text-brand-900 tracking-wider my-1">#------</div>
+        <p class="text-xs text-brand-600 font-medium">Ye Token Code Counter Operator ko batayein</p>
+      </div>
+
+      <!-- Live Order Tracker Status Banner -->
+      <div id="statusTracker" class="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs">
+        <div id="trackerSpin" class="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin shrink-0"></div>
+        <div class="text-xs font-bold">
+          <span id="trackerMsg">Counter verification ka intezaar hai... (Payment check ho rahi hai)</span>
+        </div>
+      </div>
+
+      <!-- UPI QR Code & Online Payment Card -->
+      <div class="bg-white border border-slate-200 rounded-3xl p-5 text-center shadow-xs">
+        <div class="text-xs font-extrabold text-slate-800 mb-1">UPI Se Payment Karein</div>
+        <div class="text-[11px] text-slate-500 mb-3">Google Pay, PhonePe, Paytm ya Kisi bhi UPI App se scan karein</div>
+
+        <div class="inline-block bg-white p-3 rounded-2xl border border-slate-200 shadow-inner my-1">
+          <div id="qrimg" class="flex items-center justify-center min-w-[200px] min-h-[200px]"></div>
+        </div>
+
+        <div class="mt-3 flex items-center justify-center gap-2">
+          <span class="text-xs text-slate-500 font-medium">Amount to Pay:</span>
+          <span id="payamt" class="font-mono text-xl font-black text-slate-900">₹0</span>
+        </div>
+
+        <!-- 1-Tap Pay CTA Button -->
+        <a id="paybtn" href="#" class="mt-3 w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2 no-underline">
+          <span>📲 GPay / PhonePe Se Pay Karein</span>
+        </a>
+
+        <!-- UPI ID Copy Row -->
+        <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+          <span class="text-slate-500 font-medium">UPI ID:</span>
+          <div class="flex items-center gap-2">
+            <span id="payvpa" class="font-mono font-bold text-slate-700"></span>
+            <button id="copyUpiBtn" type="button" class="text-brand-600 hover:text-brand-700 font-bold bg-brand-50 px-2 py-1 rounded-md text-[11px]">
+              Copy ID
+            </button>
+          </div>
+        </div>
+        <div id="copyNotice" class="text-[10px] text-emerald-600 font-semibold mt-1" style="display:none">
+          UPI ID clipboard mein copy ho gayi!
+        </div>
+      </div>
+
+      <!-- Cash / Counter Fallback Card -->
+      <div class="bg-slate-100/80 border border-slate-200 rounded-2xl p-3.5 flex items-start gap-3">
+        <span class="text-xl">🏪</span>
+        <div class="text-xs text-slate-600">
+          <b class="text-slate-900 block mb-0.5">Counter QR ya Cash se bhi de sakte hain</b>
+          Dukan ke counter par laga QR scan karein ya Cash de kar Token <b id="tokenRef" class="text-brand-600">#------</b> batayein.
+        </div>
+      </div>
+
+      <!-- Finish / Print Again Button -->
+      <button id="again" type="button" class="w-full py-3 px-4 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl shadow-xs transition">
+        ➕ Ek Aur Document Print Karein
+      </button>
+
+    </section>
+
+  </main>
+
+<!-- External Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
@@ -883,7 +440,9 @@ button.primary-btn:disabled {
 <script>
 (function(){
   var C = window.CYBERPRINT_CONFIG || {};
-  document.getElementById('shop').textContent = C.SHOP_NAME || 'CyberPrint Pay';
+  var shopEl = document.getElementById('shop');
+  if(shopEl) shopEl.textContent = C.SHOP_NAME || 'CyberPrint Pay';
+
   var sb = supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
   });
@@ -897,9 +456,17 @@ button.primary-btn:disabled {
   function setStep(num){
     ['stp1','stp2','stp3'].forEach(function(id, idx){
       var el = $(id);
-      if(idx + 1 === num){ el.className = 'step-item active'; }
-      else if(idx + 1 < num){ el.className = 'step-item done'; }
-      else { el.className = 'step-item'; }
+      var numSpan = el.querySelector('.step-num');
+      if(idx + 1 === num){
+        el.className = 'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-brand-700 bg-brand-50 font-bold text-xs ring-1 ring-brand-200 transition-all';
+        if(numSpan){ numSpan.className = 'step-num w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[11px] font-bold'; numSpan.textContent = String(num); }
+      } else if(idx + 1 < num){
+        el.className = 'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-emerald-700 bg-emerald-50 font-bold text-xs transition-all';
+        if(numSpan){ numSpan.className = 'step-num w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[11px] font-bold'; numSpan.textContent = '✓'; }
+      } else {
+        el.className = 'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-slate-400 font-medium text-xs transition-all';
+        if(numSpan){ numSpan.className = 'step-num w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[11px]'; numSpan.textContent = String(idx + 1); }
+      }
     });
   }
 
@@ -909,15 +476,186 @@ button.primary-btn:disabled {
     return null;
   }
 
-  async function pageCount(f){
-    if(f.type === 'application/pdf'){
-      try{
-        var buf = await f.arrayBuffer();
-        var pdf = await pdfjsLib.getDocument({data:buf}).promise;
-        return pdf.numPages || 1;
-      }catch(e){ return 1; }
+  var currentPdfDoc = null;
+  var currentPdfPage = 1;
+  var currentImgUrl = null;
+
+  async function renderPdfPage(num){
+    if(!currentPdfDoc) return;
+    try {
+      currentPdfPage = num;
+      var page = await currentPdfDoc.getPage(num);
+      var canvas = $('pdfCanvasEl');
+      var ctx = canvas.getContext('2d');
+
+      var unscaledViewport = page.getViewport({ scale: 1 });
+      var targetWidth = Math.min(360, window.innerWidth - 64);
+      var scale = targetWidth / unscaledViewport.width;
+      var viewport = page.getViewport({ scale: Math.max(0.4, scale) });
+
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+      $('previewLoading').style.display = 'none';
+      $('paperSheet').style.display = 'flex';
+      canvas.style.display = 'block';
+      $('imgPreviewEl').style.display = 'none';
+      $('previewPageIndicator').textContent = 'Page ' + num + ' of ' + currentPdfDoc.numPages;
+
+      updateLivePreviewAdjustment();
+    } catch(err){
+      $('previewLoading').textContent = 'Preview draw nahi ho saka';
     }
-    return 1;
+  }
+
+  function updateLivePreviewAdjustment(){
+    var sheet = $('paperSheet');
+    if(!sheet || sheet.style.display === 'none') return;
+
+    var modeRadio = document.querySelector('input[name=mode]:checked');
+    var mode = modeRadio ? modeRadio.value : 'bw';
+    var paper = $('paper') ? $('paper').value : 'A4';
+    var orient = $('orient') ? $('orient').value : 'portrait';
+    var copies = Math.max(1, parseInt($('copies').value || '1', 10));
+    var usingRange = !$('rangeInputsBox').hidden;
+
+    // 1. Color Simulation: Grayscale filter for B&W vs Natural Color
+    if(mode === 'bw'){
+      sheet.style.filter = 'grayscale(100%) contrast(1.1)';
+    } else {
+      sheet.style.filter = 'none';
+    }
+
+    // 2. Orientation & Paper Size Aspect Ratio
+    var ratios = { 'A4': [210, 297], 'A3': [297, 420], 'Legal': [216, 356] };
+    var dims = ratios[paper] || [210, 297];
+    var w = dims[0], h = dims[1];
+
+    if(orient === 'landscape'){
+      sheet.style.aspectRatio = h + ' / ' + w;
+      sheet.style.width = '100%';
+      sheet.style.height = 'auto';
+    } else {
+      sheet.style.aspectRatio = w + ' / ' + h;
+      sheet.style.width = 'auto';
+      sheet.style.height = '100%';
+    }
+
+    // 3. Status Badge on Sheet
+    var modeLbl = (mode === 'color') ? '🎨 Color' : '🖤 B&W';
+    var copyLbl = copies + (copies > 1 ? ' Copies' : ' Copy');
+    $('sheetStatusBadge').textContent = paper + ' · ' + (orient === 'landscape' ? 'Landscape' : 'Portrait') + ' · ' + modeLbl + ' · ' + copyLbl;
+
+    // 4. Page Range Check
+    if(usingRange && currentPdfDoc && currentPdfDoc.numPages > 1){
+      var f = Math.max(1, Math.min(unitPages, parseInt($('from').value || '1', 10)));
+      var t = Math.max(1, Math.min(unitPages, parseInt($('to').value || String(unitPages), 10)));
+      if(f > t){ var tmp = f; f = t; t = tmp; }
+
+      if(currentPdfPage >= f && currentPdfPage <= t){
+        $('excludedWarning').style.display = 'none';
+      } else {
+        $('excludedWarning').style.display = 'flex';
+      }
+
+      document.querySelectorAll('#pdfPagePills .page-pill').forEach(function(btn){
+        var p = parseInt(btn.dataset.page, 10);
+        var inRange = (p >= f && p <= t);
+        var isCurrent = (p === currentPdfPage);
+
+        if(isCurrent){
+          btn.className = 'page-pill px-2.5 py-1 text-xs rounded-lg shadow-xs transition font-black ' +
+            (inRange ? 'bg-brand-600 text-white ring-2 ring-brand-300' : 'bg-slate-800 text-rose-300 ring-2 ring-rose-400');
+          btn.textContent = 'P. ' + p + (inRange ? ' ✓' : ' ✗');
+        } else if(inRange){
+          btn.className = 'page-pill px-2.5 py-1 bg-white border border-emerald-300 text-emerald-800 font-bold text-xs rounded-lg shadow-xs transition';
+          btn.textContent = 'P. ' + p + ' ✓';
+        } else {
+          btn.className = 'page-pill px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-400 line-through font-medium text-xs rounded-lg transition opacity-60';
+          btn.textContent = 'P. ' + p;
+        }
+      });
+    } else {
+      $('excludedWarning').style.display = 'none';
+      document.querySelectorAll('#pdfPagePills .page-pill').forEach(function(btn){
+        var p = parseInt(btn.dataset.page, 10);
+        var isCurrent = (p === currentPdfPage);
+        btn.className = isCurrent
+          ? 'page-pill px-2.5 py-1 bg-brand-600 text-white font-black text-xs rounded-lg shadow-xs transition ring-2 ring-brand-300'
+          : 'page-pill px-2.5 py-1 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 font-bold text-xs rounded-lg shadow-xs transition';
+        btn.textContent = 'P. ' + p;
+      });
+    }
+  }
+
+  async function showPreview(f){
+    $('previewLoading').style.display = 'flex';
+    $('paperSheet').style.display = 'none';
+    $('imgPreviewEl').style.display = 'none';
+    $('pdfCanvasEl').style.display = 'none';
+    $('pdfPagesStrip').style.display = 'none';
+
+    if(currentImgUrl){ URL.revokeObjectURL(currentImgUrl); currentImgUrl = null; }
+    currentPdfDoc = null;
+    currentPdfPage = 1;
+
+    if(f.type.startsWith('image/')){
+      currentImgUrl = URL.createObjectURL(f);
+      $('imgPreviewEl').src = currentImgUrl;
+      $('imgPreviewEl').onload = function(){
+        $('previewLoading').style.display = 'none';
+        $('paperSheet').style.display = 'flex';
+        $('imgPreviewEl').style.display = 'block';
+        $('pdfCanvasEl').style.display = 'none';
+        $('previewPageIndicator').textContent = 'Photo (1 of 1)';
+        updateLivePreviewAdjustment();
+      };
+      unitPages = 1;
+      updateFileMeta(f, 1);
+    } else if(f.type === 'application/pdf'){
+      try {
+        var buf = await f.arrayBuffer();
+        currentPdfDoc = await pdfjsLib.getDocument({data: buf}).promise;
+        var total = currentPdfDoc.numPages || 1;
+        unitPages = total;
+        updateFileMeta(f, total);
+
+        if(total > 1){
+          var pills = '';
+          for(var i = 1; i <= Math.min(total, 12); i++){
+            pills += '<button type="button" class="page-pill ' + (i === 1 ? 'bg-brand-600 text-white font-black' : 'bg-white border border-slate-200 text-slate-700 font-bold') + ' px-2.5 py-1 text-xs rounded-lg shadow-xs transition" data-page="' + i + '">P. ' + i + '</button>';
+          }
+          if(total > 12){
+            pills += '<span class="text-[10px] text-slate-400 font-medium">+' + (total - 12) + ' more</span>';
+          }
+          $('pdfPagePills').innerHTML = pills;
+          $('pdfPagesStrip').style.display = 'flex';
+
+          $('pdfPagePills').querySelectorAll('.page-pill').forEach(function(btn){
+            btn.onclick = function(){
+              var p = parseInt(btn.dataset.page, 10);
+              renderPdfPage(p);
+            };
+          });
+        }
+        await renderPdfPage(1);
+      } catch(e){
+        $('previewLoading').textContent = 'PDF Preview available nahi hai';
+        unitPages = 1;
+        updateFileMeta(f, 1);
+      }
+    }
+  }
+
+  function updateFileMeta(f, pages){
+    $('fic').textContent = f.type==='application/pdf' ? 'PDF' : (f.name.split('.').pop()||'IMG').toUpperCase();
+    $('fname').textContent = f.name;
+    $('fmeta').textContent = (f.size/1024/1024).toFixed(2) + ' MB \u00b7 ' + pages + ' page' + (pages > 1 ? 's' : '');
+    $('ptot').textContent = '(' + pages + ' Pages)';
+    $('from').max = pages; $('to').max = pages; $('to').value = pages;
+    recalc();
   }
 
   async function pick(f){
@@ -925,15 +663,9 @@ button.primary-btn:disabled {
     if(err){ $('s1err').hidden=false; $('s1err').textContent=err; return; }
     $('s1err').hidden=true;
     file = f;
-    unitPages = await pageCount(f);
-    $('fic').textContent = f.type==='application/pdf' ? 'PDF' : (f.name.split('.').pop()||'IMG').toUpperCase();
-    $('fname').textContent = f.name;
-    $('fmeta').textContent = (f.size/1024/1024).toFixed(2) + ' MB \u00b7 ' + unitPages + ' page' + (unitPages > 1 ? 's' : '');
-    $('ptot').textContent = '(' + unitPages + ')';
-    $('from').max = unitPages; $('to').max = unitPages; $('to').value = unitPages;
     $('s1').hidden = true; $('s2').hidden = false;
     setStep(2);
-    recalc();
+    showPreview(f);
   }
 
   function genUUID(){
@@ -946,8 +678,9 @@ button.primary-btn:disabled {
 
   function recalc(){
     var copies = Math.max(1, parseInt($('copies').value || '1', 10));
-    var mode = document.querySelector('input[name=mode]:checked').value;
-    var usingRange = $('rangeLbl').classList.contains('active');
+    var modeRadio = document.querySelector('input[name=mode]:checked');
+    var mode = modeRadio ? modeRadio.value : 'bw';
+    var usingRange = !$('rangeInputsBox').hidden;
     var eff = unitPages;
     var pageRange = null;
 
@@ -966,15 +699,16 @@ button.primary-btn:disabled {
 
     $('total').textContent = money(amount);
     $('billFormula').textContent = eff + ' page' + (eff > 1 ? 's' : '') + ' \u00d7 ' + copies + ' copy \u00d7 \u20b9' + rate + (mode === 'color' ? ' (Color)' : ' (B&W)');
-    $('billRate').textContent = money(amount);
+
+    updateLivePreviewAdjustment();
 
     return { copies: copies, mode: mode, eff: eff, pageRange: pageRange, rate: rate, amount: amount };
   }
 
   $('drop').onclick = function(){ $('file').click(); };
   $('file').onchange = function(e){ if(e.target.files[0]) pick(e.target.files[0]); };
-  ['dragover','dragenter'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.add('over'); }); });
-  ['dragleave','drop'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.remove('over'); }); });
+  ['dragover','dragenter'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.add('border-brand-500','bg-brand-50/50'); }); });
+  ['dragleave','drop'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.remove('border-brand-500','bg-brand-50/50'); }); });
   $('drop').addEventListener('drop', function(e){ if(e.dataTransfer.files[0]) pick(e.dataTransfer.files[0]); });
 
   $('copyMinus').onclick = function(){
@@ -989,20 +723,27 @@ button.primary-btn:disabled {
 
   document.querySelectorAll('input[name=mode]').forEach(function(r){
     r.onchange = function(){
-      document.querySelectorAll('#mode .seg-card').forEach(function(l){ l.classList.remove('active'); });
-      r.closest('.seg-card').classList.add('active');
+      document.querySelectorAll('#modeGroup .mode-card').forEach(function(l){
+        l.className = 'mode-card relative flex flex-col p-3 border border-slate-200 bg-white hover:border-slate-300 rounded-xl cursor-pointer transition';
+      });
+      var card = r.closest('.mode-card');
+      if(card){
+        card.className = 'mode-card relative flex flex-col p-3 border-2 border-brand-500 bg-brand-50/50 rounded-xl cursor-pointer transition';
+      }
       recalc();
     };
   });
 
   $('allpages').onclick = function(){
-    $('allpages').classList.add('active');
-    $('rangeLbl').classList.remove('active');
+    $('allpages').className = 'py-2.5 px-3 rounded-xl border-2 border-brand-500 bg-brand-50/50 text-brand-700 font-bold text-xs transition';
+    $('rangeLbl').className = 'py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-xs hover:border-slate-300 transition';
+    $('rangeInputsBox').hidden = true;
     recalc();
   };
-  $('rangeLbl').onclick = function(e){
-    $('rangeLbl').classList.add('active');
-    $('allpages').classList.remove('active');
+  $('rangeLbl').onclick = function(){
+    $('rangeLbl').className = 'py-2.5 px-3 rounded-xl border-2 border-brand-500 bg-brand-50/50 text-brand-700 font-bold text-xs transition';
+    $('allpages').className = 'py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-xs hover:border-slate-300 transition';
+    $('rangeInputsBox').hidden = false;
     recalc();
   };
   $('from').oninput = recalc; $('to').oninput = recalc;
@@ -1037,19 +778,19 @@ button.primary-btn:disabled {
         var msg = $('trackerMsg');
 
         if(st === 'printing'){
-          tracker.className = 'live-tracker tracker-printing';
+          tracker.className = 'bg-blue-50 border border-blue-200 text-blue-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs';
           spin.style.display = 'inline-block';
-          spin.style.borderTopColor = '#1e40af';
+          spin.className = 'w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin shrink-0';
           msg.textContent = 'Machine mein print nikal raha hai... \uD83D\uDDA8\uFE0F';
         } else if(st === 'printed'){
-          tracker.className = 'live-tracker tracker-printed';
+          tracker.className = 'bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs';
           spin.style.display = 'none';
           msg.textContent = '\uD83C\uDF89 Badhai ho! Print taiyaar hai, counter se collect karein!';
           if(pollTimer) clearInterval(pollTimer);
         } else if(st === 'rejected' || st === 'failed'){
-          tracker.className = 'live-tracker tracker-rejected';
+          tracker.className = 'bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs';
           spin.style.display = 'none';
-          msg.textContent = '\u274C Job reject ho gaya: ' + (res.data.print_error || 'Counter par poochhein');
+          msg.textContent = '\u274C Request cancel ho gayi: ' + (res.data.print_error || 'Counter par poochhein');
           if(pollTimer) clearInterval(pollTimer);
         }
       }
@@ -1060,12 +801,12 @@ button.primary-btn:disabled {
     if(!file) return;
     var btn = $('submit'); var s = recalc();
     btn.disabled = true;
-    btn.innerHTML = '<span class="spin"></span> File upload ho rahi hai\u2026';
+    btn.innerHTML = '<span class="spin mr-2"></span> File upload ho rahi hai\u2026';
     $('s2err').hidden = true;
     try {
       var params = new URLSearchParams(window.location.search);
       var isLocalStorage = params.get('storage') === 'local';
-      var agentHost = params.get('agent') || (window.location.port === '8085' ? window.location.host : '10.108.118.179:8085');
+      var agentHost = params.get('agent') || (window.location.port === '8085' ? window.location.host : '10.108.118.216:8085');
 
       var id = genUUID();
       var safe = file.name.replace(/[^\w.\-]+/g, '_');
@@ -1119,7 +860,7 @@ button.primary-btn:disabled {
 
       if(!qrLink){
         $('paybtn').style.display = 'none';
-        $('qrimg').innerHTML = '<div class="err-banner">UPI ID config.js mein set nahi hai &mdash; counter par cash de dijiye.</div>';
+        $('qrimg').innerHTML = '<div class="text-xs text-rose-600 font-bold p-3">UPI ID config.js mein set nahi hai &mdash; counter par cash de dijiye.</div>';
       } else {
         $('paybtn').style.display = 'flex';
         $('paybtn').onclick = function(e){
@@ -1137,7 +878,7 @@ button.primary-btn:disabled {
           qr.make();
           $('qrimg').innerHTML = qr.createImgTag(4, 8);
         } catch(err){
-          $('qrimg').innerHTML = '<div style="font-size:12px;color:var(--muted)">QR draw nahi ho saka &mdash; neeche UPI ID copy karein.</div>';
+          $('qrimg').innerHTML = '<div class="text-xs text-slate-500 font-medium">QR draw nahi ho saka &mdash; neeche UPI ID copy karein.</div>';
         }
       }
 
@@ -1197,7 +938,7 @@ button.primary-btn:disabled {
         }
         deferredPrompt = null;
       } else {
-        alert('Mobile mein App install karne ke liye:\n\n1. Browser ke 3-dots (⋮) ya Share button par click karein.\n2. "Add to Home screen" ya "Install app" chunein.');
+        alert('Mobile mein App install karne ke liye:\n\n1. Browser ke 3-dots (\u22ee) ya Share button par click karein.\n2. "Add to Home screen" ya "Install app" chunein.');
       }
     };
   }

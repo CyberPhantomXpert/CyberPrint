@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="theme-color" content="#0f172a"/>
-<title>CyberPrint Pay &mdash; Counter Operator Desk</title>
+<title>CyberPrint Pay — Counter Operator Desk</title>
 <link rel="manifest" href="manifest-admin.json" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -12,540 +12,266 @@
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace']
+      },
+      colors: {
+        brand: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          900: '#1e3a8a',
+        },
+        slate: {
+          850: '#151e2e',
+          900: '#0f172a',
+          950: '#0b1326'
+        }
+      }
+    }
+  }
+}
+</script>
 <style>
-:root {
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --brand: #2563eb;
-  --brand-light: #eff6ff;
-  --ok: #16a34a;
-  --ok-light: #dcfce7;
-  --warn: #d97706;
-  --warn-light: #fef3c7;
-  --err: #dc2626;
-  --err-light: #fee2e2;
-  --radius: 14px;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--ink);
-  line-height: 1.5;
-}
-header {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: #fff;
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  flex-wrap: wrap;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-header h1 {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-header .agentbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #cbd5e1;
-  background: #ffffff14;
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px solid #ffffff22;
-}
-header .dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--err);
-  display: inline-block;
-}
-header .dot.on {
-  background: #4ade80;
-  box-shadow: 0 0 8px #4ade80;
-}
-header button {
-  background: #ffffff18;
-  color: #fff;
-  border: 1px solid #ffffff33;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-header button:hover {
-  background: #ffffff28;
-}
-
-main {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 20px 16px 40px;
-}
-.card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 18px 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 14px rgba(15,23,42,0.05);
-}
-h2 {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0 0 12px;
-}
-label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  margin: 10px 0 4px;
-}
-input {
-  width: 100%;
-  font: inherit;
-  padding: 10px 12px;
-  border: 1.5px solid var(--line);
-  border-radius: 10px;
-}
-input:focus {
-  outline: none;
-  border-color: var(--brand);
-}
-button.primary {
-  width: 100%;
-  margin-top: 14px;
-  padding: 13px;
-  border: 0;
-  border-radius: 10px;
-  background: var(--brand);
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-button.primary:hover {
-  background: #1d4ed8;
-}
-
-.sum {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-.sum div {
-  background: #f8fafc;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 14px 18px;
-  min-width: 140px;
-  flex: 1;
-}
-.sum b {
-  display: block;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--ink);
-}
-.sum span {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-}
-.note {
-  font-size: 13px;
-  color: #475569;
-  margin-top: 14px;
-  background: #f1f5f9;
-  border: 1px solid var(--line);
-  padding: 12px 14px;
-  border-radius: 10px;
-  line-height: 1.5;
-}
-
-.tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-.tabs button {
-  border: 1.5px solid var(--line);
-  background: #fff;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  color: var(--muted);
-  transition: all 0.15s ease;
-}
-.tabs button.on {
-  background: var(--ink);
-  color: #fff;
-  border-color: var(--ink);
-}
-
-.grid {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-}
-.job {
-  background: #fff;
-  border: 1.5px solid var(--line);
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(15,23,42,0.04);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-.job .top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-}
-.job .code {
-  font-weight: 900;
-  font-size: 20px;
-  letter-spacing: 1px;
-  color: var(--brand);
-}
-.job .fn {
-  font-size: 13px;
-  font-weight: 600;
-  color: #334155;
-  word-break: break-all;
-  margin-top: 2px;
-}
-.badge {
-  font-size: 11px;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.b-pending { background: var(--warn-light); color: var(--warn); border: 1px solid #fde047; }
-.b-approved, .b-printing { background: var(--brand-light); color: var(--brand); border: 1px solid #bfdbfe; }
-.b-printed { background: var(--ok-light); color: var(--ok); border: 1px solid #86efac; }
-.b-failed, .b-rejected, .b-cancelled { background: var(--err-light); color: var(--err); border: 1px solid #fca5a5; }
-
-.specs {
-  margin: 12px 0;
-  font-size: 13px;
-  color: #475569;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  background: #f8fafc;
-  padding: 10px 12px;
-  border-radius: 10px;
-}
-.specs b { color: var(--ink); }
-.price {
-  font-size: 22px;
-  font-weight: 900;
-  margin: 8px 0;
-  color: var(--ok);
-}
-.expiry {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-.expiry.soon { color: var(--err); font-weight: 600; }
-
-.acts {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-.acts button {
-  border: 1px solid var(--line);
-  background: #fff;
-  border-radius: 9px;
-  padding: 8px 12px;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.acts .ok { background: var(--ok); color: #fff; border-color: var(--ok); }
-.acts .no { background: #fff; color: var(--err); border-color: #fecaca; }
-.acts .no:hover { background: #fef2f2; }
-.acts .op { background: #fff; color: var(--brand); border-color: #bfdbfe; }
-.acts .op:hover { background: #eff6ff; }
-.empty {
-  color: var(--muted);
-  text-align: center;
-  padding: 40px;
-  font-size: 14px;
-}
-.err {
-  color: var(--err);
-  font-size: 13px;
-  margin-top: 8px;
-}
-
-/* Storage & QR Box Styling */
-.pill-btn {
-  border: 0;
-  background: transparent;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.pill-btn.active {
-  background: #fff;
-  color: var(--brand);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-.qr-box {
-  background: #fff;
-  border: 1.5px solid var(--line);
-  border-radius: 14px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-.qr-canvas-holder {
-  background: #fff;
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 160px;
-  min-width: 160px;
-}
-.qr-canvas-holder img, .qr-canvas-holder canvas {
-  display: block;
-  margin: 0 auto;
-}
-.qr-url-txt {
-  font-size: 11px;
-  font-family: monospace;
-  color: #475569;
-  background: #f1f5f9;
-  padding: 4px 8px;
-  border-radius: 6px;
-  margin-top: 10px;
-  word-break: break-all;
-  max-width: 100%;
-}
-.qr-act-btn {
-  flex: 1;
-  border: 1px solid var(--line);
-  background: #f8fafc;
-  border-radius: 8px;
-  padding: 8px 10px;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.qr-act-btn:hover {
-  background: #e2e8f0;
-}
-.qr-act-btn.primary {
-  background: var(--brand-light);
-  color: var(--brand);
-  border-color: #bfdbfe;
-}
-.qr-act-btn.primary:hover {
-  background: #dbeafe;
-}
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .qr-canvas-holder canvas, .qr-canvas-holder img {
+    margin: 0 auto;
+    border-radius: 12px;
+    background: #fff;
+    padding: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
 </style>
 </head>
-<body>
+<body class="bg-[#0f172a] text-slate-100 min-h-screen font-sans antialiased selection:bg-brand-500 selection:text-white">
 
-<header>
-  <h1 id="title">CyberPrint Pay &mdash; Counter Desk</h1>
-  <span class="agentbar">
-    <span id="conn" class="dot"></span>
-    <span id="agenttxt">Agent: checking&hellip;</span>
-  </span>
-  <button id="installAdminBtn" style="background:#16a34a;color:#fff;border:0;border-radius:20px;padding:6px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer">📲 App Install</button>
-  <button id="soundToggle" title="Awaaz alert chalu ya band karein">🔊 Awaaz: ON</button>
-  <button id="refresh" hidden>Refresh 🔄</button>
-  <button id="logout" hidden>Log out 🚪</button>
-</header>
+  <!-- Top Operator Bar -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-blue-400 flex items-center justify-center shadow-lg shadow-brand-500/20 shrink-0">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 id="title" class="text-base sm:text-lg font-black tracking-tight text-white">CyberPrint Desk</h1>
+            <span class="bg-brand-500/20 border border-brand-500/30 text-brand-400 text-[10px] font-bold px-2 py-0.5 rounded-full">v2.4 Pro</span>
+          </div>
+          <p class="text-xs text-slate-400 font-medium">Counter Operator Control Station</p>
+        </div>
+      </div>
 
-<main>
-  <!-- Operator Login Form -->
-  <section id="login" class="card" style="max-width:380px;margin:50px auto">
-    <h2>Operator Sign-in (Counter Login)</h2>
-    <label>Email Address</label>
-    <input id="email" type="email" autocomplete="username" placeholder="operator@cyberprint.local" />
-    <label>Password</label>
-    <input id="pw" type="password" autocomplete="current-password" placeholder="••••••••" />
-    <button class="primary" id="signin">Sign In Karein</button>
-    <div id="lerr" class="err" hidden></div>
-  </section>
+      <!-- Telemetry & Action Buttons -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="bg-slate-800/90 border border-slate-700/80 rounded-xl px-3 py-1.5 flex items-center gap-2.5 shadow-inner text-xs">
+          <div class="flex items-center gap-1.5">
+            <span id="conn" class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block transition-colors"></span>
+            <span id="agenttxt" class="font-bold text-slate-200">Agent: checking…</span>
+          </div>
+        </div>
 
-  <!-- Operator Dashboard -->
-  <section id="dash" hidden>
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
-        <h2 style="margin:0">Aaj ka Kaam &amp; Kamai (Today's Performance)</h2>
-        <button id="testJobBtn" style="border:1.5px solid #bfdbfe;background:#eff6ff;color:var(--brand);border-radius:10px;padding:8px 16px;font:inherit;font-size:13px;font-weight:700;cursor:pointer">
-          🧪 Test Print Nikalo
+        <button id="soundToggle" class="bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-xl transition active:scale-95">
+          🔊 Awaaz: ON
+        </button>
+
+        <button id="testJobBtn" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/30 transition active:scale-95">
+          🧪 Test Print
+        </button>
+
+        <button id="installAdminBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl shadow-sm transition active:scale-95">
+          📲 App Install
+        </button>
+
+        <button id="refresh" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold px-2.5 py-1.5 rounded-xl transition" hidden>
+          🔄
+        </button>
+
+        <button id="logout" class="bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 text-xs font-bold px-2.5 py-1.5 rounded-xl transition" hidden>
+          🚪 Logout
         </button>
       </div>
-
-      <div class="sum" id="summary"></div>
-
-      <div class="note">
-        <b>Operator Hint:</b> Customer request bhejte hi agent console window ya floating card pop hoga &mdash; payment verify karke direct <b>Print Nikalo</b> dabayein. Mobile se bhi direct print command bhej sakte hain. Files <b>10 minute</b> baad automatically delete ho jayengi.
-      </div>
     </div>
+  </header>
 
-    <!-- Storage Bucket & Counter Tools QR Card -->
-    <div class="card" style="background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px">
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+
+    <!-- Operator Login Screen -->
+    <section id="login" class="max-w-md mx-auto my-12 bg-slate-850 border border-slate-800 rounded-3xl p-6 shadow-xl text-left" hidden>
+      <div class="w-12 h-12 rounded-2xl bg-brand-600/20 text-brand-400 flex items-center justify-center text-xl mb-4">
+        🔐
+      </div>
+      <h2 class="text-xl font-extrabold text-white">Operator Sign-in</h2>
+      <p class="text-xs text-slate-400 mt-1 mb-5">CyberPrint counter desk console par login karein.</p>
+      
+      <div class="space-y-4">
         <div>
-          <h2 style="margin:0;display:flex;align-items:center;gap:8px">
-            <span>📱 Counter QR Codes &amp; Storage Bucket Switch</span>
-          </h2>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">
-            Grahak ke liye Print QR aur Mobile-to-PC File Drop tool
-          </div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Email Address</label>
+          <input id="email" type="email" autocomplete="username" placeholder="operator@cyberprint.local" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-500" />
         </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Password</label>
+          <input id="pw" type="password" autocomplete="current-password" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-500" />
+        </div>
+        <button id="signin" type="button" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-sm rounded-xl shadow-md shadow-brand-600/30 transition active:scale-[0.99]">
+          Sign In Karein &rarr;
+        </button>
+        <div id="lerr" class="bg-rose-950/50 border border-rose-800 text-rose-300 p-3 rounded-xl text-xs font-medium" hidden></div>
+      </div>
+    </section>
 
-        <!-- Storage Mode Switcher -->
-        <div style="display:flex;align-items:center;gap:6px;background:#f1f5f9;padding:4px;border-radius:12px;border:1px solid var(--line)">
-          <span style="font-size:12px;font-weight:700;color:var(--muted);padding-left:8px">Bucket:</span>
-          <button id="storeCloudBtn" class="pill-btn active" title="Files Supabase storage bucket mein save hongi">
-            ☁️ Supabase Bucket ('jobs')
-          </button>
-          <button id="storeLocalBtn" class="pill-btn" title="Files direct PC ke local disk par save hongi (zero cloud quota)">
-            💻 Local PC (Wi-Fi)
-          </button>
-        </div>
+    <!-- Operator Dashboard Screen -->
+    <section id="dash" class="space-y-5" hidden>
+
+      <!-- KPI Metrics Grid -->
+      <div id="summary" class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <!-- Injected via summary() -->
       </div>
 
-      <!-- Storage Info Banner -->
-      <div id="storageNotice" style="font-size:12px;padding:8px 12px;border-radius:8px;background:#eff6ff;color:#1e40af;margin-bottom:16px;border:1px solid #bfdbfe">
-        <b>Active Bucket:</b> ☁️ <b>Supabase Cloud Bucket ('jobs')</b> &mdash; Customer kahi se bhi upload kar sakta hai. Files 10 min baad auto-delete hongi.
-      </div>
-
-      <!-- QR Access Mode Selection (Internet 4G/5G vs Local Wi-Fi) -->
-      <div style="background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <!-- Storage Bucket & Counter Standee QR Control Center -->
+      <div class="bg-slate-850 border border-slate-800 rounded-2xl p-5 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
           <div>
-            <b style="font-size:13px">🌐 Customer Access Mode (QR Kis Network Ke Liye Banayein?):</b>
-            <div style="font-size:11px;color:var(--muted)">Grahak bina Wi-Fi ke (4G/5G mobile internet) se scan karega ya shop ke Wi-Fi se?</div>
+            <h2 class="text-base font-extrabold text-white flex items-center gap-2">
+              <span>📱 Counter QR Codes &amp; Quick Access Link</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">Counter acrylic stand par ye QR lagayein taki grahak direct scan &amp; upload kar sakein.</p>
           </div>
-          <div style="display:flex;gap:6px;background:#f1f5f9;padding:4px;border-radius:10px;border:1px solid var(--line)">
-            <button id="qrModePublicBtn" class="pill-btn active" title="Grahak apne phone ke mobile data (4G/5G) se scan karega - Wi-Fi ki zaroorat nahi">
-              🌐 Mobile Internet (4G/5G)
-            </button>
-            <button id="qrModeLanBtn" class="pill-btn" title="Grahak shop ke local Wi-Fi se connect hai">
-              📶 Shop Wi-Fi (LAN)
+          
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Storage Bucket Switcher -->
+            <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-750 p-1 rounded-xl text-xs">
+              <span class="font-bold text-slate-400 pl-2">Storage:</span>
+              <button id="storeCloudBtn" class="bg-brand-600 text-white font-bold px-2.5 py-1.5 rounded-lg shadow-xs transition">
+                ☁️ Supabase
+              </button>
+              <button id="storeLocalBtn" class="text-slate-400 hover:text-white font-semibold px-2.5 py-1.5 rounded-lg transition">
+                💻 Local PC
+              </button>
+            </div>
+
+            <!-- Standee Print Button -->
+            <button id="printStandeeBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition">
+              <span>🖨️</span> Standee Flyer Print
             </button>
           </div>
         </div>
 
-        <div id="publicUrlBox" style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:12px;font-weight:700;color:#334155">Public Website Link:</span>
-          <input id="publicUrlInput" type="url" style="flex:1;min-width:240px;padding:6px 10px;font-size:12px;font-weight:700;border-radius:8px;border:1.5px solid var(--line)" placeholder="e.g. https://ankit8556.github.io/cyberprint-pay" />
-          <span style="font-size:11px;color:var(--muted)">Iss link ka QR banega jise customer kisi bhi SIM (Jio/Airtel/Vi) ke net se bina Wi-Fi ke khol sakta hai.</span>
+        <!-- Storage Status Banner -->
+        <div id="storageNotice" class="text-xs px-3.5 py-2.5 rounded-xl bg-blue-950/40 border border-blue-800/60 text-blue-300 mt-4 font-medium">
+          <b>Active Bucket:</b> ☁️ <b>Supabase Cloud Bucket ('jobs')</b> — Customer kahi se bhi upload kar sakta hai. Files auto-delete hongi.
         </div>
 
-        <div id="lanIpBox" style="margin-top:10px;display:none;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:12px;font-weight:700;color:#334155">🖥️ Counter PC IP:</span>
-          <input id="lanIpInput" type="text" value="10.108.118.179" style="width:150px;padding:6px 10px;font-size:12px;font-weight:700;border-radius:8px;border:1.5px solid var(--line)" placeholder="e.g. 192.168.1.10" />
-          <button id="detectIpBtn" style="background:#f8fafc;border:1.5px solid var(--line);border-radius:8px;padding:5px 10px;font:inherit;font-size:11px;font-weight:700;cursor:pointer">🔄 Auto-Detect IP</button>
-          <span style="font-size:11px;color:var(--muted)">Sirf tab kaam karega jab customer aapke Wi-Fi se juda ho.</span>
+        <!-- QR Access Network Mode Selector -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 mt-3.5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div>
+              <span class="text-xs font-bold text-slate-200">🌐 QR Kis Network Ke Liye Banayein?</span>
+              <p class="text-[11px] text-slate-400 mt-0.5">Customer SIM ke mobile net (4G/5G) se scan karega ya shop ke Wi-Fi se?</p>
+            </div>
+            <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+              <button id="qrModePublicBtn" class="bg-brand-600 text-white font-bold px-3 py-1.5 rounded-lg shadow-xs transition">
+                🌐 Mobile Data (4G/5G)
+              </button>
+              <button id="qrModeLanBtn" class="text-slate-400 hover:text-white font-semibold px-3 py-1.5 rounded-lg transition">
+                📶 Shop Wi-Fi (LAN)
+              </button>
+            </div>
+          </div>
+
+          <!-- Public URL Box -->
+          <div id="publicUrlBox" class="mt-3 pt-3 border-t border-slate-800 flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold text-slate-300">Public Website Link:</span>
+            <input id="publicUrlInput" type="url" class="flex-1 min-w-[240px] bg-slate-950 border border-slate-750 text-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold focus:outline-none focus:border-brand-500" placeholder="https://ankit8556.github.io/cyberprint-pay" />
+            <span class="text-[11px] text-slate-400">Jio / Airtel 4G/5G se direct scan hoga</span>
+          </div>
+
+          <!-- LAN IP Box -->
+          <div id="lanIpBox" class="mt-3 pt-3 border-t border-slate-800 flex flex-wrap items-center gap-2" style="display:none">
+            <span class="text-xs font-bold text-slate-300">Counter PC IP:</span>
+            <input id="lanIpInput" type="text" value="10.108.118.216" class="w-36 bg-slate-950 border border-slate-750 text-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold focus:outline-none focus:border-brand-500" />
+            <button id="detectIpBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-2.5 py-1.5 rounded-lg transition">🔄 Auto-Detect IP</button>
+            <span class="text-[11px] text-slate-400">Customer aapke Wi-Fi se connect hona zaroori hai</span>
+          </div>
+        </div>
+
+        <!-- Dual QR Codes Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          
+          <!-- Tool 1: Print & Pay Tool -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+            <div class="flex items-center gap-2.5 text-left mb-3">
+              <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-base">🖨️</span>
+              <div>
+                <div class="text-xs font-extrabold text-white">1. Customer Print &amp; Pay Counter</div>
+                <div class="text-[11px] text-slate-400">Grahak phone se upload &amp; UPI pay karega</div>
+              </div>
+            </div>
+            <div id="printToolQR" class="qr-canvas-holder my-2"></div>
+            <div id="printToolUrl" class="text-[11px] font-mono text-slate-400 truncate bg-slate-950 px-2 py-1 rounded-md mt-2"></div>
+            <div class="grid grid-cols-2 gap-2 mt-3">
+              <button id="copyPrintUrlBtn" class="py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition">
+                📋 Copy Link
+              </button>
+              <button id="openPrintToolBtn" class="py-1.5 px-2.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-lg transition">
+                🔗 Kholein (Test)
+              </button>
+            </div>
+          </div>
+
+          <!-- Tool 2: Mobile-to-PC File Drop -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+            <div class="flex items-center gap-2.5 text-left mb-3">
+              <span class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-base">📲</span>
+              <div>
+                <div class="text-xs font-extrabold text-white">2. Mobile-to-PC File Drop</div>
+                <div class="text-[11px] text-slate-400">Direct PC ke Downloads folder mein file drop</div>
+              </div>
+            </div>
+            <div id="dropToolQR" class="qr-canvas-holder my-2"></div>
+            <div id="dropToolUrl" class="text-[11px] font-mono text-slate-400 truncate bg-slate-950 px-2 py-1 rounded-md mt-2"></div>
+            <div class="grid grid-cols-2 gap-2 mt-3">
+              <button id="copyDropUrlBtn" class="py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition">
+                📋 Copy Link
+              </button>
+              <button id="openDropToolBtn" class="py-1.5 px-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition">
+                🔗 Kholein (Test)
+              </button>
+            </div>
+            <button id="openDropFolderBtn" class="w-full mt-2 py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5">
+              <span>📂</span> PC Downloads Folder Kholo
+            </button>
+          </div>
+
         </div>
       </div>
 
-      <!-- QR Codes Grid -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(290px, 1fr));gap:16px">
-        
-        <!-- Tool 1: Print & Pay Tool -->
-        <div class="qr-box">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-            <span style="font-size:22px">🖨️</span>
-            <div>
-              <div style="font-weight:800;font-size:14px">1. Customer Print &amp; Pay Tool</div>
-              <div style="font-size:11px;color:var(--muted)">Grahak phone se upload &amp; UPI pay karega</div>
-            </div>
-          </div>
-          <div id="printToolQR" class="qr-canvas-holder"></div>
-          <div id="printToolUrl" class="qr-url-txt"></div>
-          <div style="display:flex;gap:6px;margin-top:10px;width:100%;flex-wrap:wrap">
-            <button id="copyPrintUrlBtn" class="qr-act-btn">📋 Copy Link</button>
-            <button id="openPrintToolBtn" class="qr-act-btn">🔗 Kholein</button>
-            <button id="printStandeeBtn" class="qr-act-btn primary" style="flex:100%">🖨️ Standee Flyer Print</button>
-          </div>
-        </div>
-
-        <!-- Tool 2: Local Mobile-to-PC File Drop -->
-        <div class="qr-box">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-            <span style="font-size:22px">🚀</span>
-            <div>
-              <div style="font-weight:800;font-size:14px">2. Mobile-to-PC File Drop</div>
-              <div style="font-size:11px;color:var(--muted)">Direct PC ke Downloads folder mein file drop</div>
-            </div>
-          </div>
-          <div id="dropToolQR" class="qr-canvas-holder"></div>
-          <div id="dropToolUrl" class="qr-url-txt"></div>
-          <div style="display:flex;gap:6px;margin-top:10px;width:100%;flex-wrap:wrap">
-            <button id="copyDropUrlBtn" class="qr-act-btn">📋 Copy Link</button>
-            <button id="openDropToolBtn" class="qr-act-btn">🔗 Kholein</button>
-            <button id="openDropFolderBtn" class="qr-act-btn primary" style="flex:100%">📂 PC Downloads Folder Kholo</button>
-          </div>
-        </div>
-
+      <!-- Filter Tabs Navigation -->
+      <div id="tabs" class="flex flex-wrap gap-2 pt-2">
+        <!-- Injected via renderTabs() -->
       </div>
-    </div>
 
-    <!-- Filter Tabs -->
-    <div class="tabs" id="tabs"></div>
+      <!-- Live Job Queue List -->
+      <div id="list" class="space-y-3">
+        <!-- Injected via render() -->
+      </div>
 
-    <!-- Jobs Grid -->
-    <div class="grid" id="list"></div>
-  </section>
-</main>
+    </section>
+
+  </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="qrcode.min.js"></script>
@@ -553,7 +279,9 @@ button.primary:hover {
 <script>
 (function(){
   var C = window.CYBERPRINT_CONFIG || {};
-  document.getElementById('title').textContent = (C.SHOP_NAME || 'CyberPrint Pay') + ' \u2014 Counter Desk';
+  var titleEl = document.getElementById('title');
+  if(titleEl) titleEl.textContent = (C.SHOP_NAME || 'CyberPrint Desk');
+
   var sb = supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY);
   var B = C.BUCKET || 'jobs';
   var $ = function(id){ return document.getElementById(id); };
@@ -566,7 +294,9 @@ button.primary:hover {
 
   function updateSoundBtn(){
     $('soundToggle').textContent = soundEnabled ? '🔊 Awaaz: ON' : '🔇 Awaaz: OFF';
-    $('soundToggle').style.opacity = soundEnabled ? '1' : '0.7';
+    $('soundToggle').className = soundEnabled
+      ? 'bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-xl transition active:scale-95'
+      : 'bg-slate-900 border border-slate-800 text-slate-500 text-xs font-bold px-3 py-1.5 rounded-xl transition active:scale-95';
   }
   updateSoundBtn();
 
@@ -607,9 +337,9 @@ button.primary:hover {
 
   // Storage Mode & QR Management
   var storageMode = localStorage.getItem('cyberprint_storage_mode') || 'cloud';
-  var qrAccessMode = localStorage.getItem('cyberprint_qr_access') || 'public'; // 'public' (4G/5G) or 'lan' (Wi-Fi)
+  var qrAccessMode = localStorage.getItem('cyberprint_qr_access') || 'public';
   var publicBaseUrl = localStorage.getItem('cyberprint_public_url') || C.PUBLIC_URL || (window.location.protocol.startsWith('http') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') : 'https://ankit8556.github.io/cyberprint-pay');
-  var lanIp = '10.108.118.179';
+  var lanIp = '10.108.118.216';
   var lanPort = 8085;
 
   if($('publicUrlInput')) $('publicUrlInput').value = publicBaseUrl;
@@ -622,13 +352,13 @@ button.primary:hover {
 
   function updateQrModeUI(){
     if(qrAccessMode === 'lan'){
-      $('qrModeLanBtn').classList.add('active');
-      $('qrModePublicBtn').classList.remove('active');
+      $('qrModeLanBtn').className = 'bg-brand-600 text-white font-bold px-3 py-1.5 rounded-lg shadow-xs transition';
+      $('qrModePublicBtn').className = 'text-slate-400 hover:text-white font-semibold px-3 py-1.5 rounded-lg transition';
       $('publicUrlBox').style.display = 'none';
       $('lanIpBox').style.display = 'flex';
     } else {
-      $('qrModePublicBtn').classList.add('active');
-      $('qrModeLanBtn').classList.remove('active');
+      $('qrModePublicBtn').className = 'bg-brand-600 text-white font-bold px-3 py-1.5 rounded-lg shadow-xs transition';
+      $('qrModeLanBtn').className = 'text-slate-400 hover:text-white font-semibold px-3 py-1.5 rounded-lg transition';
       $('publicUrlBox').style.display = 'flex';
       $('lanIpBox').style.display = 'none';
     }
@@ -649,19 +379,15 @@ button.primary:hover {
 
   function updateStorageUI(){
     if(storageMode === 'local'){
-      $('storeLocalBtn').classList.add('active');
-      $('storeCloudBtn').classList.remove('active');
-      $('storageNotice').innerHTML = '<b>Active Bucket:</b> 💻 <b>Local PC Storage (Wi-Fi)</b> &mdash; Files direct PC par save hongi, Supabase storage quota bilkul kharch nahi hoga. Fast 100 Mbps Wi-Fi speed.';
-      $('storageNotice').style.background = '#f0fdf4';
-      $('storageNotice').style.color = '#15803d';
-      $('storageNotice').style.borderColor = '#86efac';
+      $('storeLocalBtn').className = 'bg-emerald-600 text-white font-bold px-2.5 py-1.5 rounded-lg shadow-xs transition';
+      $('storeCloudBtn').className = 'text-slate-400 hover:text-white font-semibold px-2.5 py-1.5 rounded-lg transition';
+      $('storageNotice').innerHTML = '<b>Active Bucket:</b> 💻 <b>Local PC Storage (Wi-Fi)</b> &mdash; Files direct PC disk par save hongi, zero Supabase quota kharch hoga.';
+      $('storageNotice').className = 'text-xs px-3.5 py-2.5 rounded-xl bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 mt-4 font-medium';
     } else {
-      $('storeCloudBtn').classList.add('active');
-      $('storeLocalBtn').classList.remove('active');
+      $('storeCloudBtn').className = 'bg-brand-600 text-white font-bold px-2.5 py-1.5 rounded-lg shadow-xs transition';
+      $('storeLocalBtn').className = 'text-slate-400 hover:text-white font-semibold px-2.5 py-1.5 rounded-lg transition';
       $('storageNotice').innerHTML = '<b>Active Bucket:</b> ☁️ <b>Supabase Cloud Bucket (\'' + B + '\')</b> &mdash; Customer kahi se bhi upload kar sakta hai. Files ' + RETAIN + ' min baad auto-delete hongi.';
-      $('storageNotice').style.background = '#eff6ff';
-      $('storageNotice').style.color = '#1e40af';
-      $('storageNotice').style.borderColor = '#bfdbfe';
+      $('storageNotice').className = 'text-xs px-3.5 py-2.5 rounded-xl bg-blue-950/40 border border-blue-800/60 text-blue-300 mt-4 font-medium';
     }
     updateQrModeUI();
   }
@@ -817,7 +543,11 @@ button.primary:hover {
   ];
 
   function agentOnline(){ return agent && agent.last_seen && (Date.now() - new Date(agent.last_seen).getTime() < 30000); }
-  function setConn(ok){ $('conn').className = 'dot' + (ok ? ' on' : ''); }
+  function setConn(ok){
+    $('conn').className = ok
+      ? 'w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shadow-sm shadow-emerald-400/50 animate-pulse'
+      : 'w-2.5 h-2.5 rounded-full bg-rose-500 inline-block';
+  }
   function codeOf(j){ return (j.id || '').replace(/-/g, '').slice(0, 6).toUpperCase(); }
   function find(id){ return jobs.filter(function(x){ return x.id === id; })[0]; }
 
@@ -871,8 +601,8 @@ button.primary:hover {
     var online = agentOnline();
     setConn(online);
     $('agenttxt').textContent = online
-      ? ('Agent: Online' + (agent.printer ? ' \u00b7 ' + agent.printer : ''))
-      : 'Agent: Offline';
+      ? ('Online' + (agent.printer ? ' \u00b7 ' + agent.printer : ''))
+      : 'Offline';
 
     if(agent && agent.note){
       var m = agent.note.match(/http:\/\/([0-9.]+):([0-9]+)/);
@@ -898,7 +628,11 @@ button.primary:hover {
   function renderTabs(){
     $('tabs').innerHTML = TABS.map(function(t){
       var n = jobs.filter(t.test).length;
-      return '<button data-k="' + t.k + '" class="' + (filter === t.k ? 'on' : '') + '">' + t.label + ' (' + n + ')</button>';
+      var active = (filter === t.k);
+      return '<button data-k="' + t.k + '" class="' + (active ? 'bg-brand-600 text-white shadow-sm' : 'bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-800') + ' text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5">' +
+        '<span>' + t.label + '</span>' +
+        '<span class="px-1.5 py-0.2 rounded-full text-[10px] ' + (active ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400') + '">' + n + '</span>' +
+      '</button>';
     }).join('');
     $('tabs').querySelectorAll('button').forEach(function(b){ b.onclick = function(){ filter = b.dataset.k; render(); }; });
   }
@@ -909,80 +643,130 @@ button.primary:hover {
     var printJobs = today.filter(function(j){ return !j.note || j.note.indexOf('FILE_DROP') === -1; });
     var dropJobs = today.filter(function(j){ return j.note && j.note.indexOf('FILE_DROP') >= 0; });
     var printed = printJobs.filter(function(j){ return j.status === 'printed'; });
+    var pendingCount = printJobs.filter(function(j){ return j.status === 'pending'; }).length;
     var rev = printed.reduce(function(a, j){ return a + (j.total_price || 0); }, 0);
     var bwPages = printed.filter(function(j){ return j.color_mode === 'bw'; }).reduce(function(a, j){ return a + ((j.page_count || 1) * (j.copies || 1)); }, 0);
     var colorPages = printed.filter(function(j){ return j.color_mode === 'color'; }).reduce(function(a, j){ return a + ((j.page_count || 1) * (j.copies || 1)); }, 0);
+
     $('summary').innerHTML =
-      '<div><b>' + printJobs.length + '</b><span>Print Orders</span></div>' +
-      '<div><b>' + dropJobs.length + '</b><span>File Drops 📥</span></div>' +
-      '<div><b>' + money(rev) + '</b><span>Kul Kamai</span></div>' +
-      '<div><b>' + bwPages + ' B&amp;W / ' + colorPages + ' Color</b><span>Pages Printed</span></div>';
+      '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
+        '<div class="flex items-center justify-between">' +
+          '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Incoming Queue</span>' +
+          '<span class="p-1 bg-amber-500/10 text-amber-400 rounded-lg text-[10px] font-bold">Needs Action</span>' +
+        '</div>' +
+        '<div class="mt-2 flex items-baseline gap-2">' +
+          '<span class="font-mono text-3xl font-black ' + (pendingCount > 0 ? 'text-amber-400 animate-pulse' : 'text-slate-200') + '">' + pendingCount + '</span>' +
+          '<span class="text-xs text-slate-400">orders pending</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
+        '<div class="flex items-center justify-between">' +
+          '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Today\'s Revenue</span>' +
+          '<span class="p-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-[10px] font-bold">UPI / Cash</span>' +
+        '</div>' +
+        '<div class="mt-2 flex items-baseline gap-2">' +
+          '<span class="font-mono text-3xl font-black text-emerald-400">' + money(rev) + '</span>' +
+          '<span class="text-xs text-slate-400">' + printed.length + ' printed</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
+        '<div class="flex items-center justify-between">' +
+          '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pages Printed</span>' +
+          '<span class="p-1 bg-brand-500/10 text-brand-400 rounded-lg text-[10px] font-bold">Sheets</span>' +
+        '</div>' +
+        '<div class="mt-2 flex items-baseline gap-2">' +
+          '<span class="font-mono text-3xl font-black text-white">' + (bwPages + colorPages) + '</span>' +
+          '<span class="text-xs text-slate-400">(' + bwPages + ' B&W / ' + colorPages + ' Color)</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
+        '<div class="flex items-center justify-between">' +
+          '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">File Drops</span>' +
+          '<span class="p-1 bg-purple-500/10 text-purple-400 rounded-lg text-[10px] font-bold">PC Saved</span>' +
+        '</div>' +
+        '<div class="mt-2 flex items-baseline gap-2">' +
+          '<span class="font-mono text-3xl font-black text-purple-400">' + dropJobs.length + '</span>' +
+          '<span class="text-xs text-slate-400">files received</span>' +
+        '</div>' +
+      '</div>';
   }
 
   function time(iso){ return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
   function esc(s){ return String(s || '').replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
   function expiryLine(j){
-    if(!j.file_path) return j.status === 'pending' ? '<div class="expiry soon">File removed</div>' : '';
+    if(!j.file_path) return j.status === 'pending' ? '<div class="text-[11px] text-rose-400 mt-1">File removed</div>' : '';
     var ends = new Date(j.created_at).getTime() + RETAIN * 60000;
     var mins = Math.ceil((ends - Date.now()) / 60000);
-    if(mins <= 0) return '<div class="expiry soon">File delete ho rahi hai...</div>';
-    return '<div class="expiry' + (mins <= 3 ? ' soon' : '') + '">\u23F3 File ~' + mins + ' min mein auto-delete hogi</div>';
+    if(mins <= 0) return '<div class="text-[11px] text-rose-400 mt-1">File delete ho rahi hai...</div>';
+    return '<div class="text-[11px] text-amber-300 mt-1">\u23F3 File ~' + mins + ' min mein auto-delete hogi</div>';
   }
 
   function card(j){
     var isDrop = j.note && j.note.indexOf('FILE_DROP') >= 0;
-    var colorLbl = j.color_mode === 'color' ? '🎨 Color (Rangeen)' : '⚫ B&W (Kala-Safed)';
+    var colorLbl = j.color_mode === 'color' ? '🎨 Color' : '⚫ B&W';
     var isLocal = j.file_path && j.file_path.startsWith('local://');
     var storageBadge = isDrop
-      ? '<span style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;margin-left:6px">📥 Mobile File Drop</span>'
+      ? '<span class="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-bold px-2 py-0.5 rounded-md">📥 Mobile Drop</span>'
       : (isLocal
-        ? '<span style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;margin-left:6px">💻 Local Disk</span>'
-        : '<span style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;margin-left:6px">☁️ Cloud</span>');
+        ? '<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-md">💻 Local Disk</span>'
+        : '<span class="bg-brand-500/20 text-brand-300 border border-brand-500/30 text-[10px] font-bold px-2 py-0.5 rounded-md">☁️ Cloud</span>');
+
+    var statusBadge = '';
+    if(j.status === 'pending') statusBadge = '<span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full animate-pulse">Pending</span>';
+    else if(j.status === 'printing' || j.status === 'approved') statusBadge = '<span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">Printing</span>';
+    else if(j.status === 'printed') statusBadge = '<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">Printed ✓</span>';
+    else statusBadge = '<span class="bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">' + j.status + '</span>';
+
     var acts = [];
     if(isDrop){
-      acts.push('<button class="ok" onclick="openDownloadsFolder()" style="background:#2563eb;color:#fff;font-size:13px;padding:8px 14px;font-weight:700">📂 PC Downloads Mein Dekhein</button>');
+      acts.push('<button class="py-2 px-3.5 bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-xs rounded-xl shadow-xs transition" onclick="openDownloadsFolder()">📂 PC Downloads Mein Dekhein</button>');
       if(j.file_path){
-        acts.push('<button class="op" data-open="' + j.id + '">File Kholo</button>');
-        acts.push('<button data-dl="' + j.id + '">Download</button>');
+        acts.push('<button class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition" data-open="' + j.id + '">File Kholo</button>');
+        acts.push('<button class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition" data-dl="' + j.id + '">Download</button>');
       }
     } else {
       if(j.status === 'pending' && j.file_path){
-        acts.push('<button class="ok" data-approve="' + j.id + '" style="background:#16a34a;color:#fff;font-size:14px;padding:8px 16px;font-weight:700">🖨️ Print Nikalo</button>');
+        acts.push('<button class="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow-md shadow-emerald-600/30 transition active:scale-95" data-approve="' + j.id + '">🖨️ Print Nikalo</button>');
       }
-      if((j.status === 'failed') && j.file_path){
-        acts.push('<button class="ok" data-requeue="' + j.id + '">Dobara Bhejo (Retry)</button>');
+      if(j.status === 'failed' && j.file_path){
+        acts.push('<button class="py-2 px-3.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl transition" data-requeue="' + j.id + '">Dobara Bhejo (Retry)</button>');
       }
       if(j.file_path){
-        acts.push('<button class="op" data-open="' + j.id + '">File Kholo</button>');
-        acts.push('<button data-dl="' + j.id + '">Download</button>');
+        acts.push('<button class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition" data-open="' + j.id + '">File Kholo</button>');
+        acts.push('<button class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition" data-dl="' + j.id + '">Download</button>');
       }
       if(j.status === 'pending' || j.status === 'failed' || j.status === 'approved'){
-        acts.push('<button class="no" data-reject="' + j.id + '">Reject (Mana Karo)</button>');
+        acts.push('<button class="py-2 px-3 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 font-bold text-xs rounded-xl transition" data-reject="' + j.id + '">Reject</button>');
       }
     }
-    return '<div class="job">' +
-      '<div>' +
-        '<div class="top">' +
-          '<div><div class="code">#' + codeOf(j) + ' ' + storageBadge + '</div><div class="fn">' + esc(j.file_name) + '</div></div>' +
-          '<span class="badge b-' + j.status + '">' + j.status + '</span>' +
+
+    return '<div class="bg-slate-850 border border-slate-800 hover:border-slate-750 rounded-2xl p-4 sm:p-5 shadow-sm transition flex flex-col md:flex-row md:items-center justify-between gap-4">' +
+      '<div class="space-y-2 min-w-0 flex-1">' +
+        '<div class="flex items-center gap-2.5 flex-wrap">' +
+          '<span class="font-mono text-base font-black text-brand-400">#' + codeOf(j) + '</span>' +
+          storageBadge +
+          statusBadge +
+          '<span class="text-xs text-slate-400 font-medium ml-auto md:ml-0">' + time(j.created_at) + '</span>' +
         '</div>' +
-        '<div class="specs">' +
+        '<div class="text-sm font-bold text-white truncate" title="' + esc(j.file_name) + '">' + esc(j.file_name) + '</div>' +
+        '<div class="flex items-center gap-2 flex-wrap text-xs text-slate-300">' +
           (isDrop
-            ? '<span><b>📥 Direct Mobile Transfer</b></span><span>' + time(j.created_at) + '</span>'
-            : ('<span><b>' + j.page_count + '</b> page' + (j.page_count > 1 ? 's' : '') + (j.page_range ? ' (' + esc(j.page_range) + ')' : '') + '</span>' +
-               '<span><b>' + j.copies + '</b> ' + (j.copies > 1 ? 'copies' : 'copy') + '</span>' +
-               '<span><b>' + colorLbl + '</b></span>' +
-               '<span><b>' + j.paper_size + '</b></span>' +
-               '<span>' + j.orientation + '</span>' +
-               '<span>' + time(j.created_at) + '</span>')) +
+            ? '<span class="bg-slate-800 px-2 py-0.5 rounded-md font-medium text-purple-300">Direct Mobile File Transfer</span>'
+            : ('<span class="bg-slate-800 px-2 py-0.5 rounded-md font-medium">📄 ' + j.page_count + ' pg' + (j.page_range ? ' (' + esc(j.page_range) + ')' : '') + '</span>' +
+               '<span class="bg-slate-800 px-2 py-0.5 rounded-md font-medium">📑 ' + j.copies + ' copy</span>' +
+               '<span class="bg-slate-800 px-2 py-0.5 rounded-md font-medium">' + colorLbl + '</span>' +
+               '<span class="bg-slate-800 px-2 py-0.5 rounded-md font-medium">' + j.paper_size + '</span>' +
+               '<span class="bg-slate-800 px-2 py-0.5 rounded-md font-medium">' + j.orientation + '</span>')) +
         '</div>' +
-      '</div>' +
-      '<div>' +
-        (isDrop ? '<div class="price" style="color:#2563eb">FILE DROP: PC Saved</div>' : ('<div class="price">COLLECT: ' + money(j.total_price) + '</div>')) +
-        (j.print_error ? '<div class="err">' + esc(j.print_error) + '</div>' : '') +
+        (j.print_error ? '<div class="text-xs text-rose-400 bg-rose-950/40 p-2 rounded-lg font-medium">' + esc(j.print_error) + '</div>' : '') +
         (isDrop ? '' : expiryLine(j)) +
-        '<div class="acts">' + acts.join('') + '</div>' +
+      '</div>' +
+      '<div class="flex flex-col md:items-end gap-3 shrink-0">' +
+        (isDrop
+          ? '<div class="text-xs font-bold text-purple-400 uppercase tracking-wider">File Saved in Downloads</div>'
+          : '<div class="text-right"><span class="text-[10px] uppercase font-bold text-slate-400 block">Collect Cash/UPI</span><span class="font-mono text-2xl font-black text-emerald-400">' + money(j.total_price) + '</span></div>') +
+        '<div class="flex items-center gap-2 flex-wrap">' + acts.join('') + '</div>' +
       '</div>' +
     '</div>';
   }
@@ -991,7 +775,10 @@ button.primary:hover {
     renderTabs(); summary();
     var tab = TABS.filter(function(t){ return t.k === filter; })[0];
     var list = jobs.filter(tab.test);
-    if(!list.length){ $('list').innerHTML = '<div class="empty">Abhi koi job nahi hai iss category mein.</div>'; return; }
+    if(!list.length){
+      $('list').innerHTML = '<div class="bg-slate-850/60 border border-slate-800/80 rounded-2xl p-8 text-center text-slate-500 text-xs font-medium">Abhi koi job nahi hai iss category mein.</div>';
+      return;
+    }
     $('list').innerHTML = list.map(card).join('');
     $('list').querySelectorAll('[data-approve]').forEach(function(b){ b.onclick = function(){ approveJob(b.dataset.approve, b); }; });
     $('list').querySelectorAll('[data-requeue]').forEach(function(b){ b.onclick = function(){ requeue(b.dataset.requeue); }; });
@@ -1002,7 +789,6 @@ button.primary:hover {
 
   async function signedUrl(j, download){
     if(j.file_path && j.file_path.startsWith('local://')){
-      var rel = j.file_path.replace('local://', '');
       return 'http://' + lanIp + ':' + lanPort + '/api/open-downloads';
     }
     var opts = download ? { download: j.file_name } : undefined;
@@ -1147,12 +933,7 @@ button.primary:hover {
       'Job Type     : Synthetic Diagnostic Pattern (PNG format direct raster)',
       'Color Mode   : Full Color (Dye Inks CMY Active)',
       'Paper Size   : A4 (210 x 297 mm)',
-      'Copies       : 1 Copy',
-      '',
-      'Operator instructions:',
-      '  - Agar saare 7 color patches saaf dikh rahe hain, toh ink nozzles bilkul theek hain.',
-      '  - Agar text aur fine lines clear hain, toh driver scaling sahi hai.',
-      '  - B&W jobs mein Canon ka fast pigment black print head kaam karega.'
+      'Copies       : 1 Copy'
     ];
     lines.forEach(function(line, idx){
       ctx.fillText(line, 100, 825 + idx * 34);
@@ -1210,7 +991,7 @@ button.primary:hover {
       alert('Test job bhejne mein dikkat hui: ' + (err.message || err));
     } finally {
       $('testJobBtn').disabled = false;
-      $('testJobBtn').textContent = '🧪 Test Print Nikalo';
+      $('testJobBtn').textContent = '🧪 Test Print';
     }
   };
 
@@ -1238,7 +1019,7 @@ button.primary:hover {
         }
         deferredAdminPrompt = null;
       } else {
-        alert('Admin Panel ko Mobile mein install karne ke liye:\n\n1. Mobile Browser ke Menu (⋮) ya Share button par click karein.\n2. "Add to Home Screen" ya "Install app" chunein.');
+        alert('Admin Panel ko Mobile mein install karne ke liye:\n\n1. Mobile Browser ke Menu (\u22ee) ya Share button par click karein.\n2. "Add to Home Screen" ya "Install app" chunein.');
       }
     };
   }

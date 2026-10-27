@@ -4,363 +4,158 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="theme-color" content="#0f172a"/>
-<title>Mobile-to-PC File Drop</title>
+<title>Mobile-to-PC File Drop — CyberPrint</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace']
+      },
+      colors: {
+        brand: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+        }
+      }
+    }
+  }
+}
+</script>
 <style>
-:root {
-  --bg: #0f172a;
-  --card: #1e293b;
-  --card-border: #334155;
-  --brand: #3b82f6;
-  --brand-hover: #2563eb;
-  --brand-glow: rgba(59, 130, 246, 0.35);
-  --ink: #f8fafc;
-  --muted: #94a3b8;
-  --ok: #22c55e;
-  --ok-bg: rgba(34, 197, 94, 0.15);
-  --err: #ef4444;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--ink);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  line-height: 1.5;
-}
-.shell {
-  width: 100%;
-  max-width: 440px;
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: 20px;
-  padding: 24px 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  text-align: center;
-}
-.header {
-  margin-bottom: 20px;
-}
-.badge-net {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  padding: 4px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-.badge-net.wifi {
-  background: rgba(34, 197, 94, 0.15);
-  color: var(--ok);
-  border-color: rgba(34, 197, 94, 0.3);
-}
-.badge-net .dot {
-  width: 8px;
-  height: 8px;
-  background: currentColor;
-  border-radius: 50%;
-  box-shadow: 0 0 8px currentColor;
-}
-h1 {
-  font-size: 22px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.3px;
-}
-p.sub {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-.dropzone {
-  border: 2px dashed #475569;
-  background: rgba(15, 23, 42, 0.6);
-  border-radius: 16px;
-  padding: 34px 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 18px;
-  position: relative;
-}
-.dropzone.dragover {
-  border-color: var(--brand);
-  background: rgba(59, 130, 246, 0.1);
-  box-shadow: 0 0 20px var(--brand-glow);
-}
-.drop-icon {
-  font-size: 42px;
-  margin-bottom: 10px;
-  display: inline-block;
-  animation: float 2.5s ease-in-out infinite;
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-.drop-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #f1f5f9;
-}
-.drop-hint {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-input[type="file"] {
-  display: none;
-}
-
-.file-card {
-  margin-top: 14px;
-  background: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 14px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-align: left;
-}
-.file-card .icon {
-  font-size: 28px;
-}
-.file-card .info {
-  flex: 1;
-  overflow: hidden;
-}
-.file-card .name {
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.file-card .size {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 2px;
-}
-.file-card .remove {
-  background: transparent;
-  border: 0;
-  color: #94a3b8;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 4px;
-}
-.file-card .remove:hover {
-  color: var(--err);
-}
-
-.progress-box {
-  margin-top: 16px;
-  text-align: left;
-}
-.progress-bar-bg {
-  width: 100%;
-  height: 8px;
-  background: #0f172a;
-  border-radius: 10px;
-  overflow: hidden;
-}
-.progress-bar-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  transition: width 0.15s ease;
-}
-.progress-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 6px;
-  font-weight: 600;
-}
-
-.btn {
-  width: 100%;
-  padding: 14px;
-  background: var(--brand);
-  color: #fff;
-  border: 0;
-  border-radius: 12px;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 18px;
-  box-shadow: 0 4px 15px var(--brand-glow);
-  transition: all 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.btn:hover {
-  background: var(--brand-hover);
-}
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.success-card {
-  margin-top: 18px;
-  background: var(--ok-bg);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  border-radius: 14px;
-  padding: 20px 16px;
-  text-align: center;
-}
-.success-card .s-icon {
-  font-size: 38px;
-  margin-bottom: 8px;
-}
-.success-card h3 {
-  font-size: 16px;
-  font-weight: 800;
-  color: #4ade80;
-}
-.success-card p {
-  font-size: 13px;
-  color: #cbd5e1;
-  margin-top: 4px;
-}
-
-.footer-nav {
-  margin-top: 22px;
-  padding-top: 14px;
-  border-top: 1px solid #334155;
-  display: flex;
-  justify-content: space-around;
-  font-size: 12px;
-  color: var(--muted);
-}
-.footer-nav a {
-  color: #60a5fa;
-  text-decoration: none;
-  font-weight: 600;
-}
-.footer-nav a:hover {
-  text-decoration: underline;
-}
-
-/* Tool Switcher Bar */
-.tool-switch-container {
-  display: flex;
-  background: #0f172a;
-  border: 1px solid #334155;
-  padding: 4px;
-  border-radius: 14px;
-  margin-bottom: 20px;
-  gap: 4px;
-}
-.tool-switch-tab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 12px;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-  color: #94a3b8;
-  border-radius: 10px;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-.tool-switch-tab:hover {
-  color: #fff;
-}
-.tool-switch-tab.active {
-  background: #1e293b;
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.4);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-}
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .glass-header {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
 </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans pb-12 antialiased selection:bg-brand-500 selection:text-white">
 
-<div class="shell">
-  <!-- Tool Switcher: Print & Pay vs Mobile-to-PC Drop -->
-  <div class="tool-switch-container">
-    <a href="index.html" class="tool-switch-tab" title="Print nikalne ke liye UPI payment tool">
-      <span>🖨️</span> Print &amp; Pay Tool
-    </a>
-    <a href="drop.html" class="tool-switch-tab active" title="Direct PC par file transfer karein">
-      <span>📲</span> Mobile to PC Drop
-    </a>
-  </div>
-  <div class="header">
-    <div id="netBadge" class="badge-net">
-      <span class="dot"></span> <span id="netTxt">Checking network&hellip;</span>
-    </div>
-    <h1>Mobile &rarr; PC File Drop</h1>
-    <p class="sub">Direct counter PC ke download folder mein file bhejein bina WhatsApp ya wire ke.</p>
-  </div>
-
-  <div id="dropzone" class="dropzone">
-    <div class="drop-icon">📲 ➡️ 💻</div>
-    <div class="drop-title">Tap karke File Chunein</div>
-    <div class="drop-hint">PDF, Photo, Word, Excel, ZIP ya koi bhi document</div>
-    <input type="file" id="fileInput" multiple />
-  </div>
-
-  <div id="fileList"></div>
-
-  <div id="progressBox" class="progress-box" style="display:none">
-    <div class="progress-bar-bg">
-      <div id="progressFill" class="progress-bar-fill"></div>
-    </div>
-    <div class="progress-meta">
-      <span id="progressTxt">Uploading...</span>
-      <span id="progressPct">0%</span>
-    </div>
-  </div>
-
-  <button id="uploadBtn" class="btn" style="display:none">
-    🚀 PC Par Bhejein (Drop to PC)
-  </button>
-
-  <div id="successCard" class="success-card" style="display:none">
-    <div class="s-icon">✅</div>
-    <h3>File PC par pahunch gayi!</h3>
-    <p id="successDesc">Aapki file PC ke Downloads folder mein save ho chuki hai.</p>
-    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-      <button id="sendMoreBtn" class="btn" style="background:#334155;margin-top:0;padding:11px;flex:1">
-        ➕ Aur Bhejein
-      </button>
-      <a href="index.html" class="btn" style="background:#2563eb;margin-top:0;padding:11px;flex:1;text-decoration:none">
-        🖨️ Print Nikalo &rarr;
+  <!-- Top Clean Header -->
+  <header class="glass-header sticky top-0 z-30 border-b border-slate-800 text-white shadow-md">
+    <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-400 flex items-center justify-center shadow-md shadow-purple-600/30">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold tracking-tight">CyberPrint Drop</h1>
+            <span class="inline-flex items-center gap-1 bg-purple-500/15 border border-purple-500/30 text-purple-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              Mobile &rarr; PC
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Direct Transfer to Counter PC</p>
+        </div>
+      </div>
+      <a href="index.html" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition no-underline">
+        <span>🖨️</span> Print Tool
       </a>
     </div>
-  </div>
+  </header>
 
-  <div class="footer-nav">
-    <a href="index.html">🖨️ Switch to Print &amp; Pay Tool</a>
-    <span>&bull;</span>
-    <span id="statusTxt">Cloud &amp; Wi-Fi Ready</span>
-  </div>
-</div>
+  <!-- App Body Container -->
+  <main class="max-w-md mx-auto px-4 pt-3.5">
+
+    <!-- Mode Selector Pills (Print & Pay vs Mobile to PC Drop) -->
+    <div class="bg-slate-200/80 p-1 rounded-xl flex gap-1 mb-3.5 shadow-inner">
+      <a href="index.html" class="flex-1 py-2 px-3 text-slate-600 hover:text-slate-900 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition text-center no-underline">
+        <span>🖨️</span> Print &amp; Pay Counter
+      </a>
+      <button type="button" class="flex-1 py-2 px-3 bg-white text-purple-700 rounded-lg text-xs font-extrabold shadow-sm flex items-center justify-center gap-1.5 transition">
+        <span>📲</span> Mobile &rarr; PC Drop
+      </button>
+    </div>
+
+    <!-- Network Status Badge (Auto 4G/5G vs Wi-Fi) -->
+    <div class="mb-3.5 text-center">
+      <span id="netBadge" class="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-bold px-3 py-1 rounded-full shadow-xs">
+        <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+        <span id="netTxt">Network check ho raha hai...</span>
+      </span>
+    </div>
+
+    <!-- Main Drop Card -->
+    <div class="space-y-3.5">
+      
+      <!-- Upload Drop Zone -->
+      <div id="dropzone" class="border-2 border-dashed border-slate-300 hover:border-purple-500 bg-white hover:bg-purple-50/30 rounded-2xl p-7 text-center cursor-pointer transition shadow-xs flex flex-col items-center justify-center group">
+        <div class="w-14 h-14 rounded-2xl bg-purple-50 group-hover:bg-purple-100/80 text-purple-600 flex items-center justify-center mb-3 transition shadow-xs">
+          <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+        </div>
+        <div class="text-base font-extrabold text-slate-800">Files Select Karein</div>
+        <p class="text-xs text-slate-500 mt-1">Photo, PDF, Resume ya Documents</p>
+        <span class="mt-3.5 inline-flex items-center gap-1.5 bg-purple-600 group-hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition">
+          <span>📁</span> Browse Files
+        </span>
+        <span class="text-[11px] text-slate-400 mt-2 font-medium">Multiple files ek sath select kar sakte hain</span>
+      </div>
+      <input id="fileInput" type="file" multiple class="hidden" />
+
+      <!-- Selected Files List -->
+      <div id="fileList" class="space-y-2"></div>
+
+      <!-- Upload Progress Box -->
+      <div id="progressBox" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs" style="display:none">
+        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+          <div id="progressFill" class="bg-purple-600 h-2.5 rounded-full transition-all duration-150" style="width:0%"></div>
+        </div>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-600 mt-2.5">
+          <span id="progressTxt">Uploading...</span>
+          <span id="progressPct" class="font-mono text-purple-700">0%</span>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button id="uploadBtn" type="button" class="w-full py-3.5 px-4 bg-purple-600 hover:bg-purple-500 active:scale-[0.99] text-white font-extrabold text-sm rounded-2xl shadow-md shadow-purple-600/30 transition flex items-center justify-center gap-2" style="display:none">
+        <span>🚀 PC Par Bhejein</span>
+      </button>
+
+      <!-- Success Card -->
+      <div id="successCard" class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5 text-center shadow-sm" style="display:none">
+        <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto mb-2 font-bold">
+          ✓
+        </div>
+        <h3 class="text-base font-extrabold text-emerald-800">File PC Par Save Ho Gayi!</h3>
+        <p id="successDesc" class="text-xs text-emerald-700 mt-1 font-medium">Counter Operator ke PC ke Downloads folder mein file pahunch gayi hai.</p>
+        
+        <div class="mt-4 flex gap-2">
+          <button id="sendMoreBtn" type="button" class="flex-1 py-2.5 px-3 bg-white hover:bg-slate-50 border border-emerald-300 text-emerald-800 text-xs font-bold rounded-xl transition">
+            ➕ Aur Bhejein
+          </button>
+          <a href="index.html" class="flex-1 py-2.5 px-3 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 no-underline shadow-sm">
+            <span>🖨️</span> Print Nikalo &rarr;
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Switch helper -->
+      <div class="bg-slate-100/80 border border-slate-200 rounded-2xl p-3 flex items-center justify-between text-xs">
+        <span class="text-slate-500">Agar print nikalna hai:</span>
+        <a href="index.html" class="text-brand-600 hover:text-brand-700 font-bold no-underline">
+          Print &amp; Pay Kholein &rarr;
+        </a>
+      </div>
+
+    </div>
+
+  </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js?v=2"></script>
@@ -414,7 +209,7 @@ input[type="file"] {
     return '📁';
   }
 
-  // Detect whether customer is on the operator's Wi-Fi or on Mobile Internet (4G/5G)
+  // Detect network mode
   async function detectNetworkMode(){
     netTxt.textContent = 'Network check ho raha hai...';
     try {
@@ -424,16 +219,16 @@ input[type="file"] {
       clearTimeout(timeoutId);
       if(res.ok){
         uploadMode = 'wifi';
-        netBadge.className = 'badge-net wifi';
+        netBadge.className = 'inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold px-3 py-1 rounded-full shadow-xs';
         netTxt.textContent = '🟢 Local Shop Wi-Fi Mode (Direct PC Transfer)';
         return;
       }
     } catch(e){}
 
-    // Not on operator's local Wi-Fi -> Universal Cloud Mode (Mobile Data 4G/5G)
+    // Fallback to Cloud (4G/5G)
     uploadMode = 'cloud';
-    netBadge.className = 'badge-net';
-    netTxt.textContent = '☁️ Mobile Data (4G/5G) &mdash; No Wi-Fi Needed';
+    netBadge.className = 'inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-bold px-3 py-1 rounded-full shadow-xs';
+    netTxt.textContent = '☁️ Mobile Data (4G/5G) — No Wi-Fi Needed';
   }
   detectNetworkMode();
 
@@ -441,14 +236,14 @@ input[type="file"] {
 
   dropzone.ondragover = function(e){
     e.preventDefault();
-    dropzone.classList.add('dragover');
+    dropzone.classList.add('border-purple-500','bg-purple-50/50');
   };
   dropzone.ondragleave = function(){
-    dropzone.classList.remove('dragover');
+    dropzone.classList.remove('border-purple-500','bg-purple-50/50');
   };
   dropzone.ondrop = function(e){
     e.preventDefault();
-    dropzone.classList.remove('dragover');
+    dropzone.classList.remove('border-purple-500','bg-purple-50/50');
     if(e.dataTransfer && e.dataTransfer.files.length){
       addFiles(e.dataTransfer.files);
     }
@@ -475,13 +270,15 @@ input[type="file"] {
     }
     var html = '';
     selectedFiles.forEach(function(f, idx){
-      html += '<div class="file-card">' +
-        '<div class="icon">' + getFileIcon(f.name) + '</div>' +
-        '<div class="info">' +
-          '<div class="name">' + f.name + '</div>' +
-          '<div class="size">' + formatBytes(f.size) + '</div>' +
+      html += '<div class="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3 shadow-xs">' +
+        '<div class="flex items-center gap-2.5 min-w-0">' +
+          '<div class="w-9 h-9 rounded-lg bg-purple-50 border border-purple-200 flex items-center justify-center text-base shrink-0">' + getFileIcon(f.name) + '</div>' +
+          '<div class="min-w-0">' +
+            '<div class="text-xs font-bold text-slate-800 truncate">' + f.name + '</div>' +
+            '<div class="text-[11px] text-slate-500 font-medium">' + formatBytes(f.size) + '</div>' +
+          '</div>' +
         '</div>' +
-        '<button class="remove" data-idx="' + idx + '" title="Hatao">&times;</button>' +
+        '<button type="button" class="remove-btn text-slate-400 hover:text-rose-600 text-lg font-bold p-1 transition" data-idx="' + idx + '">&times;</button>' +
       '</div>';
     });
     fileList.innerHTML = html;
@@ -489,7 +286,7 @@ input[type="file"] {
     uploadBtn.textContent = '🚀 PC Par Bhejein (' + selectedFiles.length + ' file' + (selectedFiles.length > 1 ? 's' : '') + ')';
     successCard.style.display = 'none';
 
-    fileList.querySelectorAll('.remove').forEach(function(b){
+    fileList.querySelectorAll('.remove-btn').forEach(function(b){
       b.onclick = function(){
         var idx = parseInt(b.dataset.idx, 10);
         selectedFiles.splice(idx, 1);
@@ -498,35 +295,27 @@ input[type="file"] {
     });
   }
 
-  sendMoreBtn.onclick = function(){
-    selectedFiles = [];
-    fileInput.value = '';
-    renderFiles();
-    successCard.style.display = 'none';
-    dropzone.style.display = 'block';
+  uploadBtn.onclick = function(){
+    if(selectedFiles.length === 0) return;
+    if(uploadMode === 'wifi'){
+      uploadViaWifi();
+    } else {
+      uploadViaCloud();
+    }
   };
 
-  uploadBtn.onclick = async function(){
-    if(selectedFiles.length === 0) return;
+  // Local Wi-Fi Upload
+  function uploadViaWifi(){
     uploadBtn.disabled = true;
     progressBox.style.display = 'block';
-    progressFill.style.width = '10%';
-    progressPct.textContent = '10%';
-    progressTxt.textContent = 'Transfer shuru ho raha hai...';
+    progressFill.style.width = '0%';
+    progressPct.textContent = '0%';
+    progressTxt.textContent = 'Local Wi-Fi se PC par transfer ho raha hai...';
 
-    if(uploadMode === 'wifi'){
-      uploadViaWifi(selectedFiles);
-    } else {
-      uploadViaCloud(selectedFiles);
-    }
-  };
-
-  // Upload via Local Wi-Fi (when customer is on same Wi-Fi)
-  function uploadViaWifi(files){
-    var formData = new FormData();
-    for(var i = 0; i < files.length; i++){
-      formData.append('files', files[i]);
-    }
+    var fd = new FormData();
+    selectedFiles.forEach(function(f){
+      fd.append('file', f, f.name);
+    });
 
     var xhr = new XMLHttpRequest();
     xhr.open('POST', '/upload', true);
@@ -536,97 +325,98 @@ input[type="file"] {
         var pct = Math.round((e.loaded / e.total) * 100);
         progressFill.style.width = pct + '%';
         progressPct.textContent = pct + '%';
-        progressTxt.textContent = 'Bheja ja raha hai (Wi-Fi): ' + formatBytes(e.loaded) + ' / ' + formatBytes(e.total);
+        progressTxt.textContent = pct < 100 ? 'Transfer ho raha hai (' + pct + '%)...' : 'PC par save ho raha hai...';
       }
     };
 
     xhr.onload = function(){
-      if(xhr.status >= 200 && xhr.status < 300){
-        onUploadSuccess(files);
+      uploadBtn.disabled = false;
+      progressBox.style.display = 'none';
+      if(xhr.status === 200){
+        showSuccess('Direct Local Wi-Fi se Operator PC ke Downloads folder mein save ho gayi!');
       } else {
-        // Fallback to Cloud upload if Wi-Fi route fails
-        progressTxt.textContent = 'Wi-Fi se connection nahi bana, Cloud se bhej rahe hain...';
-        uploadViaCloud(files);
+        uploadViaCloud();
       }
     };
 
     xhr.onerror = function(){
-      // Fallback to Cloud upload
-      progressTxt.textContent = 'Wi-Fi error &mdash; Cloud fallback active...';
-      uploadViaCloud(files);
+      uploadViaCloud();
     };
 
-    xhr.send(formData);
+    xhr.send(fd);
   }
 
-  // Upload via Supabase Cloud (works from Jio, Airtel, Vi 4G/5G, anywhere, without Wi-Fi)
-  async function uploadViaCloud(files){
+  // Universal Cloud Mode (4G/5G)
+  async function uploadViaCloud(){
     if(!sb){
-      alert('Cloud configuration nahi mila. Kripya config.js check karein.');
+      alert('Cloud service configure nahi hai. Kripya counter Wi-Fi se connect karein.');
       uploadBtn.disabled = false;
-      progressBox.style.display = 'none';
       return;
     }
 
-    try {
-      var bucket = C.BUCKET || 'jobs';
-      var total = files.length;
+    uploadBtn.disabled = true;
+    progressBox.style.display = 'block';
+    progressFill.style.width = '10%';
+    progressPct.textContent = '10%';
+    progressTxt.textContent = 'Mobile Data (4G/5G) se bheja ja raha hai...';
 
+    try {
+      var total = selectedFiles.length;
       for(var i = 0; i < total; i++){
-        var file = files[i];
+        var f = selectedFiles[i];
         var id = genUUID();
-        var safe = file.name.replace(/[^\w.\-]+/g, '_');
+        var safe = f.name.replace(/[^\w.\-]+/g, '_');
         var path = 'drops/' + id + '/' + safe;
 
-        progressTxt.textContent = 'Uploading (' + (i + 1) + '/' + total + '): ' + file.name;
-        var pct = Math.round(((i + 0.5) / total) * 100);
-        progressFill.style.width = pct + '%';
-        progressPct.textContent = pct + '%';
-
-        // 1. Upload to Supabase Storage
-        var up = await sb.storage.from(bucket).upload(path, file, { contentType: file.type, upsert: false });
+        progressTxt.textContent = 'Uploading (' + (i + 1) + '/' + total + '): ' + f.name;
+        var up = await sb.storage.from(C.BUCKET || 'jobs').upload(path, f, {
+          contentType: f.type || 'application/octet-stream',
+          upsert: true
+        });
         if(up.error) throw up.error;
 
-        // 2. Insert into jobs table with note = 'FILE_DROP' so Agent auto-downloads to PC
         var ins = await sb.from('jobs').insert({
           id: id,
-          file_name: file.name,
+          file_name: f.name,
           file_path: path,
-          file_type: file.type,
+          file_type: f.type || 'application/octet-stream',
           page_count: 1,
           copies: 1,
           color_mode: 'bw',
-          paper_size: 'A4',
-          orientation: 'portrait',
           status: 'pending',
-          note: 'FILE_DROP',
-          customer_name: 'Mobile Drop'
+          note: 'FILE_DROP'
         });
         if(ins.error) throw ins.error;
+
+        var pct = Math.round(((i + 1) / total) * 100);
+        progressFill.style.width = pct + '%';
+        progressPct.textContent = pct + '%';
       }
 
-      progressFill.style.width = '100%';
-      progressPct.textContent = '100%';
-      onUploadSuccess(files);
+      progressBox.style.display = 'none';
+      uploadBtn.disabled = false;
+      showSuccess('Mobile Internet (4G/5G) se bheja gaya! Operator ke PC par save ho gaya.');
 
     } catch(err){
-      uploadBtn.disabled = false;
       progressBox.style.display = 'none';
+      uploadBtn.disabled = false;
       alert('Upload fail hua: ' + (err.message || err));
     }
   }
 
-  function onUploadSuccess(files){
-    uploadBtn.disabled = false;
-    progressBox.style.display = 'none';
-    successDesc.textContent = (files.length === 1 ? files[0].name : (files.length + ' files')) + ' PC ke "agent/downloads" folder mein safaltapoorvak pahunch chuki hai.';
-    successCard.style.display = 'block';
-    dropzone.style.display = 'none';
-    fileList.innerHTML = '';
+  function showSuccess(msg){
     selectedFiles = [];
-    fileInput.value = '';
+    fileList.innerHTML = '';
     uploadBtn.style.display = 'none';
+    successCard.style.display = 'block';
+    successDesc.textContent = msg;
   }
+
+  sendMoreBtn.onclick = function(){
+    successCard.style.display = 'none';
+    fileInput.value = '';
+    fileInput.click();
+  };
 })();
 </script>
 </body>
