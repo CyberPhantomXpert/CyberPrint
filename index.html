@@ -582,6 +582,70 @@ button.primary-btn:disabled {
 .pwa-install-btn:hover {
   background: #16a34a;
 }
+
+/* Tool Switcher Bar */
+.tool-switch-container {
+  display: flex;
+  background: #e2e8f0;
+  padding: 4px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+.tool-switch-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #64748b;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.tool-switch-tab:hover {
+  color: #0f172a;
+}
+.tool-switch-tab.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+.drop-alt-card {
+  margin-top: 14px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.drop-alt-card span {
+  font-size: 12px;
+  color: #1e40af;
+  font-weight: 600;
+}
+.drop-alt-btn {
+  background: #2563eb;
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+.drop-alt-btn:hover {
+  background: #1d4ed8;
+}
 </style>
 </head>
 <body>
@@ -600,6 +664,16 @@ button.primary-btn:disabled {
 </header>
 
 <main>
+  <!-- Tool Switcher: Print & Pay vs Mobile-to-PC Drop -->
+  <div class="tool-switch-container">
+    <a href="index.html" class="tool-switch-tab active" title="Print nikalne ke liye UPI payment tool">
+      <span>🖨️</span> Print &amp; Pay Tool
+    </a>
+    <a href="drop.html" class="tool-switch-tab" title="Direct PC par file transfer karein">
+      <span>📲</span> Mobile to PC File Drop
+    </a>
+  </div>
+
   <!-- Stepper Indicator -->
   <div class="stepper">
     <div class="step-item active" id="stp1"><span>1</span> File Chuney</div>
@@ -624,6 +698,15 @@ button.primary-btn:disabled {
     <div class="privacy-badge">
       <span>🔒</span>
       <span><b>100% Privacy &amp; Suraksha:</b> Aapki file print hone ke 10 minute baad automatically delete ho jayegi.</span>
+    </div>
+
+    <!-- Quick Switch to File Drop -->
+    <div class="drop-alt-card">
+      <div>
+        <span>💡 <b>Print nahi karna, sirf file bhejni hai?</b></span>
+        <div style="font-size:11px;color:#3b82f6;margin-top:2px">Direct counter PC ke downloads folder mein transfer karein</div>
+      </div>
+      <a href="drop.html" class="drop-alt-btn">📲 File Drop Kholein &rarr;</a>
     </div>
 
     <div id="s1err" class="err-banner" hidden></div>

@@ -511,9 +511,10 @@ button.primary:hover {
           </div>
           <div id="printToolQR" class="qr-canvas-holder"></div>
           <div id="printToolUrl" class="qr-url-txt"></div>
-          <div style="display:flex;gap:6px;margin-top:10px;width:100%">
+          <div style="display:flex;gap:6px;margin-top:10px;width:100%;flex-wrap:wrap">
             <button id="copyPrintUrlBtn" class="qr-act-btn">📋 Copy Link</button>
-            <button id="printStandeeBtn" class="qr-act-btn primary">🖨️ Standee Flyer Print</button>
+            <button id="openPrintToolBtn" class="qr-act-btn">🔗 Kholein</button>
+            <button id="printStandeeBtn" class="qr-act-btn primary" style="flex:100%">🖨️ Standee Flyer Print</button>
           </div>
         </div>
 
@@ -522,15 +523,16 @@ button.primary:hover {
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
             <span style="font-size:22px">🚀</span>
             <div>
-              <div style="font-weight:800;font-size:14px">2. Local Mobile-to-PC File Drop</div>
+              <div style="font-weight:800;font-size:14px">2. Mobile-to-PC File Drop</div>
               <div style="font-size:11px;color:var(--muted)">Direct PC ke Downloads folder mein file drop</div>
             </div>
           </div>
           <div id="dropToolQR" class="qr-canvas-holder"></div>
           <div id="dropToolUrl" class="qr-url-txt"></div>
-          <div style="display:flex;gap:6px;margin-top:10px;width:100%">
+          <div style="display:flex;gap:6px;margin-top:10px;width:100%;flex-wrap:wrap">
             <button id="copyDropUrlBtn" class="qr-act-btn">📋 Copy Link</button>
-            <button id="openDropFolderBtn" class="qr-act-btn">📂 Open Downloads</button>
+            <button id="openDropToolBtn" class="qr-act-btn">🔗 Kholein</button>
+            <button id="openDropFolderBtn" class="qr-act-btn primary" style="flex:100%">📂 PC Downloads Folder Kholo</button>
           </div>
         </div>
 
@@ -739,11 +741,23 @@ button.primary:hover {
     }).catch(function(){});
   };
 
+  if($('openPrintToolBtn')){
+    $('openPrintToolBtn').onclick = function(){
+      window.open(getPrintToolUrl(), '_blank');
+    };
+  }
+
   $('copyDropUrlBtn').onclick = function(){
     navigator.clipboard.writeText(getDropToolUrl()).then(function(){
       alert('Mobile File Drop Tool ka link copy ho gaya!');
     }).catch(function(){});
   };
+
+  if($('openDropToolBtn')){
+    $('openDropToolBtn').onclick = function(){
+      window.open(getDropToolUrl(), '_blank');
+    };
+  }
 
   window.openDownloadsFolder = async function(){
     try {
