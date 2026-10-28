@@ -57,6 +57,145 @@ tailwind.config = {
   @keyframes spin-anim {
     to { transform: rotate(360deg); }
   }
+
+  /* Motion Design System (Corporate + Premium Snappy Micro-interactions) */
+  :root {
+    --ease-out-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-snappy: cubic-bezier(0.7, 0, 0.84, 0);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Step Screen Entrance Transition */
+  .step-enter {
+    animation: stepEnter 0.26s var(--ease-out-snappy) forwards;
+  }
+  @keyframes stepEnter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Live Preview Accordion Reveal */
+  .preview-reveal {
+    animation: previewReveal 0.28s var(--ease-out-snappy) forwards;
+    transform-origin: top center;
+  }
+  @keyframes previewReveal {
+    from {
+      opacity: 0;
+      transform: scaleY(0.96) translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: scaleY(1) translateY(0);
+    }
+  }
+
+  /* Paper Sheet Simulation Dynamics */
+  #paperSheet {
+    transition: filter 0.25s var(--ease-out-snappy),
+                aspect-ratio 0.32s var(--ease-out-snappy),
+                transform 0.25s var(--ease-out-snappy),
+                box-shadow 0.25s ease;
+  }
+
+  /* Token Number Pop Animation on Step 3 */
+  .token-reveal {
+    animation: tokenPop 0.45s var(--ease-bounce) forwards;
+  }
+  @keyframes tokenPop {
+    0% {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+    70% {
+      transform: scale(1.05);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Interactive Tactile Press for Buttons and Cards */
+  .tap-tactile {
+    transition: transform 0.14s var(--ease-out-snappy), box-shadow 0.14s ease, border-color 0.14s ease;
+  }
+  .tap-tactile:active {
+    transform: scale(0.97);
+  }
+
+  /* Drag & Drop Over Ambient Glow */
+  .drop-dragover {
+    border-color: #2563eb !important;
+    background-color: #eff6ff !important;
+    transform: scale(1.015);
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.15);
+  }
+
+  /* Tool Switcher Slide & Cross-fade Transitions */
+  .slide-out-left {
+    animation: toolSlideOutLeft 0.16s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+  }
+  @keyframes toolSlideOutLeft {
+    to {
+      opacity: 0;
+      transform: translateX(-16px);
+    }
+  }
+
+  .slide-in-right {
+    animation: toolSlideInRight 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes toolSlideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .slide-out-right {
+    animation: toolSlideOutRight 0.16s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+  }
+  @keyframes toolSlideOutRight {
+    to {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+  }
+
+  .slide-in-left {
+    animation: toolSlideInLeft 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes toolSlideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Accessibility: Respect Reduced Motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen font-sans pb-12 antialiased selection:bg-brand-500 selection:text-white">
@@ -71,15 +210,10 @@ tailwind.config = {
           </svg>
         </div>
         <div>
-          <div class="flex items-center gap-2">
+          <div>
             <h1 id="shop" class="text-base font-extrabold tracking-tight">CyberPrint Pay</h1>
-            <span class="inline-flex items-center gap-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Live Counter
-            </span>
+            <p class="text-[11px] text-slate-400 font-medium">दुकान का डिजिटल प्रिंट व फाइल काउंटर</p>
           </div>
-          <p class="text-[11px] text-slate-400 font-medium">Self-Service Counter Print</p>
-        </div>
       </div>
       <div class="flex items-center gap-2">
         <button id="installAppBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition active:scale-95">
@@ -95,15 +229,26 @@ tailwind.config = {
   <!-- App Body Container -->
   <main class="max-w-md mx-auto px-4 pt-3.5">
 
-    <!-- Mode Selector Pills (Print & Pay vs Mobile to PC Drop) -->
-    <div class="bg-slate-200/80 p-1 rounded-xl flex gap-1 mb-3.5 shadow-inner">
-      <button type="button" class="flex-1 py-2 px-3 bg-white text-brand-600 rounded-lg text-xs font-extrabold shadow-sm flex items-center justify-center gap-1.5 transition">
-        <span>🖨️</span> Print &amp; Pay Counter
+    <!-- Interactive Sliding Mode Selector (Print, Send to PC, Receive from PC) -->
+    <div class="relative bg-slate-200/90 p-1 rounded-2xl flex mb-4 shadow-inner select-none overflow-hidden">
+      <!-- Animated Sliding Active Background Indicator Pill -->
+      <div id="toolSliderPill" class="absolute top-1 bottom-1 left-1 w-[calc(33.333%-2.67px)] bg-white rounded-xl shadow-sm pointer-events-none transition-all duration-300" style="transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); transform: translateX(0%);"></div>
+      
+      <button type="button" id="tabPrintBtn" class="relative z-10 flex-1 py-2 px-1 rounded-xl text-xs font-black flex items-center justify-center gap-1 transition-colors duration-200 text-brand-600 tap-tactile">
+        <span>🖨️</span> प्रिंट निकालें
       </button>
-      <a href="drop.html" class="flex-1 py-2 px-3 text-slate-600 hover:text-slate-900 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition text-center no-underline">
-        <span>📲</span> Mobile &rarr; PC Drop
-      </a>
+      
+      <button type="button" id="tabDropBtn" class="relative z-10 flex-1 py-2 px-1 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-colors duration-200 text-slate-600 hover:text-slate-900 tap-tactile">
+        <span>📲</span> PC में भेजें
+      </button>
+
+      <button type="button" id="tabReceiveBtn" class="relative z-10 flex-1 py-2 px-1 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-colors duration-200 text-slate-600 hover:text-slate-900 tap-tactile">
+        <span>📥</span> PC से लें
+      </button>
     </div>
+
+    <!-- ================= TOOL 1: PRINT & PAY VIEW ================= -->
+    <div id="toolPrintView">
 
     <!-- Stepper Navigation (3 Simple Steps) -->
     <nav class="bg-white border border-slate-200/90 rounded-2xl p-2.5 shadow-xs mb-3.5">
@@ -111,35 +256,35 @@ tailwind.config = {
         <!-- Step 1 -->
         <div id="stp1" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-brand-700 bg-brand-50 font-bold text-xs ring-1 ring-brand-200 transition-all">
           <span class="step-num w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[11px]">1</span>
-          <span>Upload</span>
+          <span>फाइल चुनें</span>
         </div>
         <!-- Step 2 -->
         <div id="stp2" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-slate-400 font-medium text-xs transition-all">
           <span class="step-num w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[11px]">2</span>
-          <span>Settings</span>
+          <span>सेटिंग्स</span>
         </div>
         <!-- Step 3 -->
         <div id="stp3" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-slate-400 font-medium text-xs transition-all">
           <span class="step-num w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[11px]">3</span>
-          <span>Pay &amp; Token</span>
+          <span>टोकन व Pay</span>
         </div>
       </div>
     </nav>
 
     <!-- ================= STEP 1: UPLOAD (Minimal & Direct) ================= -->
-    <section id="s1" class="space-y-3.5">
-      <div id="drop" class="border-2 border-dashed border-slate-300 hover:border-brand-500 bg-white hover:bg-brand-50/30 rounded-2xl p-7 text-center cursor-pointer transition shadow-xs flex flex-col items-center justify-center group">
+    <section id="s1" class="space-y-3.5 step-enter">
+      <div id="drop" class="border-2 border-dashed border-slate-300 hover:border-brand-500 bg-white hover:bg-brand-50/30 rounded-2xl p-7 text-center cursor-pointer transition-all duration-200 shadow-xs flex flex-col items-center justify-center group tap-tactile">
         <div class="w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-100/80 text-brand-600 flex items-center justify-center mb-3 transition shadow-xs">
           <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
         </div>
-        <div class="text-base font-extrabold text-slate-800">Apni File Chunein</div>
-        <p class="text-xs text-slate-500 mt-1">PDF document ya Photo (JPG / PNG)</p>
+        <div class="text-base font-black text-slate-800">अपनी फाइल चुनें (Photo या PDF)</div>
+        <p class="text-xs text-slate-500 mt-1">PDF डॉक्यूमेंट, फोटो, एडमिट कार्ड या फॉर्म</p>
         <span class="mt-3.5 inline-flex items-center gap-1.5 bg-brand-600 group-hover:bg-brand-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition">
-          <span>📁</span> Browse File
+          <span>📁</span> फाइल चुनें (Browse File)
         </span>
-        <span class="text-[11px] text-slate-400 mt-2 font-medium">Max 20 MB size allow hai</span>
+        <span class="text-[11px] text-slate-400 mt-2 font-medium">बड़ी से बड़ी फोटो या PDF फाइल भेज सकते हैं</span>
       </div>
       <input id="file" type="file" accept="application/pdf,image/jpeg,image/png" class="hidden" />
 
@@ -147,23 +292,37 @@ tailwind.config = {
       <div id="s1err" class="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-xl text-xs font-medium" hidden></div>
 
       <!-- Quick Switch to File Drop Card -->
-      <div class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-3 flex items-center justify-between gap-3">
+      <div class="bg-purple-50/70 border border-purple-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3">
         <div class="flex items-center gap-2.5">
-          <span class="text-lg">📲</span>
+          <span class="text-xl">📲</span>
           <div>
-            <div class="text-xs font-bold text-slate-800">Sirf PC par file bhejni hai?</div>
-            <div class="text-[11px] text-slate-500">Bina print ke direct counter PC mein bhejein</div>
+            <div class="text-xs font-black text-slate-800">बिना WhatsApp के फोटो भेजें?</div>
+            <div class="text-[11px] text-slate-600">फुल HD क्वालिटी में सीधे कंप्यूटर पर ट्रांसफर करें</div>
           </div>
         </div>
-        <a href="drop.html" class="bg-white hover:bg-slate-50 border border-blue-300 text-blue-600 text-xs font-bold px-3 py-1.5 rounded-lg shrink-0 transition no-underline">
-          File Drop &rarr;
-        </a>
+        <button type="button" id="cardSwitchToDropBtn" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shrink-0 transition active:scale-95 shadow-xs tap-tactile">
+          भेजें &rarr;
+        </button>
+      </div>
+
+      <!-- Quick Switch to Receive from PC Card -->
+      <div class="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">📥</span>
+          <div>
+            <div class="text-xs font-black text-slate-800">दुकानदार से फाइल लेनी है?</div>
+            <div class="text-[11px] text-slate-600">एडमिट कार्ड या स्कैन फोटो अपने फोन में डाउनलोड करें</div>
+          </div>
+        </div>
+        <button type="button" id="cardSwitchToReceiveBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shrink-0 transition active:scale-95 shadow-xs tap-tactile">
+          डाउनलोड करें &rarr;
+        </button>
       </div>
 
       <!-- Privacy Info -->
       <div class="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-medium">
         <span>🔒</span>
-        <span>Aapki privacy surakshit hai &bull; File print hote hi delete ho jaati hai</span>
+        <span>आपकी प्राइवेसी सुरक्षित है • फाइल प्रिंट होते ही सुरक्षित हट जाती है</span>
       </div>
     </section>
 
@@ -181,55 +340,9 @@ tailwind.config = {
             <div id="fmeta" class="text-[11px] text-slate-500 font-medium">2 Pages &bull; 0.45 MB</div>
           </div>
         </div>
-        <button type="button" onclick="location.reload()" class="text-xs text-brand-600 hover:text-brand-700 font-bold shrink-0 px-2 py-1 bg-brand-50 rounded-lg">
+        <button type="button" onclick="location.reload()" class="text-xs text-brand-600 hover:text-brand-700 font-bold shrink-0 px-2.5 py-1.5 bg-brand-50 hover:bg-brand-100 rounded-lg transition active:scale-95">
           Change
         </button>
-      </div>
-
-      <!-- Document Live Preview Card -->
-      <div id="previewCard" class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs">
-        <div class="flex items-center justify-between mb-2.5">
-          <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Live Print Preview
-          </span>
-          <span id="previewPageIndicator" class="text-[10px] font-bold text-brand-600 bg-brand-50 border border-brand-200 px-2.5 py-0.5 rounded-full">
-            Page 1 of 1
-          </span>
-        </div>
-
-        <!-- Preview Viewport / Desk Simulation -->
-        <div id="previewViewport" class="bg-slate-200/80 rounded-2xl p-3 flex flex-col items-center justify-center min-h-[220px] max-h-80 overflow-hidden border border-slate-300/70 relative shadow-inner">
-          <div id="previewLoading" class="text-xs text-slate-500 font-medium flex items-center gap-2">
-            <span class="spin border-slate-400 border-t-brand-600"></span> Document preview taiyaar ho raha hai...
-          </div>
-          
-          <!-- Realistic Simulated Paper Sheet -->
-          <div id="paperSheet" class="relative bg-white rounded-md shadow-lg border border-slate-300 flex items-center justify-center overflow-hidden transition-all duration-300 max-h-72 max-w-full" style="aspect-ratio: 210/297; display:none">
-            <!-- Image Element (JPG / PNG) -->
-            <img id="imgPreviewEl" class="max-h-full max-w-full object-contain transition-all duration-200" alt="Live Preview" />
-            <!-- PDF Canvas Element (PDF) -->
-            <canvas id="pdfCanvasEl" class="max-h-full max-w-full object-contain transition-all duration-200"></canvas>
-
-            <!-- Sheet Bottom Info Pill -->
-            <div id="sheetStatusBadge" class="absolute bottom-1.5 right-1.5 bg-slate-900/85 backdrop-blur-xs text-white text-[9px] font-mono font-bold px-2 py-0.5 rounded shadow pointer-events-none">
-              A4 · B&amp;W · Portrait
-            </div>
-
-            <!-- Warning if excluded from page range -->
-            <div id="excludedWarning" class="absolute inset-0 bg-slate-900/75 backdrop-blur-xs flex flex-col items-center justify-center text-white p-3 text-center" style="display:none">
-              <span class="text-2xl mb-1">🚫</span>
-              <span class="text-xs font-black">Ye Page Print Nahi Hoga</span>
-              <span class="text-[10px] text-slate-300 mt-0.5">Selected range se bahar hai</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Multi-page PDF Page Selector Strip -->
-        <div id="pdfPagesStrip" class="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto pb-1" style="display:none">
-          <span class="text-[11px] font-bold text-slate-500 shrink-0">Pages:</span>
-          <div id="pdfPagePills" class="flex items-center gap-1.5"></div>
-        </div>
       </div>
 
       <!-- Print Mode: B&W vs Color (Large Friendly Buttons) -->
@@ -346,6 +459,58 @@ tailwind.config = {
         </div>
       </div>
 
+      <!-- Show Live Preview Button at Bottom -->
+      <button type="button" id="togglePreviewBtn" class="w-full py-2.5 px-3 bg-white hover:bg-slate-50 border border-slate-300 hover:border-brand-500 text-slate-700 hover:text-brand-600 font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 active:scale-[0.99]">
+        <span id="togglePreviewIcon">👁️</span>
+        <span id="togglePreviewText">Show Live Preview (Kaisa Print Hoga Dekhein)</span>
+      </button>
+
+      <!-- Document Live Preview Card (Placed at Bottom, toggleable) -->
+      <div id="previewCard" class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs" style="display:none">
+        <div class="flex items-center justify-between mb-2.5">
+          <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Live Print Preview
+          </span>
+          <span id="previewPageIndicator" class="text-[10px] font-bold text-brand-600 bg-brand-50 border border-brand-200 px-2.5 py-0.5 rounded-full">
+            Page 1 of 1
+          </span>
+        </div>
+
+        <!-- Preview Viewport / Desk Simulation -->
+        <div id="previewViewport" class="bg-slate-200/80 rounded-2xl p-3 flex flex-col items-center justify-center min-h-[220px] max-h-80 overflow-hidden border border-slate-300/70 relative shadow-inner">
+          <div id="previewLoading" class="text-xs text-slate-500 font-medium flex items-center gap-2">
+            <span class="spin border-slate-400 border-t-brand-600"></span> Document preview taiyaar ho raha hai...
+          </div>
+          
+          <!-- Realistic Simulated Paper Sheet -->
+          <div id="paperSheet" class="relative bg-white rounded-md shadow-lg border border-slate-300 flex items-center justify-center overflow-hidden transition-all duration-300 max-h-72 max-w-full" style="aspect-ratio: 210/297; display:none">
+            <!-- Image Element (JPG / PNG) -->
+            <img id="imgPreviewEl" class="max-h-full max-w-full object-contain transition-all duration-200" alt="Live Preview" />
+            <!-- PDF Canvas Element (PDF) -->
+            <canvas id="pdfCanvasEl" class="max-h-full max-w-full object-contain transition-all duration-200"></canvas>
+
+            <!-- Sheet Bottom Info Pill -->
+            <div id="sheetStatusBadge" class="absolute bottom-1.5 right-1.5 bg-slate-900/85 backdrop-blur-xs text-white text-[9px] font-mono font-bold px-2 py-0.5 rounded shadow pointer-events-none">
+              A4 · B&amp;W · Portrait
+            </div>
+
+            <!-- Warning if excluded from page range -->
+            <div id="excludedWarning" class="absolute inset-0 bg-slate-900/75 backdrop-blur-xs flex flex-col items-center justify-center text-white p-3 text-center" style="display:none">
+              <span class="text-2xl mb-1">🚫</span>
+              <span class="text-xs font-black">Ye Page Print Nahi Hoga</span>
+              <span class="text-[10px] text-slate-300 mt-0.5">Selected range se bahar hai</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Multi-page PDF Page Selector Strip -->
+        <div id="pdfPagesStrip" class="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto pb-1" style="display:none">
+          <span class="text-[11px] font-bold text-slate-500 shrink-0">Pages:</span>
+          <div id="pdfPagePills" class="flex items-center gap-1.5"></div>
+        </div>
+      </div>
+
       <!-- Error Alert -->
       <div id="s2err" class="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-xl text-xs font-medium" hidden></div>
 
@@ -366,7 +531,7 @@ tailwind.config = {
     <section id="s3" class="space-y-4" hidden>
       
       <!-- Big Token Banner -->
-      <div class="bg-gradient-to-br from-brand-50 via-white to-blue-50 border-2 border-brand-300 rounded-3xl p-5 text-center shadow-sm">
+      <div class="token-banner bg-gradient-to-br from-brand-50 via-white to-blue-50 border-2 border-brand-300 rounded-3xl p-5 text-center shadow-sm">
         <div class="text-xs font-bold text-brand-700 uppercase tracking-wider">Aapka Print Token Number</div>
         <div id="jobno" class="font-mono text-5xl font-black text-brand-900 tracking-wider my-1">#------</div>
         <p class="text-xs text-brand-600 font-medium">Ye Token Code Counter Operator ko batayein</p>
@@ -430,6 +595,146 @@ tailwind.config = {
 
     </section>
 
+    </div><!-- End toolPrintView -->
+
+    <!-- ================= TOOL 2: MOBILE TO PC DROP VIEW ================= -->
+    <div id="toolDropView" style="display:none" class="space-y-3.5">
+      
+      <!-- Friendly Banner: Bina WhatsApp ke Photo Bhejein -->
+      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-4 text-white shadow-sm text-center">
+        <div class="inline-flex items-center gap-1.5 bg-white/20 px-2.5 py-0.5 rounded-full text-[11px] font-bold mb-1">
+          <span>✨</span> डायरेक्ट कंप्यूटर ट्रांसफर
+        </div>
+        <h2 class="text-base font-black">बिना WhatsApp के फोटो भेजें</h2>
+        <p class="text-xs text-purple-100 mt-0.5">फोटो की क्वालिटी धुंधली नहीं होगी • सीधे दुकान के PC में पहुंचेगी</p>
+      </div>
+
+      <!-- Main Drop Card -->
+      <div id="dropzoneEl" class="border-2 border-dashed border-purple-300 hover:border-purple-500 bg-white hover:bg-purple-50/30 rounded-2xl p-7 text-center cursor-pointer transition-all duration-200 shadow-xs flex flex-col items-center justify-center group tap-tactile">
+        <div class="w-14 h-14 rounded-2xl bg-purple-50 group-hover:bg-purple-100/80 text-purple-600 flex items-center justify-center mb-3 transition shadow-xs">
+          <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+        </div>
+        <div class="text-base font-black text-slate-800">फोटो या डॉक्यूमेंट चुनें</div>
+        <p class="text-xs text-slate-500 mt-1">Photo, PDF, Resume ya Documents</p>
+        <span class="mt-3.5 inline-flex items-center gap-1.5 bg-purple-600 group-hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition">
+          <span>📁</span> फाइल चुनें (Browse)
+        </span>
+        <span class="text-[11px] text-slate-400 mt-2 font-medium">एक साथ कई फोटो भी चुन सकते हैं</span>
+      </div>
+      <input id="dropFileInput" type="file" multiple class="hidden" />
+
+      <!-- Selected Files List -->
+      <div id="dropFileList" class="space-y-2"></div>
+
+      <!-- Upload Progress Box -->
+      <div id="dropProgressBox" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs" style="display:none">
+        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+          <div id="dropProgressFill" class="bg-purple-600 h-2.5 rounded-full transition-all duration-150" style="width:0%"></div>
+        </div>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-600 mt-2.5">
+          <span id="dropProgressTxt">भेजा जा रहा है...</span>
+          <span id="dropProgressPct" class="font-mono text-purple-700">0%</span>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button id="dropUploadBtn" type="button" class="w-full py-3.5 px-4 bg-purple-600 hover:bg-purple-500 active:scale-[0.99] text-white font-extrabold text-sm rounded-2xl shadow-md shadow-purple-600/30 transition flex items-center justify-center gap-2 tap-tactile" style="display:none">
+        <span>🚀 कंप्यूटर में भेजें</span>
+      </button>
+
+      <!-- Success Card -->
+      <div id="dropSuccessCard" class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5 text-center shadow-sm" style="display:none">
+        <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto mb-2 font-bold">
+          ✓
+        </div>
+        <h3 class="text-base font-extrabold text-emerald-800">फाइल कंप्यूटर में पहुंच गई!</h3>
+        <p id="dropSuccessDesc" class="text-xs text-emerald-700 mt-1 font-medium">दुकानदार के PC में फाइल सुरक्षित सेव हो गई है।</p>
+        
+        <div class="mt-4 flex gap-2">
+          <button id="dropSendMoreBtn" type="button" class="flex-1 py-2.5 px-3 bg-white hover:bg-slate-50 border border-emerald-300 text-emerald-800 text-xs font-bold rounded-xl transition tap-tactile">
+            ➕ और भेजें
+          </button>
+          <button id="dropSwitchToPrintBtn" type="button" class="flex-1 py-2.5 px-3 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm tap-tactile">
+            <span>🖨️</span> प्रिंट निकालें &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Helper info -->
+      <div class="bg-slate-100/80 border border-slate-200 rounded-2xl p-3 flex items-center justify-between text-xs">
+        <span class="text-slate-500">प्रिंट निकालना है?</span>
+        <button type="button" id="dropFooterPrintLink" class="font-bold text-brand-600 hover:text-brand-700 underline">
+          प्रिंट काउंटर पर जाएं &rarr;
+        </button>
+      </div>
+
+    </div><!-- End toolDropView -->
+
+    <!-- ================= TOOL 3: RECEIVE FROM PC VIEW ================= -->
+    <div id="toolReceiveView" style="display:none" class="space-y-3.5">
+      
+      <!-- Friendly Banner -->
+      <div class="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-4 text-white shadow-sm text-center">
+        <div class="inline-flex items-center gap-1.5 bg-white/20 px-2.5 py-0.5 rounded-full text-[11px] font-bold mb-1">
+          <span>📥</span> कंप्यूटर से मोबाइल में
+        </div>
+        <h2 class="text-base font-black">कंप्यूटर से अपने फोन में फाइल लें</h2>
+        <p class="text-xs text-emerald-100 mt-0.5">एडमिट कार्ड, रिजल्ट, फॉर्म या स्कैन डॉक्यूमेंट तुरंत पाएं</p>
+      </div>
+
+      <!-- Code Input Card -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3.5">
+        <label class="block text-xs font-black text-slate-700 uppercase tracking-wider text-center">
+          दुकानदार का दिया 6 अंकों का कोड डालें
+        </label>
+        
+        <div class="relative flex items-center justify-center">
+          <span class="absolute left-4 font-mono font-black text-lg text-slate-400">#</span>
+          <input id="receiveCodeInput" type="text" maxlength="6" placeholder="जैसे 482910" class="w-full pl-9 pr-4 py-3 bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl text-center font-mono font-black text-xl tracking-widest text-slate-900 focus:outline-none transition uppercase" />
+        </div>
+
+        <button id="receiveSearchBtn" type="button" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-extrabold text-sm rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2 tap-tactile">
+          <span>🔍 फाइल खोजें और डाउनलोड करें</span>
+        </button>
+
+        <div id="receiveErr" class="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs font-medium text-center" hidden></div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="receiveLoading" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs text-center" style="display:none">
+        <span class="spin border-slate-300 border-t-emerald-600 mx-auto mb-2"></span>
+        <div class="text-xs font-bold text-slate-700">फाइल ढूंढी जा रही है...</div>
+      </div>
+
+      <!-- Found File Download Card -->
+      <div id="receiveFileCard" class="bg-emerald-50/80 border-2 border-emerald-300 rounded-2xl p-4 shadow-sm" style="display:none">
+        <div class="flex items-center gap-3">
+          <div id="receiveFileIcon" class="w-12 h-12 rounded-xl bg-white border border-emerald-200 text-emerald-600 flex items-center justify-center text-2xl shrink-0 shadow-xs">
+            📄
+          </div>
+          <div class="min-w-0 flex-1">
+            <div id="receiveFileName" class="text-xs font-black text-slate-900 truncate">document.pdf</div>
+            <div id="receiveFileMeta" class="text-[11px] text-emerald-800 font-medium">0.85 MB • तैयार है</div>
+          </div>
+        </div>
+
+        <a id="receiveDownloadBtn" href="#" download class="mt-3.5 w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-black text-sm rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2 text-center no-underline tap-tactile">
+          <span>⬇️ मोबाइल में डाउनलोड करें</span>
+        </a>
+      </div>
+
+      <!-- Quick Helper info -->
+      <div class="bg-slate-100/80 border border-slate-200 rounded-2xl p-3 flex items-center justify-between text-xs">
+        <span class="text-slate-500">प्रिंट भी निकालना है?</span>
+        <button type="button" id="receiveFooterPrintLink" class="font-bold text-brand-600 hover:text-brand-700 underline">
+          प्रिंट काउंटर पर जाएं &rarr;
+        </button>
+      </div>
+
+    </div><!-- End toolReceiveView -->
+
   </main>
 
 <!-- External Scripts -->
@@ -452,6 +757,469 @@ tailwind.config = {
   var currentJobId = null, pollTimer = null;
   var $ = function(id){ return document.getElementById(id); };
   var money = function(n){ return '\u20b9' + (n || 0); };
+
+  // ================= INTERACTIVE 3-TOOL SWITCHER =================
+  var currentTool = 'print';
+  var isToolAnimating = false;
+
+  function switchTool(tool, instant){
+    if(tool === currentTool && !instant) return;
+    if(isToolAnimating && !instant) return;
+
+    var pill = $('toolSliderPill');
+    var btnPrint = $('tabPrintBtn');
+    var btnDrop = $('tabDropBtn');
+    var btnReceive = $('tabReceiveBtn');
+    var viewPrint = $('toolPrintView');
+    var viewDrop = $('toolDropView');
+    var viewReceive = $('toolReceiveView');
+
+    var toolMap = {
+      'print': { pos: '0%', el: viewPrint, btn: btnPrint, color: 'text-brand-600' },
+      'drop': { pos: '100%', el: viewDrop, btn: btnDrop, color: 'text-purple-700' },
+      'receive': { pos: '200%', el: viewReceive, btn: btnReceive, color: 'text-emerald-700' }
+    };
+
+    var target = toolMap[tool] || toolMap['print'];
+    var current = toolMap[currentTool] || toolMap['print'];
+
+    [btnPrint, btnDrop, btnReceive].forEach(function(b){
+      if(!b) return;
+      b.className = 'relative z-10 flex-1 py-2 px-1 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-colors duration-200 text-slate-600 hover:text-slate-900 tap-tactile';
+    });
+    if(target.btn){
+      target.btn.className = 'relative z-10 flex-1 py-2 px-1 rounded-xl text-xs font-black flex items-center justify-center gap-1 transition-colors duration-200 ' + target.color + ' tap-tactile';
+    }
+
+    if(pill) pill.style.transform = 'translateX(' + target.pos + ')';
+
+    if(instant){
+      [viewPrint, viewDrop, viewReceive].forEach(function(v){ if(v) v.style.display = 'none'; });
+      if(target.el) target.el.style.display = 'block';
+      currentTool = tool;
+      return;
+    }
+
+    isToolAnimating = true;
+
+    var order = ['print', 'drop', 'receive'];
+    var isMovingRight = order.indexOf(tool) > order.indexOf(currentTool);
+
+    if(current.el){
+      current.el.className = isMovingRight ? 'slide-out-left' : 'slide-out-right';
+    }
+
+    setTimeout(function(){
+      [viewPrint, viewDrop, viewReceive].forEach(function(v){
+        if(v){ v.style.display = 'none'; v.className = ''; }
+      });
+      if(target.el){
+        target.el.style.display = 'block';
+        target.el.className = isMovingRight ? 'slide-in-right' : 'slide-in-left';
+      }
+      currentTool = tool;
+      isToolAnimating = false;
+    }, 160);
+
+    try {
+      var url = new URL(window.location);
+      url.searchParams.set('tool', tool);
+      window.history.replaceState({}, '', url);
+    } catch(e){}
+  }
+
+  $('tabPrintBtn').onclick = function(){ switchTool('print'); };
+  $('tabDropBtn').onclick = function(){ switchTool('drop'); };
+  $('tabReceiveBtn').onclick = function(){ switchTool('receive'); };
+  if($('cardSwitchToDropBtn')) $('cardSwitchToDropBtn').onclick = function(){ switchTool('drop'); };
+  if($('cardSwitchToReceiveBtn')) $('cardSwitchToReceiveBtn').onclick = function(){ switchTool('receive'); };
+  if($('dropSwitchToPrintBtn')) $('dropSwitchToPrintBtn').onclick = function(){ switchTool('print'); };
+  if($('dropFooterPrintLink')) $('dropFooterPrintLink').onclick = function(){ switchTool('print'); };
+  if($('receiveFooterPrintLink')) $('receiveFooterPrintLink').onclick = function(){ switchTool('print'); };
+
+  // ================= RECEIVE FROM PC LOGIC =================
+  async function searchReceiveFile(code, preloadedUrl, preloadedName, preloadedSize){
+    var err = $('receiveErr');
+    var load = $('receiveLoading');
+    var card = $('receiveFileCard');
+    var iconEl = $('receiveFileIcon');
+    var nameEl = $('receiveFileName');
+    var metaEl = $('receiveFileMeta');
+    var dlBtn = $('receiveDownloadBtn');
+
+    err.hidden = true;
+    card.style.display = 'none';
+
+    if(!code && !preloadedUrl){
+      err.hidden = false;
+      err.textContent = 'कृपया 6 अंकों का कोड डालें';
+      return;
+    }
+
+    // Direct URL available via QR scan
+    if(preloadedUrl){
+      nameEl.textContent = preloadedName || 'shared_file';
+      metaEl.textContent = (preloadedSize ? formatBytes(preloadedSize) : 'तैयार है') + ' • सीधे डाउनलोड करें';
+      dlBtn.href = preloadedUrl;
+      dlBtn.setAttribute('download', preloadedName || 'file');
+      iconEl.textContent = getDropFileIcon(preloadedName || 'file');
+      card.style.display = 'block';
+      card.classList.remove('token-reveal');
+      void card.offsetWidth;
+      card.classList.add('token-reveal');
+      return;
+    }
+
+    // Otherwise search via agent or supabase
+    load.style.display = 'block';
+    code = (code || '').trim().replace(/^#/, '').toUpperCase();
+
+    try {
+      var agentHost = (window.location.port === '8085' ? window.location.host : '10.108.118.216:8085');
+      // 1. Try local agent first
+      var agentFound = false;
+      try {
+        var aRes = await fetch('http://' + agentHost + '/api/get-share?code=' + encodeURIComponent(code));
+        if(aRes.ok){
+          var aData = await aRes.json();
+          if(aData && aData.ok && aData.file){
+            load.style.display = 'none';
+            nameEl.textContent = aData.file.name;
+            metaEl.textContent = formatBytes(aData.file.size) + ' • PC से तैयार है';
+            dlBtn.href = aData.file.url;
+            dlBtn.setAttribute('download', aData.file.name);
+            iconEl.textContent = getDropFileIcon(aData.file.name);
+            card.style.display = 'block';
+            card.classList.remove('token-reveal');
+            void card.offsetWidth;
+            card.classList.add('token-reveal');
+            agentFound = true;
+            return;
+          }
+        }
+      } catch(e){}
+
+      // 2. Try Supabase cloud search
+      if(!agentFound && sb){
+        var query = await sb.from('jobs')
+          .select('*')
+          .eq('status', 'pending')
+          .ilike('note', 'PC_SHARE#' + code)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if(query.data && query.data.length > 0){
+          var j = query.data[0];
+          var signRes = await sb.storage.from(C.BUCKET || 'jobs').createSignedUrl(j.file_path, 86400);
+          var dlUrl = (signRes && signRes.data) ? signRes.data.signedUrl : '';
+          if(dlUrl){
+            load.style.display = 'none';
+            nameEl.textContent = j.file_name;
+            metaEl.textContent = 'तैयार है • क्लाउड से डाउनलोड करें';
+            dlBtn.href = dlUrl;
+            dlBtn.setAttribute('download', j.file_name);
+            iconEl.textContent = getDropFileIcon(j.file_name);
+            card.style.display = 'block';
+            card.classList.remove('token-reveal');
+            void card.offsetWidth;
+            card.classList.add('token-reveal');
+            return;
+          }
+        }
+      }
+
+      load.style.display = 'none';
+      err.hidden = false;
+      err.textContent = 'कोड #' + code + ' के लिए कोई फाइल नहीं मिली। कृपया कोड चेक करें।';
+
+    } catch(errEx){
+      load.style.display = 'none';
+      err.hidden = false;
+      err.textContent = 'ढूंढने में गड़बड़ हुई: ' + (errEx.message || errEx);
+    }
+  }
+
+  $('receiveSearchBtn').onclick = function(){
+    var code = ($('receiveCodeInput').value || '').trim();
+    searchReceiveFile(code);
+  };
+
+  $('receiveCodeInput').onkeyup = function(e){
+    if(e.key === 'Enter'){
+      var code = ($('receiveCodeInput').value || '').trim();
+      searchReceiveFile(code);
+    }
+  };
+
+  // ================= MOBILE TO PC DROP TOOL LOGIC =================
+  var dropSelectedFiles = [];
+  var dropUploadMode = 'cloud';
+
+  function formatBytes(bytes){
+    if(bytes === 0) return '0 Bytes';
+    var k = 1024, dm = 2;
+    var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  }
+
+  function getDropFileIcon(name){
+    var ext = name.split('.').pop().toLowerCase();
+    if(['jpg','jpeg','png','gif','webp','bmp'].indexOf(ext) >= 0) return '🖼️';
+    if(ext === 'pdf') return '📄';
+    if(['doc','docx'].indexOf(ext) >= 0) return '📝';
+    if(['xls','xlsx','csv'].indexOf(ext) >= 0) return '📊';
+    if(['zip','rar','7z'].indexOf(ext) >= 0) return '📦';
+    return '📁';
+  }
+
+  async function detectDropNetworkMode(){
+    var badge = $('dropNetBadge');
+    var txt = $('dropNetTxt');
+    if(!badge || !txt) return;
+    txt.textContent = 'Network check ho raha hai...';
+    try {
+      var controller = new AbortController();
+      var timeoutId = setTimeout(function(){ controller.abort(); }, 1200);
+      var res = await fetch('/api/info', { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if(res.ok){
+        dropUploadMode = 'wifi';
+        badge.className = 'inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold px-3 py-1 rounded-full shadow-xs';
+        txt.textContent = '🟢 Local Shop Wi-Fi Mode (Direct PC Transfer)';
+        return;
+      }
+    } catch(e){}
+
+    dropUploadMode = 'cloud';
+    badge.className = 'inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-bold px-3 py-1 rounded-full shadow-xs';
+    txt.textContent = '☁️ Mobile Data (4G/5G) — Universal Drop';
+  }
+
+  var dropzoneEl = $('dropzoneEl');
+  var dropFileInput = $('dropFileInput');
+  var dropFileList = $('dropFileList');
+  var dropUploadBtn = $('dropUploadBtn');
+  var dropProgressBox = $('dropProgressBox');
+  var dropProgressFill = $('dropProgressFill');
+  var dropProgressTxt = $('dropProgressTxt');
+  var dropProgressPct = $('dropProgressPct');
+  var dropSuccessCard = $('dropSuccessCard');
+  var dropSuccessDesc = $('dropSuccessDesc');
+  var dropSendMoreBtn = $('dropSendMoreBtn');
+
+  if(dropzoneEl && dropFileInput){
+    dropzoneEl.onclick = function(){ dropFileInput.click(); };
+
+    dropzoneEl.ondragover = function(e){
+      e.preventDefault();
+      dropzoneEl.classList.add('drop-dragover');
+    };
+    dropzoneEl.ondragleave = function(){
+      dropzoneEl.classList.remove('drop-dragover');
+    };
+    dropzoneEl.ondrop = function(e){
+      e.preventDefault();
+      dropzoneEl.classList.remove('drop-dragover');
+      if(e.dataTransfer && e.dataTransfer.files.length){
+        addDropFiles(e.dataTransfer.files);
+      }
+    };
+
+    dropFileInput.onchange = function(){
+      if(dropFileInput.files.length){
+        addDropFiles(dropFileInput.files);
+      }
+    };
+  }
+
+  function addDropFiles(files){
+    for(var i = 0; i < files.length; i++){
+      dropSelectedFiles.push(files[i]);
+    }
+    renderDropFiles();
+  }
+
+  function renderDropFiles(){
+    if(!dropFileList) return;
+    if(dropSelectedFiles.length === 0){
+      dropFileList.innerHTML = '';
+      if(dropUploadBtn) dropUploadBtn.style.display = 'none';
+      return;
+    }
+    var html = '';
+    dropSelectedFiles.forEach(function(f, idx){
+      html += '<div class="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3 shadow-xs step-enter">' +
+        '<div class="flex items-center gap-2.5 min-w-0">' +
+          '<div class="w-9 h-9 rounded-lg bg-purple-50 border border-purple-200 flex items-center justify-center text-base shrink-0">' + getDropFileIcon(f.name) + '</div>' +
+          '<div class="min-w-0">' +
+            '<div class="text-xs font-bold text-slate-800 truncate">' + f.name + '</div>' +
+            '<div class="text-[11px] text-slate-500 font-medium">' + formatBytes(f.size) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<button type="button" class="drop-remove-btn text-slate-400 hover:text-rose-600 text-lg font-bold p-1 transition tap-tactile" data-idx="' + idx + '">&times;</button>' +
+      '</div>';
+    });
+    dropFileList.innerHTML = html;
+    if(dropUploadBtn){
+      dropUploadBtn.style.display = 'flex';
+      dropUploadBtn.textContent = '🚀 PC Par Bhejein (' + dropSelectedFiles.length + ' file' + (dropSelectedFiles.length > 1 ? 's' : '') + ')';
+    }
+    if(dropSuccessCard) dropSuccessCard.style.display = 'none';
+
+    dropFileList.querySelectorAll('.drop-remove-btn').forEach(function(b){
+      b.onclick = function(){
+        var idx = parseInt(b.dataset.idx, 10);
+        dropSelectedFiles.splice(idx, 1);
+        renderDropFiles();
+      };
+    });
+  }
+
+  if(dropUploadBtn){
+    dropUploadBtn.onclick = function(){
+      if(dropSelectedFiles.length === 0) return;
+      if(dropUploadMode === 'wifi'){
+        uploadDropViaWifi();
+      } else {
+        uploadDropViaCloud();
+      }
+    };
+  }
+
+  function uploadDropViaWifi(){
+    dropUploadBtn.disabled = true;
+    dropProgressBox.style.display = 'block';
+    dropProgressFill.style.width = '0%';
+    dropProgressPct.textContent = '0%';
+    dropProgressTxt.textContent = 'Local Wi-Fi se PC par transfer ho raha hai...';
+
+    var fd = new FormData();
+    dropSelectedFiles.forEach(function(f){
+      fd.append('file', f, f.name);
+    });
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/upload', true);
+
+    xhr.upload.onprogress = function(e){
+      if(e.lengthComputable){
+        var pct = Math.round((e.loaded / e.total) * 100);
+        dropProgressFill.style.width = pct + '%';
+        dropProgressPct.textContent = pct + '%';
+        dropProgressTxt.textContent = pct < 100 ? 'Transfer ho raha hai (' + pct + '%)...' : 'PC par save ho raha hai...';
+      }
+    };
+
+    xhr.onload = function(){
+      dropUploadBtn.disabled = false;
+      dropProgressBox.style.display = 'none';
+      if(xhr.status === 200){
+        showDropSuccess('Direct Local Wi-Fi se Operator PC ke Downloads folder mein save ho gayi!');
+      } else {
+        uploadDropViaCloud();
+      }
+    };
+
+    xhr.onerror = function(){
+      uploadDropViaCloud();
+    };
+
+    xhr.send(fd);
+  }
+
+  async function uploadDropViaCloud(){
+    if(!sb){
+      alert('Cloud service configure nahi hai. Kripya counter Wi-Fi se connect karein.');
+      dropUploadBtn.disabled = false;
+      return;
+    }
+
+    dropUploadBtn.disabled = true;
+    dropProgressBox.style.display = 'block';
+    dropProgressFill.style.width = '10%';
+    dropProgressPct.textContent = '10%';
+    dropProgressTxt.textContent = 'Mobile Data (4G/5G) se bheja ja raha hai...';
+
+    try {
+      var total = dropSelectedFiles.length;
+      for(var i = 0; i < total; i++){
+        var f = dropSelectedFiles[i];
+        var id = genUUID();
+        var safe = f.name.replace(/[^\w.\-]+/g, '_');
+        var path = 'drops/' + id + '/' + safe;
+
+        dropProgressTxt.textContent = 'Uploading (' + (i + 1) + '/' + total + '): ' + f.name;
+        var up = await sb.storage.from(C.BUCKET || 'jobs').upload(path, f, {
+          contentType: f.type || 'application/octet-stream',
+          upsert: true
+        });
+        if(up.error) throw up.error;
+
+        var ins = await sb.from('jobs').insert({
+          id: id,
+          file_name: f.name,
+          file_path: path,
+          file_type: f.type || 'application/octet-stream',
+          page_count: 1,
+          copies: 1,
+          color_mode: 'bw',
+          status: 'pending',
+          note: 'FILE_DROP'
+        });
+        if(ins.error) throw ins.error;
+
+        var pct = Math.round(((i + 1) / total) * 100);
+        dropProgressFill.style.width = pct + '%';
+        dropProgressPct.textContent = pct + '%';
+      }
+
+      dropProgressBox.style.display = 'none';
+      dropUploadBtn.disabled = false;
+      showDropSuccess('Mobile Internet (4G/5G) se bheja gaya! Operator ke PC par save ho gaya.');
+
+    } catch(err){
+      dropProgressBox.style.display = 'none';
+      dropUploadBtn.disabled = false;
+      alert('Upload fail hua: ' + (err.message || err));
+    }
+  }
+
+  function showDropSuccess(msg){
+    dropSelectedFiles = [];
+    dropFileList.innerHTML = '';
+    dropUploadBtn.style.display = 'none';
+    dropSuccessCard.style.display = 'block';
+    dropSuccessCard.classList.remove('token-reveal');
+    void dropSuccessCard.offsetWidth;
+    dropSuccessCard.classList.add('token-reveal');
+    dropSuccessDesc.textContent = msg;
+  }
+
+  if(dropSendMoreBtn){
+    dropSendMoreBtn.onclick = function(){
+      dropSuccessCard.style.display = 'none';
+      dropFileInput.value = '';
+      dropFileInput.click();
+    };
+  }
+
+  // Check URL param ?tool=drop or ?receive=CODE on initial load
+  var initUrlParams = new URLSearchParams(window.location.search);
+  var receiveParam = initUrlParams.get('receive');
+  var fileParam = initUrlParams.get('file');
+  var urlParam = initUrlParams.get('url');
+  var sizeParam = parseInt(initUrlParams.get('size') || '0', 10);
+
+  if(receiveParam || initUrlParams.get('tool') === 'receive'){
+    switchTool('receive', true);
+    if(receiveParam){
+      $('receiveCodeInput').value = receiveParam;
+      searchReceiveFile(receiveParam, urlParam, fileParam, sizeParam);
+    }
+  } else if(initUrlParams.get('tool') === 'drop'){
+    switchTool('drop', true);
+  }
 
   function setStep(num){
     ['stp1','stp2','stp3'].forEach(function(id, idx){
@@ -663,7 +1431,12 @@ tailwind.config = {
     if(err){ $('s1err').hidden=false; $('s1err').textContent=err; return; }
     $('s1err').hidden=true;
     file = f;
-    $('s1').hidden = true; $('s2').hidden = false;
+    $('s1').hidden = true;
+    var s2 = $('s2');
+    s2.hidden = false;
+    s2.classList.remove('step-enter');
+    void s2.offsetWidth;
+    s2.classList.add('step-enter');
     setStep(2);
     showPreview(f);
   }
@@ -707,8 +1480,8 @@ tailwind.config = {
 
   $('drop').onclick = function(){ $('file').click(); };
   $('file').onchange = function(e){ if(e.target.files[0]) pick(e.target.files[0]); };
-  ['dragover','dragenter'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.add('border-brand-500','bg-brand-50/50'); }); });
-  ['dragleave','drop'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.remove('border-brand-500','bg-brand-50/50'); }); });
+  ['dragover','dragenter'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.add('drop-dragover'); }); });
+  ['dragleave','drop'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.remove('drop-dragover'); }); });
   $('drop').addEventListener('drop', function(e){ if(e.dataTransfer.files[0]) pick(e.dataTransfer.files[0]); });
 
   $('copyMinus').onclick = function(){
@@ -748,6 +1521,33 @@ tailwind.config = {
   };
   $('from').oninput = recalc; $('to').oninput = recalc;
   $('paper').onchange = recalc; $('orient').onchange = recalc;
+
+  var togglePreviewBtn = $('togglePreviewBtn');
+  if(togglePreviewBtn){
+    togglePreviewBtn.onclick = function(){
+      var card = $('previewCard');
+      var isHidden = (card.style.display === 'none' || card.hasAttribute('hidden'));
+      if(isHidden){
+        card.style.display = 'block';
+        card.removeAttribute('hidden');
+        card.classList.remove('preview-reveal');
+        void card.offsetWidth;
+        card.classList.add('preview-reveal');
+        $('togglePreviewText').textContent = 'Hide Live Preview';
+        $('togglePreviewIcon').textContent = '✕';
+        togglePreviewBtn.classList.remove('bg-white', 'text-slate-700');
+        togglePreviewBtn.classList.add('bg-slate-200', 'text-slate-900');
+        updateLivePreviewAdjustment();
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        card.style.display = 'none';
+        $('togglePreviewText').textContent = 'Show Live Preview (Kaisa Print Hoga Dekhein)';
+        $('togglePreviewIcon').textContent = '👁️';
+        togglePreviewBtn.classList.remove('bg-slate-200', 'text-slate-900');
+        togglePreviewBtn.classList.add('bg-white', 'text-slate-700');
+      }
+    };
+  }
 
   function upiLink(amount, note, forIntent){
     var vpa = (C.UPI_ID || '').trim();
@@ -883,9 +1683,21 @@ tailwind.config = {
       }
 
       $('s2').hidden = true;
-      $('s3').hidden = false;
+      var s3 = $('s3');
+      s3.hidden = false;
+      s3.classList.remove('step-enter');
+      void s3.offsetWidth;
+      s3.classList.add('step-enter');
+
+      var tokenBanner = s3.querySelector('.token-banner');
+      if(tokenBanner){
+        tokenBanner.classList.remove('token-reveal');
+        void tokenBanner.offsetWidth;
+        tokenBanner.classList.add('token-reveal');
+      }
+
       setStep(3);
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
       // Start live polling status
       if(pollTimer) clearInterval(pollTimer);

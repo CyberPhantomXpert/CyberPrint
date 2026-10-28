@@ -208,8 +208,8 @@ tailwind.config = {
           </div>
         </div>
 
-        <!-- Dual QR Codes Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <!-- Dual & PC Share QR Codes Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
           
           <!-- Tool 1: Print & Pay Tool -->
           <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
@@ -254,6 +254,49 @@ tailwind.config = {
             <button id="openDropFolderBtn" class="w-full mt-2 py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5">
               <span>📂</span> PC Downloads Folder Kholo
             </button>
+          </div>
+
+          <!-- Tool 3: PC to Mobile File Share -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2.5 text-left mb-3">
+                <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base">📤</span>
+                <div>
+                  <div class="text-xs font-extrabold text-white">3. PC to Mobile File Share</div>
+                  <div class="text-[11px] text-slate-400">PC se grahak ke phone par file bhejein</div>
+                </div>
+              </div>
+
+              <!-- Upload Drag/Drop Box -->
+              <div id="pcShareBox" class="border-2 border-dashed border-slate-750 hover:border-emerald-500 bg-slate-950/60 hover:bg-emerald-950/20 rounded-xl p-4 cursor-pointer transition text-center group">
+                <div class="text-2xl mb-1 text-emerald-400">📄</div>
+                <div class="text-xs font-bold text-slate-200">File Chunein ya Drag Karein</div>
+                <p class="text-[10px] text-slate-500 mt-0.5">Admit card, photo ya document</p>
+                <input id="pcShareInput" type="file" class="hidden" />
+              </div>
+
+              <!-- Upload Progress -->
+              <div id="pcShareProgress" class="py-3 text-xs text-emerald-400 font-bold" style="display:none">
+                <span class="spin border-slate-400 border-t-emerald-500 mr-1.5"></span> Upload ho raha hai...
+              </div>
+
+              <!-- Active Share Result Card (When file uploaded) -->
+              <div id="pcShareResultCard" class="p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-xl text-center" style="display:none">
+                <div class="text-[11px] font-bold text-emerald-300">Grahak ko ye 6-Digit Code batayein:</div>
+                <div id="pcShareCodeDisplay" class="font-mono text-3xl font-black text-emerald-400 my-1 tracking-widest">#------</div>
+                <div id="pcShareFileName" class="text-[11px] text-slate-300 font-bold truncate">file.pdf</div>
+                <div id="pcShareQRHolder" class="qr-canvas-holder my-2"></div>
+                <div class="flex gap-1.5 mt-2">
+                  <button id="pcShareCopyLinkBtn" type="button" class="flex-1 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded-lg transition">
+                    📋 Copy Link
+                  </button>
+                  <button id="pcShareResetBtn" type="button" class="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold rounded-lg transition">
+                    ➕ Nayi File
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="text-[10px] text-slate-500 mt-2">Grahak QR scan karega ya code dalega</div>
           </div>
 
         </div>
@@ -496,6 +539,131 @@ tailwind.config = {
   };
 
   $('openDropFolderBtn').onclick = window.openDownloadsFolder;
+
+  // ================= PC TO MOBILE FILE SHARE (OPERATOR DESK) =================
+  var pcShareInput = $('pcShareInput');
+  var pcShareBox = $('pcShareBox');
+  var pcShareProgress = $('pcShareProgress');
+  var pcShareResultCard = $('pcShareResultCard');
+  var pcShareCodeDisplay = $('pcShareCodeDisplay');
+  var pcShareFileName = $('pcShareFileName');
+  var pcShareQRHolder = $('pcShareQRHolder');
+  var pcShareCopyLinkBtn = $('pcShareCopyLinkBtn');
+  var pcShareResetBtn = $('pcShareResetBtn');
+
+  if(pcShareBox && pcShareInput){
+    pcShareBox.onclick = function(){ pcShareInput.click(); };
+
+    pcShareBox.ondragover = function(e){
+      e.preventDefault();
+      pcShareBox.classList.add('border-emerald-500', 'bg-emerald-950/40');
+    };
+    pcShareBox.ondragleave = function(){
+      pcShareBox.classList.remove('border-emerald-500', 'bg-emerald-950/40');
+    };
+    pcShareBox.ondrop = function(e){
+      e.preventDefault();
+      pcShareBox.classList.remove('border-emerald-500', 'bg-emerald-950/40');
+      if(e.dataTransfer && e.dataTransfer.files.length){
+        handlePcShareFile(e.dataTransfer.files[0]);
+      }
+    };
+
+    pcShareInput.onchange = function(){
+      if(pcShareInput.files.length){
+        handlePcShareFile(pcShareInput.files[0]);
+      }
+    };
+  }
+
+  async function handlePcShareFile(f){
+    if(!f) return;
+    if(pcShareProgress) pcShareProgress.style.display = 'block';
+    if(pcShareBox) pcShareBox.style.display = 'none';
+    if(pcShareResultCard) pcShareResultCard.style.display = 'none';
+
+    try {
+      var shareCode = Math.floor(100000 + Math.random() * 900000).toString();
+      var id = genUUID();
+      var safeName = f.name.replace(/[^\w.\-]+/g, '_');
+      var path = 'pc_shares/' + shareCode + '/' + safeName;
+      var downloadUrl = '';
+
+      if(storageMode === 'local'){
+        var fd = new FormData();
+        fd.append('file', f, f.name);
+        var agentHost = (window.location.port === '8085' ? window.location.host : lanIp + ':' + lanPort);
+        var upRes = await fetch('http://' + agentHost + '/api/pc-share-upload?code=' + shareCode, {
+          method: 'POST',
+          body: fd
+        });
+        if(upRes.ok){
+          var upData = await upRes.json();
+          downloadUrl = (upData && upData.url) ? upData.url : ('http://' + agentHost + '/api/pc-share-download/' + shareCode);
+        } else {
+          throw new Error('Local PC upload fail hua');
+        }
+      } else {
+        var up = await sb.storage.from(B).upload(path, f, {
+          contentType: f.type || 'application/octet-stream',
+          upsert: true
+        });
+        if(up.error) throw up.error;
+
+        var signRes = await sb.storage.from(B).createSignedUrl(path, 86400);
+        if(signRes.data && signRes.data.signedUrl){
+          downloadUrl = signRes.data.signedUrl;
+        }
+
+        await sb.from('jobs').insert({
+          id: id,
+          file_name: f.name,
+          file_path: path,
+          file_type: f.type || 'application/octet-stream',
+          page_count: 1,
+          copies: 1,
+          color_mode: 'bw',
+          status: 'pending',
+          customer_name: 'PC_TO_MOBILE',
+          note: 'PC_SHARE#' + shareCode
+        });
+      }
+
+      if(pcShareProgress) pcShareProgress.style.display = 'none';
+      if(pcShareResultCard) pcShareResultCard.style.display = 'block';
+      if(pcShareCodeDisplay) pcShareCodeDisplay.textContent = '#' + shareCode;
+      if(pcShareFileName) pcShareFileName.textContent = f.name + ' (' + (f.size / 1024 / 1024).toFixed(2) + ' MB)';
+
+      var pBase = (publicBaseUrl || 'https://ankit8556.github.io/cyberprint-pay').replace(/\/+$/, '');
+      var customerShareUrl = pBase + '/index.html?receive=' + shareCode + '&name=' + encodeURIComponent(f.name) + '&size=' + f.size + '&url=' + encodeURIComponent(downloadUrl);
+
+      if(window.QRCode && pcShareQRHolder){
+        pcShareQRHolder.innerHTML = '';
+        new QRCode(pcShareQRHolder, { text: customerShareUrl, width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M });
+      }
+
+      if(pcShareCopyLinkBtn){
+        pcShareCopyLinkBtn.onclick = function(){
+          navigator.clipboard.writeText(customerShareUrl).then(function(){
+            alert('Customer Download Link copy ho gaya!');
+          }).catch(function(){});
+        };
+      }
+
+    } catch(err){
+      if(pcShareProgress) pcShareProgress.style.display = 'none';
+      if(pcShareBox) pcShareBox.style.display = 'block';
+      alert('File share nahi ho saki: ' + (err.message || err));
+    }
+  }
+
+  if(pcShareResetBtn){
+    pcShareResetBtn.onclick = function(){
+      if(pcShareResultCard) pcShareResultCard.style.display = 'none';
+      if(pcShareBox) pcShareBox.style.display = 'block';
+      if(pcShareInput) pcShareInput.value = '';
+    };
+  }
 
   $('printStandeeBtn').onclick = function(){
     var shop = C.SHOP_NAME || 'CyberPrint Pay';
