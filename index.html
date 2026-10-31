@@ -545,11 +545,23 @@ tailwind.config = {
         <p class="text-xs text-brand-600 font-medium">Ye Token Code Counter Operator ko batayein</p>
       </div>
 
-      <!-- Live Order Tracker Status Banner -->
-      <div id="statusTracker" class="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs">
-        <div id="trackerSpin" class="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin shrink-0"></div>
-        <div class="text-xs font-bold">
-          <span id="trackerMsg">Counter verification ka intezaar hai... (Payment check ho rahi hai)</span>
+      <!-- Live Order Tracker + Printer Animation -->
+      <div id="statusTracker" class="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-3.5 shadow-xs">
+        <div class="flex items-center gap-3">
+          <div id="trackerSpin" class="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin shrink-0"></div>
+          <div class="text-xs font-bold">
+            <span id="trackerMsg">Counter verification ka intezaar hai... (Payment check ho rahi hai)</span>
+          </div>
+        </div>
+
+        <!-- Printer animation, loaded lazily when this step opens -->
+        <div id="printAnimWrap" class="mt-1" hidden>
+          <div id="printAnim" class="w-[200px] h-[200px] mx-auto scale-110"></div>
+          <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden mx-8 mt-0.5">
+            <div id="printBar" class="h-full w-0 rounded-full transition-all duration-500"
+                 style="background-image:repeating-linear-gradient(45deg,#2563eb 0 8px,#3b82f6 8px 16px)"></div>
+          </div>
+          <div id="printMeta" class="text-[11px] text-slate-500 font-semibold text-center mt-1.5">Page 1 / 1 &middot; lagbhag</div>
         </div>
       </div>
 
@@ -818,7 +830,7 @@ tailwind.config = {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
-<script src="config.js?v=2"></script>
+<script src="config.js?v=3"></script>
 <script>
 (function(){
   var C = window.CYBERPRINT_CONFIG || {};
@@ -1811,36 +1823,195 @@ tailwind.config = {
     return 'upi://pay?' + parts.join('&');
   }
 
+  // ---- Printer animation (Lottie, loaded only when the token screen opens) ----
+  var printAnim = null, printAnimLoading = false;
+  var animState = {
+    status: null, sidesTotal: 1, sidesDone: 0, lastRow: null,
+    startedAt: 0, minUntil: 0, ticker: null, finished: false
+  };
+
+  function loopMs(){ return 6000 / (C.ANIM_SPEED || 1.6); }
+
+  function prefersReduced(){
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
+  function loadPrintAnim(cb){
+    if(printAnim || printAnimLoading){ if(printAnim && cb) cb(); return; }
+    if(C.PRINT_ANIM_ENABLED === false) return;
+    printAnimLoading = true;
+    var done = function(){ printAnimLoading = false; if(cb) cb(); };
+    var start = function(){
+      if(!window.lottie || !$('printAnim')){ done(); return; }
+      fetch('printer-printing.json').then(function(r){
+        if(!r.ok) throw new Error('anim json ' + r.status);
+        return r.json();
+      }).then(function(data){
+        try {
+          printAnim = lottie.loadAnimation({
+            container: $('printAnim'), renderer: 'svg', loop: false, autoplay: false,
+            animationData: data, rendererSettings: { preserveAspectRatio: 'xMidYMid meet' }
+          });
+          printAnim.addEventListener('DOMLoaded', function(){
+            printAnim.goToAndStop(C.IDLE_FRAME || 100, true);
+            done();
+            // the job may already be printing while the 200KB of assets load
+            if(animState.status === 'printing' && $('printAnimWrap')){
+              $('printAnimWrap').hidden = false;
+              startAnimProgress(animState.lastRow);
+            } else if(animState.status === 'printed' && $('printAnimWrap')){
+              $('printAnimWrap').hidden = false;
+              finishAnim();
+            }
+          });
+          printAnim.addEventListener('loopComplete', onAnimLoop);
+          printAnim.addEventListener('data_failed', function(){ printAnim = null; done(); });
+        } catch(e){ printAnim = null; done(); }
+      }).catch(function(){ printAnim = null; done(); });
+    };
+    if(window.lottie) return start();
+    var s = document.createElement('script');
+    s.src = 'lottie_light.min.js';
+    s.onload = start;
+    s.onerror = done;
+    document.head.appendChild(s);
+  }
+
+  function renderAnimMeta(){
+    var meta = $('printMeta');
+    if(!meta) return;
+    var shown = Math.min(animState.sidesTotal, animState.sidesDone + 1);
+    if(animState.finished) shown = animState.sidesTotal;
+    meta.textContent = 'Page ' + shown + ' / ' + animState.sidesTotal + ' \u00b7 lagbhag';
+  }
+
+  function stopTicker(){
+    if(animState.ticker){ clearInterval(animState.ticker); animState.ticker = null; }
+  }
+
+  function startTicker(){
+    if(animState.ticker) return;
+    animState.ticker = setInterval(function(){
+      if(animState.status !== 'printing'){ stopTicker(); return; }
+      var bar = $('printBar');
+      if(!bar) return;
+      var perSide = (C.SECONDS_PER_SIDE || 3.75) * 1000;
+      var elapsed = Date.now() - animState.startedAt;
+      var est = (elapsed / perSide) / animState.sidesTotal;
+      bar.style.width = Math.max(3, Math.min(95, Math.round(est * 100))) + '%';
+    }, 250);
+  }
+
+  function onAnimLoop(){
+    animState.sidesDone = Math.min(animState.sidesTotal, animState.sidesDone + 1);
+    renderAnimMeta();
+    if(animState.sidesDone >= animState.sidesTotal){
+      printAnim.pause();
+      printAnim.goToAndStop(179, true);
+    }
+  }
+
+  // Hold the last sheet on screen, but never cut the loop short: a one-page job
+  // can report 'printed' before the customer has seen a single page come out.
+  function finishAnim(){
+    if(!printAnim) return;
+    animState.finished = true;
+    var wait = animState.minUntil - Date.now();
+    var hold = function(){ if(printAnim){ printAnim.pause(); printAnim.goToAndStop(179, true); } renderAnimMeta(); };
+    if(wait > 0 && !prefersReduced()){ setTimeout(hold, wait); } else { hold(); }
+  }
+
+  function startAnimProgress(row){
+    var pages = parseInt(row && row.page_count, 10) || 1;
+    var copies = parseInt(row && row.copies, 10) || 1;
+    var total = Math.max(1, pages * copies);
+    if(!animState.startedAt || animState.sidesTotal !== total){
+      animState.sidesTotal = total;
+      animState.sidesDone = 0;
+      animState.finished = false;
+      animState.startedAt = Date.now();
+      animState.minUntil = Date.now() + Math.max(C.PRINT_ANIM_MIN_MS || 2500, loopMs());
+    }
+    renderAnimMeta();
+    if(prefersReduced()){
+      printAnim.goToAndStop(C.IDLE_FRAME || 100, true);
+    } else {
+      printAnim.setSpeed(C.ANIM_SPEED || 1.6);
+      printAnim.playSegments([0, 179], true);
+    }
+    startTicker();
+  }
+
+  // Single place that turns a job status into banner colour, copy and animation
+  function setJobState(st, row){
+    var tracker = $('statusTracker'), spin = $('trackerSpin'), msg = $('trackerMsg'), wrap = $('printAnimWrap');
+    if(!tracker || !msg) return;
+    animState.status = st;
+    if(row) animState.lastRow = row;
+
+    var base = 'rounded-2xl p-3.5 shadow-xs';
+    if(st === 'printing'){
+      tracker.className = 'bg-blue-50 border border-blue-200 text-blue-800 ' + base;
+      if(spin) spin.style.display = 'none';
+      msg.textContent = 'Machine mein print nikal raha hai\u2026';
+      if(wrap && printAnim){ wrap.hidden = false; startAnimProgress(row); }
+    } else if(st === 'approved'){
+      tracker.className = 'bg-blue-50 border border-blue-200 text-blue-800 ' + base;
+      if(spin) spin.style.display = 'none';
+      msg.textContent = 'File machine ke paas pahunch gayi \u2014 bas thodi der';
+      stopTicker();
+    } else if(st === 'printed'){
+      tracker.className = 'bg-emerald-50 border border-emerald-200 text-emerald-800 ' + base;
+      if(spin) spin.style.display = 'none';
+      msg.textContent = '\uD83C\uDF89 Badhai ho! Print taiyaar hai, counter se collect karein!';
+      stopTicker();
+      var bar = $('printBar');
+      if(bar) bar.style.width = '100%';
+      if(printAnim){
+        if(wrap) wrap.hidden = false;
+        if(!animState.startedAt){
+          // never saw a 'printing' poll: play one full page before holding the tray frame
+          animState.sidesTotal = Math.max(1, (parseInt(row && row.page_count, 10) || 1) * (parseInt(row && row.copies, 10) || 1));
+          animState.sidesDone = 0;
+          animState.finished = false;
+          animState.startedAt = Date.now();
+          animState.minUntil = Date.now() + Math.max(C.PRINT_ANIM_MIN_MS || 2500, loopMs());
+          if(!prefersReduced()){ printAnim.setSpeed(C.ANIM_SPEED || 1.6); printAnim.playSegments([0, 179], true); }
+          renderAnimMeta();
+        }
+        finishAnim();
+      }
+      if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+    } else if(st === 'rejected' || st === 'failed' || st === 'cancelled'){
+      tracker.className = 'bg-rose-50 border border-rose-200 text-rose-800 ' + base;
+      if(spin) spin.style.display = 'none';
+      msg.textContent = '\u274C Request cancel ho gayi: ' + ((row && row.print_error) || 'Counter par poochhein');
+      stopTicker();
+      if(printAnim) printAnim.goToAndStop(C.IDLE_FRAME || 100, true);
+      if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+    }
+  }
+
   // Real-time job status polling
   async function pollStatus(){
     if(!currentJobId) return;
     try {
-      var res = await sb.from('jobs').select('status, print_error').eq('id', currentJobId).single();
-      if(res && res.data){
-        var st = res.data.status;
-        var tracker = $('statusTracker');
-        var spin = $('trackerSpin');
-        var msg = $('trackerMsg');
-
-        if(st === 'printing'){
-          tracker.className = 'bg-blue-50 border border-blue-200 text-blue-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs';
-          spin.style.display = 'inline-block';
-          spin.className = 'w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin shrink-0';
-          msg.textContent = 'Machine mein print nikal raha hai... \uD83D\uDDA8\uFE0F';
-        } else if(st === 'printed'){
-          tracker.className = 'bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs';
-          spin.style.display = 'none';
-          msg.textContent = '\uD83C\uDF89 Badhai ho! Print taiyaar hai, counter se collect karein!';
-          if(pollTimer) clearInterval(pollTimer);
-        } else if(st === 'rejected' || st === 'failed'){
-          tracker.className = 'bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs';
-          spin.style.display = 'none';
-          msg.textContent = '\u274C Request cancel ho gayi: ' + (res.data.print_error || 'Counter par poochhein');
-          if(pollTimer) clearInterval(pollTimer);
-        }
-      }
+      var res = await sb.from('jobs').select('status, print_error, page_count, copies').eq('id', currentJobId).single();
+      if(res && res.data) setJobState(res.data.status, res.data);
     } catch(e){}
   }
+
+  // Pause the loop and the poll while the tab is hidden, resume on return
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){
+      if(printAnim && animState.status === 'printing' && !prefersReduced()) printAnim.pause();
+      stopTicker();
+    } else if(animState.status === 'printing'){
+      if(printAnim && !prefersReduced()) printAnim.play();
+      startTicker();
+      pollStatus();
+    }
+  });
 
   $('submit').onclick = async function(){
     if(!file) return;
@@ -1944,7 +2115,8 @@ tailwind.config = {
       setStep(3);
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // Start live polling status
+      // Start live polling status + load the printer animation
+      loadPrintAnim();
       if(pollTimer) clearInterval(pollTimer);
       pollTimer = setInterval(pollStatus, 2500);
 
@@ -1998,6 +2170,30 @@ tailwind.config = {
         alert('Mobile mein App install karne ke liye:\n\n1. Browser ke 3-dots (\u22ee) ya Share button par click karein.\n2. "Add to Home screen" ya "Install app" chunein.');
       }
     };
+  }
+  // Demo mode: ?demo=printing&pages=5 renders the print states with no real job
+  var demoParams = new URLSearchParams(window.location.search);
+  var demoState = demoParams.get('demo');
+  if(demoState){
+    var demoPages = Math.max(1, parseInt(demoParams.get('pages') || '1', 10));
+    var demoCopies = Math.max(1, parseInt(demoParams.get('copies') || '1', 10));
+    if($('s1')) $('s1').hidden = true;
+    if($('s2')) $('s2').hidden = true;
+    if($('s3')) $('s3').hidden = false;
+    if($('jobno')) $('jobno').textContent = '#DEMO';
+    setStep(3);
+    loadPrintAnim(function(){
+      if(demoState === 'printed'){
+        setJobState('printed', { page_count: demoPages, copies: demoCopies });
+        setTimeout(function(){ if(printAnim) printAnim.goToAndStop(179, true); }, 1200);
+      } else if(demoState === 'approved'){
+        setJobState('approved', {});
+      } else if(demoState === 'skip'){
+        setJobState('printed', { page_count: demoPages, copies: demoCopies });
+      } else {
+        setJobState('printing', { page_count: demoPages, copies: demoCopies });
+      }
+    });
   }
 })();
 </script>

@@ -32,5 +32,12 @@ window.CYBERPRINT_CONFIG = {
 
   // Upload limits
   MAX_FILE_MB: 20,
-  ALLOWED_TYPES: ["application/pdf", "image/jpeg", "image/png"]
+  ALLOWED_TYPES: ["application/pdf", "image/jpeg", "image/png"],
+
+  // Printer animation on the token screen (step 3)
+  PRINT_ANIM_ENABLED: true,
+  ANIM_SPEED: 1.6,        // playback multiplier; the asset is 6s per side at 1.0
+  SECONDS_PER_SIDE: 3.75, // keep in step with 6 / ANIM_SPEED for an honest progress bar
+  PRINT_ANIM_MIN_MS: 2500,// hold the printing animation this long even if the job finishes sooner
+  IDLE_FRAME: 100         // frame where the printer sits at rest (paper flat in the slot)
 };
