@@ -1,7 +1,7 @@
 # Secrets & local configuration
 agent/config.json
 config.local.js
-
+config.js
 # Runtime logs, PIDs and temporary files
 agent/agent.pid
 agent/agent.log
