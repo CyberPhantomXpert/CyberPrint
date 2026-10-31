@@ -611,55 +611,40 @@ tailwind.config = {
       var cloudUrl = '';
       var localUrl = '';
 
-      // 1. Upload to Supabase Cloud Storage (Works without Wi-Fi over 4G/5G mobile internet)
-      if(sb){
-        try {
-          var up = await sb.storage.from(B).upload(path, f, {
-            contentType: f.type || 'application/octet-stream',
-            upsert: true
-          });
-          if(!up.error){
-            var signRes = await sb.storage.from(B).createSignedUrl(path, 86400 * 7); // 7 days
-            if(signRes.data && signRes.data.signedUrl){
-              cloudUrl = signRes.data.signedUrl;
-            }
-          }
-          await sb.from('jobs').insert({
-            id: id,
-            file_name: f.name,
-            file_path: path,
-            file_type: f.type || 'application/octet-stream',
-            page_count: 1,
-            copies: 1,
-            color_mode: 'bw',
-            status: 'pending',
-            customer_name: 'PC_TO_MOBILE',
-            note: 'PC_SHARE#' + shareCode + (cloudUrl ? ('#' + cloudUrl) : '')
-          }).catch(function(){});
-        } catch(cloudErr){
-          console.warn('Cloud PC share upload error:', cloudErr);
-        }
+      // 1. Upload to local agent (agent automatically saves locally AND uploads to Supabase cloud storage with full auth)
+      var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+      var fd = new FormData();
+      fd.append('file', f, f.name);
+      var upRes = await fetch('http://' + agentHost + '/api/pc-share-upload?code=' + shareCode, {
+        method: 'POST',
+        body: fd
+      });
+      if(upRes.ok){
+        var upData = await upRes.json();
+        cloudUrl = upData.cloud_url || '';
+        localUrl = upData.local_url || upData.url || '';
+      } else {
+        throw new Error('Local agent upload failed');
       }
 
-      // 2. Upload to Local Agent (Works super fast over Wi-Fi LAN direct transfer)
-      try {
-        var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
-        var fd = new FormData();
-        fd.append('file', f, f.name);
-        var upRes = await fetch('http://' + agentHost + '/api/pc-share-upload?code=' + shareCode, {
-          method: 'POST',
-          body: fd
-        });
-        if(upRes.ok){
-          var upData = await upRes.json();
-          localUrl = (upData && upData.url) ? upData.url : '';
-        }
-      } catch(localErr){
-        console.warn('Local agent share upload error:', localErr);
+      // 2. Also register in Supabase jobs table for 6-digit code discovery
+      if(sb){
+        sb.from('jobs').insert({
+          id: id,
+          file_name: f.name,
+          file_path: path,
+          file_type: f.type || 'application/octet-stream',
+          page_count: 1,
+          copies: 1,
+          color_mode: 'bw',
+          status: 'pending',
+          customer_name: 'PC_TO_MOBILE',
+          note: 'PC_SHARE#' + shareCode + (cloudUrl ? ('#' + cloudUrl) : '')
+        }).catch(function(){});
       }
 
       if(!cloudUrl && !localUrl){
-        throw new Error('फाइल अपलोड नहीं हो सकी। कृपया इंटरनेट या एजेंट कनेक्शन चेक करें।');
+        throw new Error('फाइल शेयर तैयार नहीं हो सकी।');
       }
 
       if(pcShareProgress) pcShareProgress.style.display = 'none';

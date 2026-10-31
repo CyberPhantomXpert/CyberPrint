@@ -734,8 +734,12 @@ tailwind.config = {
           <span>✓</span> 4G/5G मोबाइल डेटा व दुकान के Wi-Fi दोनों पर चलेगा
         </div>
 
-        <a id="receiveDownloadBtn" href="#" download class="mt-3 w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-black text-sm rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2 text-center no-underline tap-tactile">
+        <a id="receiveDownloadBtn" href="#" target="_blank" download class="mt-3 w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-black text-sm rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2 text-center no-underline tap-tactile">
           <span>⬇️ मोबाइल में डाउनलोड करें</span>
+        </a>
+
+        <a id="receiveWifiDownloadBtn" href="#" target="_blank" download class="mt-2 w-full py-2.5 px-3 bg-white hover:bg-slate-50 border border-emerald-300 text-emerald-800 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 text-center no-underline tap-tactile" style="display:none">
+          <span>⚡ दुकान के Wi-Fi से डायरेक्ट डाउनलोड</span>
         </a>
       </div>
 
@@ -1036,15 +1040,32 @@ tailwind.config = {
     activeReceiveCloudUrl = preloadedUrl || '';
     activeReceiveLocalUrl = localUrl || '';
 
+    var isPageHttps = window.location.protocol === 'https:';
+    var primaryUrl = isPageHttps ? (activeReceiveCloudUrl || activeReceiveLocalUrl) : (activeReceiveLocalUrl || activeReceiveCloudUrl);
+
     // Direct URL available via QR scan or URL params
-    if(preloadedUrl || localUrl){
+    if(primaryUrl){
       var fn = preloadedName || 'shared_file';
       nameEl.textContent = fn;
       var szStr = preloadedSize ? formatBytes(preloadedSize) : 'तैयार है';
       metaEl.textContent = szStr + ' • सीधे डाउनलोड करें';
-      dlBtn.href = preloadedUrl || localUrl;
+      dlBtn.href = primaryUrl;
+      dlBtn.setAttribute('target', '_blank');
       dlBtn.setAttribute('download', fn);
       iconEl.textContent = getDropFileIcon(fn);
+
+      var wifiBtn = $('receiveWifiDownloadBtn');
+      if(wifiBtn){
+        if(activeReceiveLocalUrl && activeReceiveLocalUrl !== primaryUrl){
+          wifiBtn.href = activeReceiveLocalUrl;
+          wifiBtn.setAttribute('target', '_blank');
+          wifiBtn.setAttribute('download', fn);
+          wifiBtn.style.display = 'flex';
+        } else {
+          wifiBtn.style.display = 'none';
+        }
+      }
+
       card.style.display = 'block';
       card.classList.remove('token-reveal');
       void card.offsetWidth;
@@ -1103,7 +1124,7 @@ tailwind.config = {
         if(query.data && query.data.length > 0){
           var j = query.data[0];
           var parts = (j.note || '').split('#');
-          var cloudDlUrl = parts[2] || '';
+          var cloudDlUrl = parts.slice(2).join('#') || '';
           if(!cloudDlUrl){
             try {
               var signRes = await sb.storage.from(C.BUCKET || 'jobs').createSignedUrl(j.file_path, 86400 * 7);
@@ -1116,6 +1137,7 @@ tailwind.config = {
             metaEl.textContent = 'तैयार है • 4G/5G इंटरनेट से डाउनलोड करें';
             activeReceiveCloudUrl = cloudDlUrl;
             dlBtn.href = cloudDlUrl;
+            dlBtn.setAttribute('target', '_blank');
             dlBtn.setAttribute('download', j.file_name);
             iconEl.textContent = getDropFileIcon(j.file_name);
             card.style.display = 'block';
@@ -1138,27 +1160,18 @@ tailwind.config = {
     }
   }
 
-  // Handle download click with automatic fallback between local Wi-Fi and Cloud
+  // Download button click handling: allow natural direct download without popup/mixed-content blockage
   if($('receiveDownloadBtn')){
-    $('receiveDownloadBtn').onclick = async function(e){
-      if(activeReceiveLocalUrl && activeReceiveCloudUrl){
+    $('receiveDownloadBtn').onclick = function(e){
+      var target = dlBtn.getAttribute('href');
+      if(!target || target === '#' || target === ''){
         e.preventDefault();
-        var btn = $('receiveDownloadBtn');
-        var originalHtml = btn.innerHTML;
-        btn.innerHTML = '<span>⬇️ डाउनलोड हो रहा है...</span>';
-        try {
-          var testCtrl = new AbortController();
-          var testTimeout = setTimeout(function(){ testCtrl.abort(); }, 1200);
-          var check = await fetch(activeReceiveLocalUrl, { method: 'HEAD', signal: testCtrl.signal });
-          clearTimeout(testTimeout);
-          if(check.ok){
-            window.location.href = activeReceiveLocalUrl;
-            btn.innerHTML = originalHtml;
-            return;
-          }
-        } catch(e){}
-        window.location.href = activeReceiveCloudUrl;
-        btn.innerHTML = originalHtml;
+        alert('डाउनलोड लिंक उपलब्ध नहीं है, कृपया दोबारा QR कोड स्कैन करें।');
+        return;
+      }
+      // If page is HTTPS and target is HTTP, mobile browser may block direct file download
+      if(window.location.protocol === 'https:' && target.startsWith('http://')){
+        window.open(target, '_blank');
       }
     };
   }
