@@ -1084,7 +1084,8 @@ tailwind.config = {
     code = (code || '').trim().replace(/^#/, '').toUpperCase();
 
     try {
-      var agentHost = (window.location.port === '8085' ? window.location.host : '10.172.100.234:8085');
+      var searchParams = new URLSearchParams(window.location.search);
+      var agentHost = searchParams.get('agent') || (window.location.port === '8085' ? window.location.host : '10.202.100.233:8085');
       // 1. Try local agent first (Wi-Fi)
       var agentFound = false;
       try {
@@ -1116,7 +1117,6 @@ tailwind.config = {
       if(!agentFound && sb){
         var query = await sb.from('jobs')
           .select('*')
-          .eq('status', 'pending')
           .ilike('note', 'PC_SHARE#' + code + '%')
           .order('created_at', { ascending: false })
           .limit(1);
@@ -1835,7 +1835,7 @@ tailwind.config = {
     try {
       var params = new URLSearchParams(window.location.search);
       var isLocalStorage = params.get('storage') === 'local';
-      var agentHost = params.get('agent') || (window.location.port === '8085' ? window.location.host : '10.108.118.216:8085');
+      var agentHost = params.get('agent') || (window.location.port === '8085' ? window.location.host : '10.202.100.233:8085');
 
       var id = genUUID();
       var safe = file.name.replace(/[^\w.\-]+/g, '_');

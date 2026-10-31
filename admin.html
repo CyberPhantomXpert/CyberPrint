@@ -628,19 +628,23 @@ tailwind.config = {
       }
 
       // 2. Also register in Supabase jobs table for 6-digit code discovery
-      if(sb){
-        sb.from('jobs').insert({
-          id: id,
-          file_name: f.name,
-          file_path: path,
-          file_type: f.type || 'application/octet-stream',
-          page_count: 1,
-          copies: 1,
-          color_mode: 'bw',
-          status: 'pending',
-          customer_name: 'PC_TO_MOBILE',
-          note: 'PC_SHARE#' + shareCode + (cloudUrl ? ('#' + cloudUrl) : '')
-        }).catch(function(){});
+      if(sb && cloudUrl){
+        try {
+          await sb.from('jobs').insert({
+            id: id,
+            file_name: f.name,
+            file_path: path,
+            file_type: f.type || 'application/octet-stream',
+            page_count: 1,
+            copies: 1,
+            color_mode: 'bw',
+            status: 'pending',
+            customer_name: 'PC_TO_MOBILE',
+            note: 'PC_SHARE#' + shareCode + '#' + cloudUrl
+          });
+        } catch(sbErr) {
+          console.warn('Supabase job record insert skipped:', sbErr);
+        }
       }
 
       if(!cloudUrl && !localUrl){
