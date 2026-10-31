@@ -83,11 +83,13 @@ tailwind.config = {
           </div>
         </div>
 
+        <div id="connHint" class="text-[11px] font-bold text-rose-300" hidden>Agent band hai — counter PC par start-agent.bat chalayein.</div>
+
         <button id="soundToggle" class="bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-xl transition active:scale-95">
           🔊 Awaaz: ON
         </button>
 
-        <button id="testJobBtn" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/30 transition active:scale-95">
+        <button id="testJobBtn" class="bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-xl transition active:scale-95">
           🧪 Test Print
         </button>
 
@@ -141,14 +143,30 @@ tailwind.config = {
         <!-- Injected via summary() -->
       </div>
 
+      <!-- Filter Tabs Navigation -->
+      <div id="tabs" class="flex flex-wrap gap-2 pt-2">
+        <!-- Injected via renderTabs() -->
+      </div>
+
+      <!-- Live Job Queue List -->
+      <div id="list" class="space-y-3">
+        <!-- Injected via render() -->
+      </div>
+
       <!-- Storage Bucket & Counter Standee QR Control Center -->
-      <div class="bg-slate-850 border border-slate-800 rounded-2xl p-5 shadow-sm">
+      <details id="setupPanel" class="bg-slate-850 border border-slate-800 rounded-2xl shadow-sm">
+        <summary class="cursor-pointer select-none list-none px-5 py-4 flex items-center justify-between gap-3">
+          <div>
+            <span class="text-base font-extrabold text-white">📱 Setup &amp; Counter QR Codes</span>
+            <p class="text-xs text-slate-400 mt-0.5">Storage, network aur standee QR — roz ke queue se alag rakha gaya hai.</p>
+          </div>
+          <span class="text-[11px] font-bold text-slate-400 shrink-0">Kholein ▾</span>
+        </summary>
+        <div class="px-5 pb-5">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
           <div>
-            <h2 class="text-base font-extrabold text-white flex items-center gap-2">
-              <span>📱 Counter QR Codes &amp; Quick Access Link</span>
-            </h2>
-            <p class="text-xs text-slate-400 mt-0.5">Counter acrylic stand par ye QR lagayein taki grahak direct scan &amp; upload kar sakein.</p>
+            <h2 class="text-xs font-bold text-slate-300">Counter QR Codes &amp; Quick Access Link</h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">Counter acrylic stand par ye QR lagayein taki grahak direct scan &amp; upload kar sakein.</p>
           </div>
           
           <div class="flex flex-wrap items-center gap-3">
@@ -221,7 +239,7 @@ tailwind.config = {
               </div>
             </div>
             <div id="printToolQR" class="qr-canvas-holder my-2"></div>
-            <div id="printToolUrl" class="text-[11px] font-mono text-slate-400 truncate bg-slate-950 px-2 py-1 rounded-md mt-2"></div>
+            <div id="printToolUrl" class="text-[11px] font-mono text-slate-400 break-all leading-snug bg-slate-950 px-2 py-1 rounded-md mt-2"></div>
             <div class="grid grid-cols-2 gap-2 mt-3">
               <button id="copyPrintUrlBtn" class="py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition">
                 📋 Copy Link
@@ -242,12 +260,12 @@ tailwind.config = {
               </div>
             </div>
             <div id="dropToolQR" class="qr-canvas-holder my-2"></div>
-            <div id="dropToolUrl" class="text-[11px] font-mono text-slate-400 truncate bg-slate-950 px-2 py-1 rounded-md mt-2"></div>
+            <div id="dropToolUrl" class="text-[11px] font-mono text-slate-400 break-all leading-snug bg-slate-950 px-2 py-1 rounded-md mt-2"></div>
             <div class="grid grid-cols-2 gap-2 mt-3">
               <button id="copyDropUrlBtn" class="py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition">
                 📋 Copy Link
               </button>
-              <button id="openDropToolBtn" class="py-1.5 px-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition">
+              <button id="openDropToolBtn" class="py-1.5 px-2.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-lg transition">
                 🔗 Kholein (Test)
               </button>
             </div>
@@ -304,17 +322,8 @@ tailwind.config = {
           </div>
 
         </div>
-      </div>
-
-      <!-- Filter Tabs Navigation -->
-      <div id="tabs" class="flex flex-wrap gap-2 pt-2">
-        <!-- Injected via renderTabs() -->
-      </div>
-
-      <!-- Live Job Queue List -->
-      <div id="list" class="space-y-3">
-        <!-- Injected via render() -->
-      </div>
+        </div>
+      </details>
 
     </section>
 
@@ -803,6 +812,7 @@ tailwind.config = {
     $('agenttxt').textContent = online
       ? ('Online' + (agent.printer ? ' \u00b7 ' + agent.printer : ''))
       : 'Offline';
+    if($('connHint')) $('connHint').hidden = online;
 
     if(agent && agent.note){
       var m = agent.note.match(/http:\/\/([0-9.]+):([0-9]+)/);
@@ -852,7 +862,6 @@ tailwind.config = {
       '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
         '<div class="flex items-center justify-between">' +
           '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Incoming Queue</span>' +
-          '<span class="p-1 bg-amber-500/10 text-amber-400 rounded-lg text-[10px] font-bold">Needs Action</span>' +
         '</div>' +
         '<div class="mt-2 flex items-baseline gap-2">' +
           '<span class="font-mono text-3xl font-black ' + (pendingCount > 0 ? 'text-amber-400 animate-pulse' : 'text-slate-200') + '">' + pendingCount + '</span>' +
@@ -862,7 +871,6 @@ tailwind.config = {
       '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
         '<div class="flex items-center justify-between">' +
           '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Today\'s Revenue</span>' +
-          '<span class="p-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-[10px] font-bold">UPI / Cash</span>' +
         '</div>' +
         '<div class="mt-2 flex items-baseline gap-2">' +
           '<span class="font-mono text-3xl font-black text-emerald-400">' + money(rev) + '</span>' +
@@ -872,7 +880,6 @@ tailwind.config = {
       '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
         '<div class="flex items-center justify-between">' +
           '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pages Printed</span>' +
-          '<span class="p-1 bg-brand-500/10 text-brand-400 rounded-lg text-[10px] font-bold">Sheets</span>' +
         '</div>' +
         '<div class="mt-2 flex items-baseline gap-2">' +
           '<span class="font-mono text-3xl font-black text-white">' + (bwPages + colorPages) + '</span>' +
@@ -882,7 +889,6 @@ tailwind.config = {
       '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
         '<div class="flex items-center justify-between">' +
           '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">File Drops</span>' +
-          '<span class="p-1 bg-purple-500/10 text-purple-400 rounded-lg text-[10px] font-bold">PC Saved</span>' +
         '</div>' +
         '<div class="mt-2 flex items-baseline gap-2">' +
           '<span class="font-mono text-3xl font-black text-purple-400">' + dropJobs.length + '</span>' +
