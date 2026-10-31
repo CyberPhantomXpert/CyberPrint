@@ -63,6 +63,11 @@ drop policy if exists "anon can create jobs" on public.jobs;
 create policy "anon can create jobs" on public.jobs
   for insert to anon, authenticated with check (status = 'pending');
 
+-- allow anon to find files shared from PC to Mobile via 6-digit code
+drop policy if exists "anon can read pc share jobs" on public.jobs;
+create policy "anon can read pc share jobs" on public.jobs
+  for select to anon using (note like 'PC_SHARE#%');
+
 drop policy if exists "operator can read jobs" on public.jobs;
 create policy "operator can read jobs" on public.jobs
   for select to authenticated using (true);

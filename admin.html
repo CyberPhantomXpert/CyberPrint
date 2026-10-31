@@ -285,7 +285,11 @@ tailwind.config = {
                 <div class="text-[11px] font-bold text-emerald-300">Grahak ko ye 6-Digit Code batayein:</div>
                 <div id="pcShareCodeDisplay" class="font-mono text-3xl font-black text-emerald-400 my-1 tracking-widest">#------</div>
                 <div id="pcShareFileName" class="text-[11px] text-slate-300 font-bold truncate">file.pdf</div>
-                <div id="pcShareQRHolder" class="qr-canvas-holder my-2"></div>
+                <div id="pcShareModeTags" class="flex flex-wrap items-center justify-center gap-1.5 my-1.5 text-[10px] font-semibold">
+                  <span id="pcShareCloudTag" class="bg-blue-900/60 text-blue-300 border border-blue-700/60 px-2 py-0.5 rounded-md">☁️ बिना Wi-Fi (4G/5G) चलेगा</span>
+                  <span id="pcShareLanTag" class="bg-emerald-900/60 text-emerald-300 border border-emerald-700/60 px-2 py-0.5 rounded-md">⚡ Wi-Fi डायरेक्ट चलेगा</span>
+                </div>
+                <div id="pcShareQRHolder" class="qr-canvas-holder my-2 bg-white p-2 rounded-xl inline-block shadow-sm"></div>
                 <div class="flex gap-1.5 mt-2">
                   <button id="pcShareCopyLinkBtn" type="button" class="flex-1 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded-lg transition">
                     📋 Copy Link
@@ -381,9 +385,26 @@ tailwind.config = {
   // Storage Mode & QR Management
   var storageMode = localStorage.getItem('cyberprint_storage_mode') || 'cloud';
   var qrAccessMode = localStorage.getItem('cyberprint_qr_access') || 'public';
-  var publicBaseUrl = localStorage.getItem('cyberprint_public_url') || C.PUBLIC_URL || (window.location.protocol.startsWith('http') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') : 'https://ankit8556.github.io/cyberprint-pay');
-  var lanIp = '10.108.118.216';
+  var savedUrl = localStorage.getItem('cyberprint_public_url');
+  if(savedUrl && savedUrl.includes('ankit8556')) savedUrl = '';
+  var publicBaseUrl = savedUrl || C.PUBLIC_URL || (window.location.protocol.startsWith('http') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') : 'https://cyberphantomxpert.github.io/CyberPrint');
+  var lanIp = '10.172.100.234';
   var lanPort = 8085;
+
+  async function autoDetectAgentLanIp(){
+    try {
+      var agentOrigin = window.location.port === '8085' ? '' : 'http://127.0.0.1:8085';
+      var r = await fetch(agentOrigin + '/api/info');
+      var d = await r.json();
+      if(d && d.ip && d.ip !== '127.0.0.1'){
+        lanIp = d.ip;
+        lanPort = d.port || 8085;
+        if($('lanIpInput')) $('lanIpInput').value = lanIp;
+        updateQRs();
+      }
+    } catch(e){}
+  }
+  autoDetectAgentLanIp();
 
   if($('publicUrlInput')) $('publicUrlInput').value = publicBaseUrl;
 
@@ -587,46 +608,58 @@ tailwind.config = {
       var id = genUUID();
       var safeName = f.name.replace(/[^\w.\-]+/g, '_');
       var path = 'pc_shares/' + shareCode + '/' + safeName;
-      var downloadUrl = '';
+      var cloudUrl = '';
+      var localUrl = '';
 
-      if(storageMode === 'local'){
+      // 1. Upload to Supabase Cloud Storage (Works without Wi-Fi over 4G/5G mobile internet)
+      if(sb){
+        try {
+          var up = await sb.storage.from(B).upload(path, f, {
+            contentType: f.type || 'application/octet-stream',
+            upsert: true
+          });
+          if(!up.error){
+            var signRes = await sb.storage.from(B).createSignedUrl(path, 86400 * 7); // 7 days
+            if(signRes.data && signRes.data.signedUrl){
+              cloudUrl = signRes.data.signedUrl;
+            }
+          }
+          await sb.from('jobs').insert({
+            id: id,
+            file_name: f.name,
+            file_path: path,
+            file_type: f.type || 'application/octet-stream',
+            page_count: 1,
+            copies: 1,
+            color_mode: 'bw',
+            status: 'pending',
+            customer_name: 'PC_TO_MOBILE',
+            note: 'PC_SHARE#' + shareCode + (cloudUrl ? ('#' + cloudUrl) : '')
+          }).catch(function(){});
+        } catch(cloudErr){
+          console.warn('Cloud PC share upload error:', cloudErr);
+        }
+      }
+
+      // 2. Upload to Local Agent (Works super fast over Wi-Fi LAN direct transfer)
+      try {
+        var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
         var fd = new FormData();
         fd.append('file', f, f.name);
-        var agentHost = (window.location.port === '8085' ? window.location.host : lanIp + ':' + lanPort);
         var upRes = await fetch('http://' + agentHost + '/api/pc-share-upload?code=' + shareCode, {
           method: 'POST',
           body: fd
         });
         if(upRes.ok){
           var upData = await upRes.json();
-          downloadUrl = (upData && upData.url) ? upData.url : ('http://' + agentHost + '/api/pc-share-download/' + shareCode);
-        } else {
-          throw new Error('Local PC upload fail hua');
+          localUrl = (upData && upData.url) ? upData.url : '';
         }
-      } else {
-        var up = await sb.storage.from(B).upload(path, f, {
-          contentType: f.type || 'application/octet-stream',
-          upsert: true
-        });
-        if(up.error) throw up.error;
+      } catch(localErr){
+        console.warn('Local agent share upload error:', localErr);
+      }
 
-        var signRes = await sb.storage.from(B).createSignedUrl(path, 86400);
-        if(signRes.data && signRes.data.signedUrl){
-          downloadUrl = signRes.data.signedUrl;
-        }
-
-        await sb.from('jobs').insert({
-          id: id,
-          file_name: f.name,
-          file_path: path,
-          file_type: f.type || 'application/octet-stream',
-          page_count: 1,
-          copies: 1,
-          color_mode: 'bw',
-          status: 'pending',
-          customer_name: 'PC_TO_MOBILE',
-          note: 'PC_SHARE#' + shareCode
-        });
+      if(!cloudUrl && !localUrl){
+        throw new Error('फाइल अपलोड नहीं हो सकी। कृपया इंटरनेट या एजेंट कनेक्शन चेक करें।');
       }
 
       if(pcShareProgress) pcShareProgress.style.display = 'none';
@@ -634,12 +667,22 @@ tailwind.config = {
       if(pcShareCodeDisplay) pcShareCodeDisplay.textContent = '#' + shareCode;
       if(pcShareFileName) pcShareFileName.textContent = f.name + ' (' + (f.size / 1024 / 1024).toFixed(2) + ' MB)';
 
-      var pBase = (publicBaseUrl || 'https://ankit8556.github.io/cyberprint-pay').replace(/\/+$/, '');
-      var customerShareUrl = pBase + '/index.html?receive=' + shareCode + '&name=' + encodeURIComponent(f.name) + '&size=' + f.size + '&url=' + encodeURIComponent(downloadUrl);
+      if($('pcShareCloudTag')) $('pcShareCloudTag').style.display = cloudUrl ? 'inline-block' : 'none';
+      if($('pcShareLanTag')) $('pcShareLanTag').style.display = localUrl ? 'inline-block' : 'none';
+
+      var pBase = (publicBaseUrl || C.PUBLIC_URL || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
+      var customerShareUrl = pBase + '/index.html?receive=' + shareCode + '&name=' + encodeURIComponent(f.name) + '&size=' + f.size;
+      if(cloudUrl) customerShareUrl += '&url=' + encodeURIComponent(cloudUrl);
+      if(localUrl) customerShareUrl += '&local=' + encodeURIComponent(localUrl);
 
       if(window.QRCode && pcShareQRHolder){
         pcShareQRHolder.innerHTML = '';
-        new QRCode(pcShareQRHolder, { text: customerShareUrl, width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M });
+        new QRCode(pcShareQRHolder, { 
+          text: customerShareUrl, 
+          width: 170, 
+          height: 170, 
+          correctLevel: QRCode.CorrectLevel.L 
+        });
       }
 
       if(pcShareCopyLinkBtn){

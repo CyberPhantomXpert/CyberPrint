@@ -684,19 +684,29 @@ tailwind.config = {
         <p class="text-xs text-emerald-100 mt-0.5">एडमिट कार्ड, रिजल्ट, फॉर्म या स्कैन डॉक्यूमेंट तुरंत पाएं</p>
       </div>
 
-      <!-- Code Input Card -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3.5">
-        <label class="block text-xs font-black text-slate-700 uppercase tracking-wider text-center">
-          दुकानदार का दिया 6 अंकों का कोड डालें
-        </label>
-        
+      <!-- Prominent QR Scanner CTA Button -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-3">
+        <button id="openScannerBtn" type="button" class="w-full py-3.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.99] text-white font-black text-sm rounded-2xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2.5 tap-tactile">
+          <span class="text-lg">📷</span>
+          <span>कैमरे से QR कोड स्कैन करें</span>
+        </button>
+        <p class="text-[11px] text-slate-500 text-center font-medium">दुकानदार के PC स्क्रीन पर दिख रहे QR कोड को स्कैन करें</p>
+
+        <!-- Divider -->
+        <div class="flex items-center gap-3 my-1">
+          <div class="h-px bg-slate-200 flex-1"></div>
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">या 6 अंकों का कोड डालें</span>
+          <div class="h-px bg-slate-200 flex-1"></div>
+        </div>
+
+        <!-- Manual 6-Digit Code Input -->
         <div class="relative flex items-center justify-center">
           <span class="absolute left-4 font-mono font-black text-lg text-slate-400">#</span>
           <input id="receiveCodeInput" type="text" maxlength="6" placeholder="जैसे 482910" class="w-full pl-9 pr-4 py-3 bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl text-center font-mono font-black text-xl tracking-widest text-slate-900 focus:outline-none transition uppercase" />
         </div>
 
-        <button id="receiveSearchBtn" type="button" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-extrabold text-sm rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2 tap-tactile">
-          <span>🔍 फाइल खोजें और डाउनलोड करें</span>
+        <button id="receiveSearchBtn" type="button" class="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 active:scale-[0.99] text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 tap-tactile">
+          <span>🔍 कोड से फाइल खोजें</span>
         </button>
 
         <div id="receiveErr" class="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs font-medium text-center" hidden></div>
@@ -720,7 +730,11 @@ tailwind.config = {
           </div>
         </div>
 
-        <a id="receiveDownloadBtn" href="#" download class="mt-3.5 w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-black text-sm rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2 text-center no-underline tap-tactile">
+        <div class="mt-2.5 inline-flex items-center gap-1.5 bg-emerald-100/80 text-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-lg">
+          <span>✓</span> 4G/5G मोबाइल डेटा व दुकान के Wi-Fi दोनों पर चलेगा
+        </div>
+
+        <a id="receiveDownloadBtn" href="#" download class="mt-3 w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-black text-sm rounded-xl shadow-md shadow-emerald-600/30 transition flex items-center justify-center gap-2 text-center no-underline tap-tactile">
           <span>⬇️ मोबाइल में डाउनलोड करें</span>
         </a>
       </div>
@@ -737,7 +751,58 @@ tailwind.config = {
 
   </main>
 
+  <!-- ================= IN-PHONE CAMERA QR SCANNER MODAL ================= -->
+  <div id="qrScannerModal" class="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-between p-4 backdrop-blur-md" style="display:none">
+    <!-- Modal Header -->
+    <div class="w-full max-w-sm flex items-center justify-between text-white pt-2">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">📷</span>
+        <div>
+          <div class="text-sm font-black">QR कोड स्कैन करें</div>
+          <div class="text-[11px] text-slate-300">दुकानदार के PC स्क्रीन का QR सामने रखें</div>
+        </div>
+      </div>
+      <button type="button" id="closeScannerBtn" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 active:scale-95 text-white flex items-center justify-center font-bold text-base transition tap-tactile">
+        ✕
+      </button>
+    </div>
+
+    <!-- Scanner Viewport Frame with Reticle & Laser Sweep -->
+    <div class="relative w-full max-w-xs aspect-square my-auto overflow-hidden rounded-3xl border-2 border-emerald-400/80 shadow-2xl bg-black flex items-center justify-center">
+      <div id="scannerViewport" class="w-full h-full"></div>
+      
+      <!-- Visual Reticle Corners -->
+      <div class="pointer-events-none absolute inset-0 flex flex-col justify-between p-4">
+        <div class="flex justify-between">
+          <div class="w-8 h-8 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl"></div>
+          <div class="w-8 h-8 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl"></div>
+        </div>
+        <!-- Animated Scanning Beam -->
+        <div class="w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#34d399] animate-pulse"></div>
+        <div class="flex justify-between">
+          <div class="w-8 h-8 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl"></div>
+          <div class="w-8 h-8 border-b-4 border-r-4 border-emerald-400 rounded-br-xl"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Instruction Pill -->
+    <div class="w-full max-w-sm pb-4 text-center">
+      <div class="bg-white/10 text-white/90 text-xs py-2.5 px-4 rounded-xl backdrop-blur-xs font-semibold shadow-xs">
+        ✨ कोड स्कैन होते ही फाइल अपने आप खुल जाएगी
+      </div>
+    </div>
+  </div>
+
 <!-- External Scripts -->
+<script src="html5-qrcode.min.js"></script>
+<script>
+  if(!window.Html5Qrcode){
+    var s = document.createElement('script');
+    s.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+    document.head.appendChild(s);
+  }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
@@ -837,8 +902,126 @@ tailwind.config = {
   if($('dropFooterPrintLink')) $('dropFooterPrintLink').onclick = function(){ switchTool('print'); };
   if($('receiveFooterPrintLink')) $('receiveFooterPrintLink').onclick = function(){ switchTool('print'); };
 
-  // ================= RECEIVE FROM PC LOGIC =================
-  async function searchReceiveFile(code, preloadedUrl, preloadedName, preloadedSize){
+  // ================= RECEIVE FROM PC LOGIC & CAMERA QR SCANNER =================
+  var activeReceiveLocalUrl = '';
+  var activeReceiveCloudUrl = '';
+  var html5QrCode = null;
+
+  function playScanBeep(){
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.16);
+    } catch(e){}
+    if (navigator.vibrate) {
+      try { navigator.vibrate(60); } catch(e){}
+    }
+  }
+
+  async function startQrScanner(){
+    var modal = $('qrScannerModal');
+    if(!modal) return;
+    modal.style.display = 'flex';
+
+    if(!window.Html5Qrcode){
+      alert('QR स्कैनर लोड हो रहा है, कृपया 1 सेकंड बाद पुनः प्रयास करें...');
+      return;
+    }
+
+    try {
+      if(!html5QrCode){
+        html5QrCode = new Html5Qrcode("scannerViewport");
+      }
+
+      var config = {
+        fps: 15,
+        qrbox: { width: 240, height: 240 },
+        aspectRatio: 1.0
+      };
+
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        function(decodedText){
+          playScanBeep();
+          stopQrScanner();
+          handleScannedCode(decodedText);
+        },
+        function(errorMsg){}
+      );
+    } catch(err){
+      console.error("Camera start error:", err);
+      alert("कैमरा शुरू नहीं हो सका: " + (err.message || "कृपया ब्राउज़र में कैमरा परमिशन Allow करें"));
+      stopQrScanner();
+    }
+  }
+
+  async function stopQrScanner(){
+    var modal = $('qrScannerModal');
+    if(modal) modal.style.display = 'none';
+    if(html5QrCode){
+      try {
+        if(html5QrCode.isScanning){
+          await html5QrCode.stop();
+        }
+      } catch(e){}
+    }
+  }
+
+  function handleScannedCode(text){
+    text = (text || '').trim();
+    if(!text) return;
+
+    // Check if full URL
+    if(text.startsWith('http://') || text.startsWith('https://')){
+      try {
+        var u = new URL(text);
+        var code = u.searchParams.get('receive') || u.searchParams.get('code');
+        var name = u.searchParams.get('name') || '';
+        var size = parseInt(u.searchParams.get('size') || '0', 10);
+        var cloudUrl = u.searchParams.get('url') || '';
+        var localUrl = u.searchParams.get('local') || '';
+
+        if(code || cloudUrl || localUrl){
+          switchTool('receive', true);
+          if(code) $('receiveCodeInput').value = code;
+          searchReceiveFile(code, cloudUrl, name, size, localUrl);
+          return;
+        }
+      } catch(e){}
+
+      if(text.includes('/api/pc-share-download/')){
+        var match = text.match(/\/api\/pc-share-download\/([A-Za-z0-9]+)/);
+        var c = match ? match[1] : '';
+        switchTool('receive', true);
+        searchReceiveFile(c, '', 'Shared File', 0, text);
+        return;
+      }
+    }
+
+    var cleanCode = text.replace(/[^0-9]/g, '');
+    if(cleanCode.length >= 4){
+      switchTool('receive', true);
+      $('receiveCodeInput').value = cleanCode;
+      searchReceiveFile(cleanCode);
+      return;
+    }
+
+    alert('QR कोड से फाइल नहीं पहचान सके: ' + text);
+  }
+
+  if($('openScannerBtn')) $('openScannerBtn').onclick = startQrScanner;
+  if($('closeScannerBtn')) $('closeScannerBtn').onclick = stopQrScanner;
+
+  async function searchReceiveFile(code, preloadedUrl, preloadedName, preloadedSize, localUrl){
     var err = $('receiveErr');
     var load = $('receiveLoading');
     var card = $('receiveFileCard');
@@ -850,23 +1033,28 @@ tailwind.config = {
     err.hidden = true;
     card.style.display = 'none';
 
-    if(!code && !preloadedUrl){
-      err.hidden = false;
-      err.textContent = 'कृपया 6 अंकों का कोड डालें';
-      return;
-    }
+    activeReceiveCloudUrl = preloadedUrl || '';
+    activeReceiveLocalUrl = localUrl || '';
 
-    // Direct URL available via QR scan
-    if(preloadedUrl){
-      nameEl.textContent = preloadedName || 'shared_file';
-      metaEl.textContent = (preloadedSize ? formatBytes(preloadedSize) : 'तैयार है') + ' • सीधे डाउनलोड करें';
-      dlBtn.href = preloadedUrl;
-      dlBtn.setAttribute('download', preloadedName || 'file');
-      iconEl.textContent = getDropFileIcon(preloadedName || 'file');
+    // Direct URL available via QR scan or URL params
+    if(preloadedUrl || localUrl){
+      var fn = preloadedName || 'shared_file';
+      nameEl.textContent = fn;
+      var szStr = preloadedSize ? formatBytes(preloadedSize) : 'तैयार है';
+      metaEl.textContent = szStr + ' • सीधे डाउनलोड करें';
+      dlBtn.href = preloadedUrl || localUrl;
+      dlBtn.setAttribute('download', fn);
+      iconEl.textContent = getDropFileIcon(fn);
       card.style.display = 'block';
       card.classList.remove('token-reveal');
       void card.offsetWidth;
       card.classList.add('token-reveal');
+      return;
+    }
+
+    if(!code){
+      err.hidden = false;
+      err.textContent = 'कृपया 6 अंकों का कोड डालें या QR स्कैन करें';
       return;
     }
 
@@ -875,17 +1063,21 @@ tailwind.config = {
     code = (code || '').trim().replace(/^#/, '').toUpperCase();
 
     try {
-      var agentHost = (window.location.port === '8085' ? window.location.host : '10.108.118.216:8085');
-      // 1. Try local agent first
+      var agentHost = (window.location.port === '8085' ? window.location.host : '10.172.100.234:8085');
+      // 1. Try local agent first (Wi-Fi)
       var agentFound = false;
       try {
-        var aRes = await fetch('http://' + agentHost + '/api/get-share?code=' + encodeURIComponent(code));
+        var ctrl = new AbortController();
+        var tId = setTimeout(function(){ ctrl.abort(); }, 1200);
+        var aRes = await fetch('http://' + agentHost + '/api/pc-share-info?code=' + encodeURIComponent(code), { signal: ctrl.signal });
+        clearTimeout(tId);
         if(aRes.ok){
           var aData = await aRes.json();
           if(aData && aData.ok && aData.file){
             load.style.display = 'none';
             nameEl.textContent = aData.file.name;
-            metaEl.textContent = formatBytes(aData.file.size) + ' • PC से तैयार है';
+            metaEl.textContent = formatBytes(aData.file.size) + ' • Wi-Fi डायरेक्ट से तैयार है';
+            activeReceiveLocalUrl = aData.file.url;
             dlBtn.href = aData.file.url;
             dlBtn.setAttribute('download', aData.file.name);
             iconEl.textContent = getDropFileIcon(aData.file.name);
@@ -899,24 +1091,31 @@ tailwind.config = {
         }
       } catch(e){}
 
-      // 2. Try Supabase cloud search
+      // 2. Try Supabase cloud search (Works on 4G/5G mobile data)
       if(!agentFound && sb){
         var query = await sb.from('jobs')
           .select('*')
           .eq('status', 'pending')
-          .ilike('note', 'PC_SHARE#' + code)
+          .ilike('note', 'PC_SHARE#' + code + '%')
           .order('created_at', { ascending: false })
           .limit(1);
 
         if(query.data && query.data.length > 0){
           var j = query.data[0];
-          var signRes = await sb.storage.from(C.BUCKET || 'jobs').createSignedUrl(j.file_path, 86400);
-          var dlUrl = (signRes && signRes.data) ? signRes.data.signedUrl : '';
-          if(dlUrl){
+          var parts = (j.note || '').split('#');
+          var cloudDlUrl = parts[2] || '';
+          if(!cloudDlUrl){
+            try {
+              var signRes = await sb.storage.from(C.BUCKET || 'jobs').createSignedUrl(j.file_path, 86400 * 7);
+              if(signRes && signRes.data) cloudDlUrl = signRes.data.signedUrl;
+            } catch(e){}
+          }
+          if(cloudDlUrl){
             load.style.display = 'none';
             nameEl.textContent = j.file_name;
-            metaEl.textContent = 'तैयार है • क्लाउड से डाउनलोड करें';
-            dlBtn.href = dlUrl;
+            metaEl.textContent = 'तैयार है • 4G/5G इंटरनेट से डाउनलोड करें';
+            activeReceiveCloudUrl = cloudDlUrl;
+            dlBtn.href = cloudDlUrl;
             dlBtn.setAttribute('download', j.file_name);
             iconEl.textContent = getDropFileIcon(j.file_name);
             card.style.display = 'block';
@@ -930,13 +1129,38 @@ tailwind.config = {
 
       load.style.display = 'none';
       err.hidden = false;
-      err.textContent = 'कोड #' + code + ' के लिए कोई फाइल नहीं मिली। कृपया कोड चेक करें।';
+      err.textContent = 'कोड #' + code + ' के लिए कोई फाइल नहीं मिली। कृपया कोड चेक करें या QR स्कैन करें।';
 
     } catch(errEx){
       load.style.display = 'none';
       err.hidden = false;
       err.textContent = 'ढूंढने में गड़बड़ हुई: ' + (errEx.message || errEx);
     }
+  }
+
+  // Handle download click with automatic fallback between local Wi-Fi and Cloud
+  if($('receiveDownloadBtn')){
+    $('receiveDownloadBtn').onclick = async function(e){
+      if(activeReceiveLocalUrl && activeReceiveCloudUrl){
+        e.preventDefault();
+        var btn = $('receiveDownloadBtn');
+        var originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span>⬇️ डाउनलोड हो रहा है...</span>';
+        try {
+          var testCtrl = new AbortController();
+          var testTimeout = setTimeout(function(){ testCtrl.abort(); }, 1200);
+          var check = await fetch(activeReceiveLocalUrl, { method: 'HEAD', signal: testCtrl.signal });
+          clearTimeout(testTimeout);
+          if(check.ok){
+            window.location.href = activeReceiveLocalUrl;
+            btn.innerHTML = originalHtml;
+            return;
+          }
+        } catch(e){}
+        window.location.href = activeReceiveCloudUrl;
+        btn.innerHTML = originalHtml;
+      }
+    };
   }
 
   $('receiveSearchBtn').onclick = function(){
@@ -974,10 +1198,6 @@ tailwind.config = {
   }
 
   async function detectDropNetworkMode(){
-    var badge = $('dropNetBadge');
-    var txt = $('dropNetTxt');
-    if(!badge || !txt) return;
-    txt.textContent = 'Network check ho raha hai...';
     try {
       var controller = new AbortController();
       var timeoutId = setTimeout(function(){ controller.abort(); }, 1200);
@@ -985,15 +1205,10 @@ tailwind.config = {
       clearTimeout(timeoutId);
       if(res.ok){
         dropUploadMode = 'wifi';
-        badge.className = 'inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold px-3 py-1 rounded-full shadow-xs';
-        txt.textContent = '🟢 Local Shop Wi-Fi Mode (Direct PC Transfer)';
         return;
       }
     } catch(e){}
-
     dropUploadMode = 'cloud';
-    badge.className = 'inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-bold px-3 py-1 rounded-full shadow-xs';
-    txt.textContent = '☁️ Mobile Data (4G/5G) — Universal Drop';
   }
 
   var dropzoneEl = $('dropzoneEl');
@@ -1206,17 +1421,18 @@ tailwind.config = {
 
   // Check URL param ?tool=drop or ?receive=CODE on initial load
   var initUrlParams = new URLSearchParams(window.location.search);
-  var receiveParam = initUrlParams.get('receive');
-  var fileParam = initUrlParams.get('file');
+  var receiveParam = initUrlParams.get('receive') || initUrlParams.get('code');
+  var fileParam = initUrlParams.get('name') || initUrlParams.get('file');
   var urlParam = initUrlParams.get('url');
+  var localParam = initUrlParams.get('local');
   var sizeParam = parseInt(initUrlParams.get('size') || '0', 10);
 
-  if(receiveParam || initUrlParams.get('tool') === 'receive'){
+  if(receiveParam || initUrlParams.get('tool') === 'receive' || urlParam || localParam){
     switchTool('receive', true);
     if(receiveParam){
       $('receiveCodeInput').value = receiveParam;
-      searchReceiveFile(receiveParam, urlParam, fileParam, sizeParam);
     }
+    searchReceiveFile(receiveParam, urlParam, fileParam, sizeParam, localParam);
   } else if(initUrlParams.get('tool') === 'drop'){
     switchTool('drop', true);
   }
