@@ -83,13 +83,11 @@ tailwind.config = {
           </div>
         </div>
 
-        <div id="connHint" class="text-[11px] font-bold text-rose-300" hidden>Agent band hai — counter PC par start-agent.bat chalayein.</div>
-
         <button id="soundToggle" class="bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-xl transition active:scale-95">
           🔊 Awaaz: ON
         </button>
 
-        <button id="testJobBtn" class="bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-xl transition active:scale-95">
+        <button id="testJobBtn" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-xl shadow-md shadow-brand-600/30 transition active:scale-95">
           🧪 Test Print
         </button>
 
@@ -143,30 +141,14 @@ tailwind.config = {
         <!-- Injected via summary() -->
       </div>
 
-      <!-- Filter Tabs Navigation -->
-      <div id="tabs" class="flex flex-wrap gap-2 pt-2">
-        <!-- Injected via renderTabs() -->
-      </div>
-
-      <!-- Live Job Queue List -->
-      <div id="list" class="space-y-3">
-        <!-- Injected via render() -->
-      </div>
-
       <!-- Storage Bucket & Counter Standee QR Control Center -->
-      <details id="setupPanel" class="bg-slate-850 border border-slate-800 rounded-2xl shadow-sm">
-        <summary class="cursor-pointer select-none list-none px-5 py-4 flex items-center justify-between gap-3">
-          <div>
-            <span class="text-base font-extrabold text-white">📱 Setup &amp; Counter QR Codes</span>
-            <p class="text-xs text-slate-400 mt-0.5">Storage, network aur standee QR — roz ke queue se alag rakha gaya hai.</p>
-          </div>
-          <span class="text-[11px] font-bold text-slate-400 shrink-0">Kholein ▾</span>
-        </summary>
-        <div class="px-5 pb-5">
+      <div class="bg-slate-850 border border-slate-800 rounded-2xl p-5 shadow-sm">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
           <div>
-            <h2 class="text-xs font-bold text-slate-300">Counter QR Codes &amp; Quick Access Link</h2>
-            <p class="text-[11px] text-slate-400 mt-0.5">Counter acrylic stand par ye QR lagayein taki grahak direct scan &amp; upload kar sakein.</p>
+            <h2 class="text-base font-extrabold text-white flex items-center gap-2">
+              <span>📱 Counter QR Codes &amp; Quick Access Link</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">Counter acrylic stand par ye QR lagayein taki grahak direct scan &amp; upload kar sakein.</p>
           </div>
           
           <div class="flex flex-wrap items-center gap-3">
@@ -239,7 +221,7 @@ tailwind.config = {
               </div>
             </div>
             <div id="printToolQR" class="qr-canvas-holder my-2"></div>
-            <div id="printToolUrl" class="text-[11px] font-mono text-slate-400 break-all leading-snug bg-slate-950 px-2 py-1 rounded-md mt-2"></div>
+            <div id="printToolUrl" class="text-[11px] font-mono text-slate-400 truncate bg-slate-950 px-2 py-1 rounded-md mt-2"></div>
             <div class="grid grid-cols-2 gap-2 mt-3">
               <button id="copyPrintUrlBtn" class="py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition">
                 📋 Copy Link
@@ -260,12 +242,12 @@ tailwind.config = {
               </div>
             </div>
             <div id="dropToolQR" class="qr-canvas-holder my-2"></div>
-            <div id="dropToolUrl" class="text-[11px] font-mono text-slate-400 break-all leading-snug bg-slate-950 px-2 py-1 rounded-md mt-2"></div>
+            <div id="dropToolUrl" class="text-[11px] font-mono text-slate-400 truncate bg-slate-950 px-2 py-1 rounded-md mt-2"></div>
             <div class="grid grid-cols-2 gap-2 mt-3">
               <button id="copyDropUrlBtn" class="py-1.5 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition">
                 📋 Copy Link
               </button>
-              <button id="openDropToolBtn" class="py-1.5 px-2.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-lg transition">
+              <button id="openDropToolBtn" class="py-1.5 px-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition">
                 🔗 Kholein (Test)
               </button>
             </div>
@@ -277,13 +259,39 @@ tailwind.config = {
           <!-- Tool 3: PC to Mobile File Share -->
           <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center flex flex-col justify-between">
             <div>
-              <div class="flex items-center gap-2.5 text-left mb-3">
+              <div class="flex items-center gap-2.5 text-left mb-2">
                 <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base">📤</span>
                 <div>
                   <div class="text-xs font-extrabold text-white">3. PC to Mobile File Share</div>
                   <div class="text-[11px] text-slate-400">PC se grahak ke phone par file bhejein</div>
                 </div>
               </div>
+
+              <!-- Live Total Sent & Downloads Counters -->
+              <div class="grid grid-cols-2 gap-2 my-2 text-left">
+                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2 flex items-center gap-2">
+                  <span class="text-lg">📤</span>
+                  <div class="min-w-0">
+                    <div class="text-[9px] text-slate-400 uppercase tracking-wider font-bold">Total Sent</div>
+                    <div id="pcShareTotalSent" class="text-xs font-extrabold text-white font-mono truncate">0 files</div>
+                  </div>
+                </div>
+                <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2 flex items-center gap-2">
+                  <span class="text-lg">📥</span>
+                  <div class="min-w-0">
+                    <div class="text-[9px] text-slate-400 uppercase tracking-wider font-bold">Total Downloads</div>
+                    <div id="pcShareTotalDownloads" class="text-xs font-extrabold text-emerald-400 font-mono truncate">0 dls</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Button to open Uploaded Files Manager -->
+              <button id="pcShareOpenListBtn" type="button" class="w-full mb-3 py-1.5 px-2.5 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 text-xs font-bold rounded-lg transition flex items-center justify-between">
+                <span class="flex items-center gap-1.5">
+                  <span>📁</span> Bheji Gayi Files &amp; Delete
+                </span>
+                <span id="pcShareBadgeCount" class="bg-slate-700 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full font-mono">0</span>
+              </button>
 
               <!-- Upload Drag/Drop Box -->
               <div id="pcShareBox" class="border-2 border-dashed border-slate-750 hover:border-emerald-500 bg-slate-950/60 hover:bg-emerald-950/20 rounded-xl p-4 cursor-pointer transition text-center group">
@@ -303,6 +311,7 @@ tailwind.config = {
                 <div class="text-[11px] font-bold text-emerald-300">Grahak ko ye 6-Digit Code batayein:</div>
                 <div id="pcShareCodeDisplay" class="font-mono text-3xl font-black text-emerald-400 my-1 tracking-widest">#------</div>
                 <div id="pcShareFileName" class="text-[11px] text-slate-300 font-bold truncate">file.pdf</div>
+                <div id="pcShareActiveDownloads" class="text-[10px] font-bold text-emerald-400 my-1 bg-emerald-950/80 border border-emerald-800/80 rounded-md py-0.5 px-2 inline-block">📥 0 Downloads</div>
                 <div id="pcShareModeTags" class="flex flex-wrap items-center justify-center gap-1.5 my-1.5 text-[10px] font-semibold">
                   <span id="pcShareCloudTag" class="bg-blue-900/60 text-blue-300 border border-blue-700/60 px-2 py-0.5 rounded-md">☁️ बिना Wi-Fi (4G/5G) चलेगा</span>
                   <span id="pcShareLanTag" class="bg-emerald-900/60 text-emerald-300 border border-emerald-700/60 px-2 py-0.5 rounded-md">⚡ Wi-Fi डायरेक्ट चलेगा</span>
@@ -311,6 +320,9 @@ tailwind.config = {
                 <div class="flex gap-1.5 mt-2">
                   <button id="pcShareCopyLinkBtn" type="button" class="flex-1 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded-lg transition">
                     📋 Copy Link
+                  </button>
+                  <button id="pcShareDeleteActiveBtn" type="button" class="py-1.5 px-2.5 bg-rose-900/50 hover:bg-rose-800/80 border border-rose-700/60 text-rose-200 text-[11px] font-bold rounded-lg transition" title="Ye File Delete Karein">
+                    🗑️ Delete
                   </button>
                   <button id="pcShareResetBtn" type="button" class="py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold rounded-lg transition">
                     ➕ Nayi File
@@ -322,16 +334,70 @@ tailwind.config = {
           </div>
 
         </div>
-        </div>
-      </details>
+      </div>
+
+      <!-- Filter Tabs Navigation -->
+      <div id="tabs" class="flex flex-wrap gap-2 pt-2">
+        <!-- Injected via renderTabs() -->
+      </div>
+
+      <!-- Live Job Queue List -->
+      <div id="list" class="space-y-3">
+        <!-- Injected via render() -->
+      </div>
+
+
 
     </section>
+
+    <!-- PC Uploaded Files Manager Modal -->
+    <div id="pcShareModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4" style="display:none">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+        
+        <!-- Modal Header -->
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base">📁</span>
+            <div>
+              <h3 class="text-sm font-extrabold text-white">PC Uploaded Files Manager</h3>
+              <div class="text-[11px] text-slate-400">Total Bheji gayi files aur customer downloads</div>
+            </div>
+          </div>
+          <button id="pcShareModalCloseBtn" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition">
+            ✕
+          </button>
+        </div>
+
+        <!-- Summary Banner Inside Modal -->
+        <div class="p-3 bg-slate-950/40 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-3">
+            <span class="text-slate-300 font-bold">📤 Total Sent: <span id="pcModalTotalSent" class="font-mono text-white">0 files</span></span>
+            <span class="text-slate-600">•</span>
+            <span class="text-emerald-400 font-bold">📥 Total Downloads: <span id="pcModalTotalDownloads" class="font-mono">0</span></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="pcModalRefreshBtn" type="button" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-bold rounded-lg transition flex items-center gap-1">
+              🔄 Refresh
+            </button>
+            <button id="pcModalDeleteAllBtn" type="button" class="px-2.5 py-1 bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/80 text-rose-300 text-xs font-bold rounded-lg transition flex items-center gap-1">
+              🗑️ Sabhi Delete Karein
+            </button>
+          </div>
+        </div>
+
+        <!-- Files List Container -->
+        <div id="pcShareModalList" class="p-3 sm:p-4 overflow-y-auto space-y-2 flex-1">
+          <!-- Dynamically populated files -->
+        </div>
+
+      </div>
+    </div>
 
   </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="qrcode.min.js"></script>
-<script src="config.js?v=3"></script>
+<script src="config.js?v=2"></script>
 <script>
 (function(){
   var C = window.CYBERPRINT_CONFIG || {};
@@ -577,9 +643,277 @@ tailwind.config = {
   var pcShareResultCard = $('pcShareResultCard');
   var pcShareCodeDisplay = $('pcShareCodeDisplay');
   var pcShareFileName = $('pcShareFileName');
+  var pcShareActiveDownloads = $('pcShareActiveDownloads');
   var pcShareQRHolder = $('pcShareQRHolder');
   var pcShareCopyLinkBtn = $('pcShareCopyLinkBtn');
+  var pcShareDeleteActiveBtn = $('pcShareDeleteActiveBtn');
   var pcShareResetBtn = $('pcShareResetBtn');
+
+  var pcShareTotalSent = $('pcShareTotalSent');
+  var pcShareTotalDownloads = $('pcShareTotalDownloads');
+  var pcShareBadgeCount = $('pcShareBadgeCount');
+  var pcShareOpenListBtn = $('pcShareOpenListBtn');
+
+  var pcShareModal = $('pcShareModal');
+  var pcShareModalCloseBtn = $('pcShareModalCloseBtn');
+  var pcModalRefreshBtn = $('pcModalRefreshBtn');
+  var pcModalDeleteAllBtn = $('pcModalDeleteAllBtn');
+  var pcShareModalList = $('pcShareModalList');
+  var pcModalTotalSent = $('pcModalTotalSent');
+  var pcModalTotalDownloads = $('pcModalTotalDownloads');
+
+  var activeShareCode = '';
+  var activeSharesData = [];
+  var lastRenderedSharesSignature = '';
+
+  function formatBytes(bytes){
+    if(!bytes || isNaN(bytes)) return '0 B';
+    var k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+  }
+
+  function getFileIcon(name){
+    name = (name || '').toLowerCase();
+    if(/\.(pdf)$/.test(name)) return '📕';
+    if(/\.(jpg|jpeg|png|webp|bmp|gif)$/.test(name)) return '🖼️';
+    if(/\.(apk|zip|rar|7z|tar|gz)$/.test(name)) return '📦';
+    if(/\.(doc|docx)$/.test(name)) return '📘';
+    if(/\.(xls|xlsx|csv)$/.test(name)) return '📊';
+    if(/\.(txt|md|log)$/.test(name)) return '📄';
+    return '📁';
+  }
+
+  async function loadPcSharesStats(){
+    var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+    try {
+      var res = await fetch('http://' + agentHost + '/api/pc-shares');
+      if(res.ok){
+        var data = await res.json();
+        if(data && data.ok){
+          activeSharesData = data.shares || [];
+          var sentCount = data.total_sent || 0;
+          var dlCount = data.total_downloads || 0;
+
+          if(pcShareTotalSent) pcShareTotalSent.textContent = sentCount + (sentCount === 1 ? ' file' : ' files');
+          if(pcShareTotalDownloads) pcShareTotalDownloads.textContent = dlCount + (dlCount === 1 ? ' dl' : ' dls');
+          if(pcShareBadgeCount) pcShareBadgeCount.textContent = sentCount;
+          if(pcModalTotalSent) pcModalTotalSent.textContent = sentCount + (sentCount === 1 ? ' file' : ' files');
+          if(pcModalTotalDownloads) pcModalTotalDownloads.textContent = dlCount;
+
+          if(activeShareCode){
+            var activeItem = activeSharesData.find(function(s){ return s.code === activeShareCode; });
+            if(activeItem && pcShareActiveDownloads){
+              var dls = activeItem.downloads || 0;
+              pcShareActiveDownloads.textContent = '📥 ' + dls + (dls === 1 ? ' Download' : ' Downloads');
+            }
+          }
+
+          var currentSig = JSON.stringify(activeSharesData.map(function(s){ return s.code + ':' + (s.downloads || 0); }));
+          if(pcShareModal && pcShareModal.style.display !== 'none' && currentSig !== lastRenderedSharesSignature){
+            lastRenderedSharesSignature = currentSig;
+            renderPcShareModalList();
+          }
+        }
+      }
+    } catch(e){}
+  }
+
+  function renderPcShareModalList(){
+    if(!pcShareModalList) return;
+    if(!activeSharesData || activeSharesData.length === 0){
+      pcShareModalList.innerHTML = '<div class="py-8 text-center text-slate-500 text-xs">' +
+        '<div class="text-3xl mb-1.5 opacity-60">📭</div>' +
+        '<div class="font-bold">Koi PC uploaded file nahi hai</div>' +
+        '<div class="text-[11px] mt-0.5">Yahan aapki bheji gayi sabhi files dikhengi</div>' +
+      '</div>';
+      return;
+    }
+
+    var html = '';
+    activeSharesData.forEach(function(item){
+      var icon = getFileIcon(item.name);
+      var sz = formatBytes(item.size);
+      var dls = item.downloads || 0;
+      var pBase = (publicBaseUrl || C.PUBLIC_URL || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
+      var shareLink = pBase + '/index.html?receive=' + item.code + '&name=' + encodeURIComponent(item.name) + '&size=' + item.size;
+      if(item.cloud_url) shareLink += '&url=' + encodeURIComponent(item.cloud_url);
+      if(item.local_url) shareLink += '&local=' + encodeURIComponent(item.local_url);
+
+      html += '<div class="p-3 bg-slate-950/70 border border-slate-800 rounded-xl flex items-center justify-between gap-3 hover:border-slate-700 transition">' +
+        '<div class="flex items-center gap-2.5 min-w-0 flex-1">' +
+          '<span class="text-2xl flex-shrink-0">' + icon + '</span>' +
+          '<div class="min-w-0">' +
+            '<div class="flex items-center gap-2">' +
+              '<span class="font-mono text-xs font-black text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-1.5 py-0.5 rounded">#' + item.code + '</span>' +
+              '<span class="text-xs font-bold text-slate-200 truncate" title="' + item.name + '">' + item.name + '</span>' +
+            '</div>' +
+            '<div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 mt-0.5">' +
+              '<span>' + sz + '</span>' +
+              '<span>•</span>' +
+              '<span>' + (item.created_at || 'Recently') + '</span>' +
+              '<span>•</span>' +
+              '<span class="' + (dls > 0 ? 'text-emerald-400 font-bold' : 'text-slate-500') + '">📥 ' + dls + (dls === 1 ? ' download' : ' downloads') + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="flex items-center gap-1.5 flex-shrink-0">' +
+          '<button type="button" class="btn-pc-copy p-1.5 bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-bold rounded-lg transition" data-link="' + encodeURIComponent(shareLink) + '" title="Copy Link">' +
+            '📋' +
+          '</button>' +
+          '<button type="button" class="btn-pc-show-qr p-1.5 bg-emerald-900/40 hover:bg-emerald-800/60 border border-emerald-700/60 text-emerald-300 text-xs font-bold rounded-lg transition" data-code="' + item.code + '" title="QR Dekhein">' +
+            '🔍 QR' +
+          '</button>' +
+          '<button type="button" class="btn-pc-delete p-1.5 bg-rose-950/50 hover:bg-rose-900/80 border border-rose-800/60 text-rose-300 text-xs font-bold rounded-lg transition" data-code="' + item.code + '" data-name="' + encodeURIComponent(item.name) + '" title="File Delete Karein">' +
+            '🗑️' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    });
+
+    pcShareModalList.innerHTML = html;
+
+    pcShareModalList.querySelectorAll('.btn-pc-copy').forEach(function(btn){
+      btn.onclick = function(){
+        var link = decodeURIComponent(this.getAttribute('data-link'));
+        navigator.clipboard.writeText(link).then(function(){
+          alert('Download Link copy ho gaya!');
+        }).catch(function(){});
+      };
+    });
+
+    pcShareModalList.querySelectorAll('.btn-pc-show-qr').forEach(function(btn){
+      btn.onclick = function(){
+        var code = this.getAttribute('data-code');
+        showShareInResultCard(code);
+        closePcShareModal();
+      };
+    });
+
+    pcShareModalList.querySelectorAll('.btn-pc-delete').forEach(function(btn){
+      btn.onclick = function(){
+        var code = this.getAttribute('data-code');
+        var name = decodeURIComponent(this.getAttribute('data-name'));
+        deleteSinglePcShare(code, name);
+      };
+    });
+  }
+
+  function showShareInResultCard(code){
+    var item = activeSharesData.find(function(s){ return s.code === code; });
+    if(!item) return;
+    activeShareCode = code;
+
+    var pBase = (publicBaseUrl || C.PUBLIC_URL || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
+    var customerShareUrl = pBase + '/index.html?receive=' + item.code + '&name=' + encodeURIComponent(item.name) + '&size=' + item.size;
+    if(item.cloud_url) customerShareUrl += '&url=' + encodeURIComponent(item.cloud_url);
+    if(item.local_url) customerShareUrl += '&local=' + encodeURIComponent(item.local_url);
+
+    if(pcShareBox) pcShareBox.style.display = 'none';
+    if(pcShareResultCard) pcShareResultCard.style.display = 'block';
+    if(pcShareCodeDisplay) pcShareCodeDisplay.textContent = '#' + item.code;
+    if(pcShareFileName) pcShareFileName.textContent = item.name + ' (' + formatBytes(item.size) + ')';
+    if(pcShareActiveDownloads){
+      var dls = item.downloads || 0;
+      pcShareActiveDownloads.textContent = '📥 ' + dls + (dls === 1 ? ' Download' : ' Downloads');
+    }
+    if($('pcShareCloudTag')) $('pcShareCloudTag').style.display = item.cloud_url ? 'inline-block' : 'none';
+    if($('pcShareLanTag')) $('pcShareLanTag').style.display = item.local_url ? 'inline-block' : 'none';
+
+    if(window.QRCode && pcShareQRHolder){
+      pcShareQRHolder.innerHTML = '';
+      new QRCode(pcShareQRHolder, { text: customerShareUrl, width: 170, height: 170, correctLevel: QRCode.CorrectLevel.L });
+    }
+
+    if(pcShareCopyLinkBtn){
+      pcShareCopyLinkBtn.onclick = function(){
+        navigator.clipboard.writeText(customerShareUrl).then(function(){
+          alert('Customer Download Link copy ho gaya!');
+        }).catch(function(){});
+      };
+    }
+  }
+
+  async function deleteSinglePcShare(code, name){
+    if(!confirm('Kya aap #' + code + ' (' + (name || 'file') + ') ko delete karna chahte hain?\nYe disk aur cloud dono se hat jayegi.')){
+      return;
+    }
+    var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+    try {
+      var res = await fetch('http://' + agentHost + '/api/pc-share-delete?code=' + encodeURIComponent(code), {
+        method: 'POST'
+      });
+      if(sb){
+        try {
+          await sb.from('jobs').update({ file_deleted: true, status: 'cancelled' }).ilike('note', 'PC_SHARE#' + code + '%');
+        } catch(e){}
+      }
+      if(activeShareCode === code){
+        activeShareCode = '';
+        if(pcShareResultCard) pcShareResultCard.style.display = 'none';
+        if(pcShareBox) pcShareBox.style.display = 'block';
+      }
+      await loadPcSharesStats();
+    } catch(e){
+      alert('File delete nahi ho saki: ' + (e.message || e));
+    }
+  }
+
+  async function deleteAllPcShares(){
+    if(!confirm('Kya aap sach me SABHI uploaded PC files ko delete karna chahte hain?\nSabhi files permanently delete ho jayengi.')){
+      return;
+    }
+    var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+    try {
+      var res = await fetch('http://' + agentHost + '/api/pc-shares-delete-all', {
+        method: 'POST'
+      });
+      if(sb){
+        try {
+          await sb.from('jobs').update({ file_deleted: true, status: 'cancelled' }).eq('customer_name', 'PC_TO_MOBILE');
+        } catch(e){}
+      }
+      activeShareCode = '';
+      if(pcShareResultCard) pcShareResultCard.style.display = 'none';
+      if(pcShareBox) pcShareBox.style.display = 'block';
+      await loadPcSharesStats();
+      alert('Sabhi PC uploaded files delete ho gayi hain.');
+    } catch(e){
+      alert('Delete karne me dikkat aayi: ' + (e.message || e));
+    }
+  }
+
+  function openPcShareModal(){
+    if(pcShareModal){
+      pcShareModal.style.display = 'flex';
+      lastRenderedSharesSignature = '';
+      renderPcShareModalList();
+      loadPcSharesStats();
+    }
+  }
+
+  function closePcShareModal(){
+    if(pcShareModal){
+      pcShareModal.style.display = 'none';
+    }
+  }
+
+  if(pcShareOpenListBtn) pcShareOpenListBtn.onclick = openPcShareModal;
+  if(pcShareModalCloseBtn) pcShareModalCloseBtn.onclick = closePcShareModal;
+  if(pcModalRefreshBtn) pcModalRefreshBtn.onclick = loadPcSharesStats;
+  if(pcModalDeleteAllBtn) pcModalDeleteAllBtn.onclick = deleteAllPcShares;
+
+  if(pcShareDeleteActiveBtn){
+    pcShareDeleteActiveBtn.onclick = function(){
+      if(activeShareCode){
+        deleteSinglePcShare(activeShareCode, pcShareFileName ? pcShareFileName.textContent : '');
+      }
+    };
+  }
+
+  // Load stats initially and poll every 8 seconds
+  loadPcSharesStats();
+  setInterval(loadPcSharesStats, 8000);
 
   if(pcShareBox && pcShareInput){
     pcShareBox.onclick = function(){ pcShareInput.click(); };
@@ -660,10 +994,14 @@ tailwind.config = {
         throw new Error('फाइल शेयर तैयार नहीं हो सकी।');
       }
 
+      activeShareCode = shareCode;
+      loadPcSharesStats();
+
       if(pcShareProgress) pcShareProgress.style.display = 'none';
       if(pcShareResultCard) pcShareResultCard.style.display = 'block';
       if(pcShareCodeDisplay) pcShareCodeDisplay.textContent = '#' + shareCode;
       if(pcShareFileName) pcShareFileName.textContent = f.name + ' (' + (f.size / 1024 / 1024).toFixed(2) + ' MB)';
+      if(pcShareActiveDownloads) pcShareActiveDownloads.textContent = '📥 0 Downloads';
 
       if($('pcShareCloudTag')) $('pcShareCloudTag').style.display = cloudUrl ? 'inline-block' : 'none';
       if($('pcShareLanTag')) $('pcShareLanTag').style.display = localUrl ? 'inline-block' : 'none';
@@ -700,6 +1038,7 @@ tailwind.config = {
 
   if(pcShareResetBtn){
     pcShareResetBtn.onclick = function(){
+      activeShareCode = '';
       if(pcShareResultCard) pcShareResultCard.style.display = 'none';
       if(pcShareBox) pcShareBox.style.display = 'block';
       if(pcShareInput) pcShareInput.value = '';
@@ -812,7 +1151,6 @@ tailwind.config = {
     $('agenttxt').textContent = online
       ? ('Online' + (agent.printer ? ' \u00b7 ' + agent.printer : ''))
       : 'Offline';
-    if($('connHint')) $('connHint').hidden = online;
 
     if(agent && agent.note){
       var m = agent.note.match(/http:\/\/([0-9.]+):([0-9]+)/);
@@ -862,6 +1200,7 @@ tailwind.config = {
       '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
         '<div class="flex items-center justify-between">' +
           '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Incoming Queue</span>' +
+          '<span class="p-1 bg-amber-500/10 text-amber-400 rounded-lg text-[10px] font-bold">Needs Action</span>' +
         '</div>' +
         '<div class="mt-2 flex items-baseline gap-2">' +
           '<span class="font-mono text-3xl font-black ' + (pendingCount > 0 ? 'text-amber-400 animate-pulse' : 'text-slate-200') + '">' + pendingCount + '</span>' +
@@ -871,6 +1210,7 @@ tailwind.config = {
       '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
         '<div class="flex items-center justify-between">' +
           '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Today\'s Revenue</span>' +
+          '<span class="p-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-[10px] font-bold">UPI / Cash</span>' +
         '</div>' +
         '<div class="mt-2 flex items-baseline gap-2">' +
           '<span class="font-mono text-3xl font-black text-emerald-400">' + money(rev) + '</span>' +
@@ -880,6 +1220,7 @@ tailwind.config = {
       '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
         '<div class="flex items-center justify-between">' +
           '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pages Printed</span>' +
+          '<span class="p-1 bg-brand-500/10 text-brand-400 rounded-lg text-[10px] font-bold">Sheets</span>' +
         '</div>' +
         '<div class="mt-2 flex items-baseline gap-2">' +
           '<span class="font-mono text-3xl font-black text-white">' + (bwPages + colorPages) + '</span>' +
@@ -889,6 +1230,7 @@ tailwind.config = {
       '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
         '<div class="flex items-center justify-between">' +
           '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">File Drops</span>' +
+          '<span class="p-1 bg-purple-500/10 text-purple-400 rounded-lg text-[10px] font-bold">PC Saved</span>' +
         '</div>' +
         '<div class="mt-2 flex items-baseline gap-2">' +
           '<span class="font-mono text-3xl font-black text-purple-400">' + dropJobs.length + '</span>' +

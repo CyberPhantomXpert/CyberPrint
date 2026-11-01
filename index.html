@@ -214,7 +214,6 @@ tailwind.config = {
             <h1 id="shop" class="text-base font-extrabold tracking-tight">CyberPrint Pay</h1>
             <p class="text-[11px] text-slate-400 font-medium">दुकान का डिजिटल प्रिंट व फाइल काउंटर</p>
           </div>
-        </div>
       </div>
       <div class="flex items-center gap-2">
         <button id="installAppBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition active:scale-95">
@@ -267,20 +266,13 @@ tailwind.config = {
         <!-- Step 3 -->
         <div id="stp3" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-slate-400 font-medium text-xs transition-all">
           <span class="step-num w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[11px]">3</span>
-          <span>टोकन</span>
+          <span>टोकन व Pay</span>
         </div>
       </div>
     </nav>
 
     <!-- ================= STEP 1: UPLOAD (Minimal & Direct) ================= -->
     <section id="s1" class="space-y-3.5 step-enter">
-
-      <!-- Rate disclosure: the per-page price before a file is chosen -->
-      <div class="bg-white border border-slate-200/90 rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-2 shadow-xs">
-        <span class="text-[11px] font-bold uppercase tracking-wide text-slate-500">रेट / Rate</span>
-        <span id="ratePill" class="text-[11px] font-bold text-slate-700">B&amp;W ₹5/पेज &middot; रंगीन ₹10/पेज</span>
-      </div>
-
       <div id="drop" class="border-2 border-dashed border-slate-300 hover:border-brand-500 bg-white hover:bg-brand-50/30 rounded-2xl p-7 text-center cursor-pointer transition-all duration-200 shadow-xs flex flex-col items-center justify-center group tap-tactile">
         <div class="w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-100/80 text-brand-600 flex items-center justify-center mb-3 transition shadow-xs">
           <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -292,7 +284,7 @@ tailwind.config = {
         <span class="mt-3.5 inline-flex items-center gap-1.5 bg-brand-600 group-hover:bg-brand-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition">
           <span>📁</span> फाइल चुनें (Browse File)
         </span>
-        <span id="dropHint" class="text-[11px] text-slate-500 mt-2 font-medium">PDF, JPG या PNG &middot; अधिकतम 20 MB</span>
+        <span class="text-[11px] text-slate-400 mt-2 font-medium">बड़ी से बड़ी फोटो या PDF फाइल भेज सकते हैं</span>
       </div>
       <input id="file" type="file" accept="application/pdf,image/jpeg,image/png" class="hidden" />
 
@@ -300,7 +292,7 @@ tailwind.config = {
       <div id="s1err" class="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-xl text-xs font-medium" hidden></div>
 
       <!-- Quick Switch to File Drop Card -->
-      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+      <div class="bg-purple-50/70 border border-purple-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3">
         <div class="flex items-center gap-2.5">
           <span class="text-xl">📲</span>
           <div>
@@ -308,13 +300,13 @@ tailwind.config = {
             <div class="text-[11px] text-slate-600">फुल HD क्वालिटी में सीधे कंप्यूटर पर ट्रांसफर करें</div>
           </div>
         </div>
-        <button type="button" id="cardSwitchToDropBtn" class="text-purple-700 hover:text-purple-900 text-xs font-bold px-1 py-1 rounded-lg shrink-0 transition active:scale-95 tap-tactile">
+        <button type="button" id="cardSwitchToDropBtn" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shrink-0 transition active:scale-95 shadow-xs tap-tactile">
           भेजें &rarr;
         </button>
       </div>
 
       <!-- Quick Switch to Receive from PC Card -->
-      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+      <div class="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3">
         <div class="flex items-center gap-2.5">
           <span class="text-xl">📥</span>
           <div>
@@ -322,13 +314,13 @@ tailwind.config = {
             <div class="text-[11px] text-slate-600">एडमिट कार्ड या स्कैन फोटो अपने फोन में डाउनलोड करें</div>
           </div>
         </div>
-        <button type="button" id="cardSwitchToReceiveBtn" class="text-emerald-700 hover:text-emerald-900 text-xs font-bold px-1 py-1 rounded-lg shrink-0 transition active:scale-95 tap-tactile">
+        <button type="button" id="cardSwitchToReceiveBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shrink-0 transition active:scale-95 shadow-xs tap-tactile">
           डाउनलोड करें &rarr;
         </button>
       </div>
 
       <!-- Privacy Info -->
-      <div class="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 font-medium">
+      <div class="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-medium">
         <span>🔒</span>
         <span>आपकी प्राइवेसी सुरक्षित है • फाइल प्रिंट होते ही सुरक्षित हट जाती है</span>
       </div>
@@ -545,23 +537,11 @@ tailwind.config = {
         <p class="text-xs text-brand-600 font-medium">Ye Token Code Counter Operator ko batayein</p>
       </div>
 
-      <!-- Live Order Tracker + Printer Animation -->
-      <div id="statusTracker" class="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-3.5 shadow-xs">
-        <div class="flex items-center gap-3">
-          <div id="trackerSpin" class="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin shrink-0"></div>
-          <div class="text-xs font-bold">
-            <span id="trackerMsg">Counter verification ka intezaar hai... (Payment check ho rahi hai)</span>
-          </div>
-        </div>
-
-        <!-- Printer animation, loaded lazily when this step opens -->
-        <div id="printAnimWrap" class="mt-1" hidden>
-          <div id="printAnim" class="w-[200px] h-[200px] mx-auto scale-110"></div>
-          <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden mx-8 mt-0.5">
-            <div id="printBar" class="h-full w-0 rounded-full transition-all duration-500"
-                 style="background-image:repeating-linear-gradient(45deg,#2563eb 0 8px,#3b82f6 8px 16px)"></div>
-          </div>
-          <div id="printMeta" class="text-[11px] text-slate-500 font-semibold text-center mt-1.5">Page 1 / 1 &middot; lagbhag</div>
+      <!-- Live Order Tracker Status Banner -->
+      <div id="statusTracker" class="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs">
+        <div id="trackerSpin" class="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin shrink-0"></div>
+        <div class="text-xs font-bold">
+          <span id="trackerMsg">Counter verification ka intezaar hai... (Payment check ho rahi hai)</span>
         </div>
       </div>
 
@@ -773,6 +753,8 @@ tailwind.config = {
 
     </div><!-- End toolReceiveView -->
 
+
+
   </main>
 
   <!-- ================= IN-PHONE CAMERA QR SCANNER MODAL ================= -->
@@ -830,7 +812,7 @@ tailwind.config = {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
-<script src="config.js?v=3"></script>
+<script src="config.js?v=2"></script>
 <script>
 (function(){
   var C = window.CYBERPRINT_CONFIG || {};
@@ -1045,6 +1027,8 @@ tailwind.config = {
   if($('openScannerBtn')) $('openScannerBtn').onclick = startQrScanner;
   if($('closeScannerBtn')) $('closeScannerBtn').onclick = stopQrScanner;
 
+  var currentReceiveCode = '';
+
   async function searchReceiveFile(code, preloadedUrl, preloadedName, preloadedSize, localUrl){
     var err = $('receiveErr');
     var load = $('receiveLoading');
@@ -1053,6 +1037,8 @@ tailwind.config = {
     var nameEl = $('receiveFileName');
     var metaEl = $('receiveFileMeta');
     var dlBtn = $('receiveDownloadBtn');
+
+    currentReceiveCode = (code || '').trim().replace(/^#/, '').toUpperCase();
 
     err.hidden = true;
     card.style.display = 'none';
@@ -1181,9 +1167,19 @@ tailwind.config = {
   }
 
   // Download button click handling: allow natural direct download without popup/mixed-content blockage
+  function pingShareDownload(){
+    if(!currentReceiveCode) return;
+    try {
+      var searchParams = new URLSearchParams(window.location.search);
+      var agentHost = searchParams.get('agent') || (window.location.port === '8085' ? window.location.host : '10.202.100.233:8085');
+      fetch('http://' + agentHost + '/api/pc-share-download-ping?code=' + encodeURIComponent(currentReceiveCode), { mode: 'no-cors' }).catch(function(){});
+    } catch(e){}
+  }
+
   if($('receiveDownloadBtn')){
     $('receiveDownloadBtn').onclick = function(e){
-      var target = dlBtn.getAttribute('href');
+      pingShareDownload();
+      var target = $('receiveDownloadBtn').getAttribute('href');
       if(!target || target === '#' || target === ''){
         e.preventDefault();
         alert('डाउनलोड लिंक उपलब्ध नहीं है, कृपया दोबारा QR कोड स्कैन करें।');
@@ -1193,6 +1189,12 @@ tailwind.config = {
       if(window.location.protocol === 'https:' && target.startsWith('http://')){
         window.open(target, '_blank');
       }
+    };
+  }
+
+  if($('receiveWifiDownloadBtn')){
+    $('receiveWifiDownloadBtn').onclick = function(){
+      pingShareDownload();
     };
   }
 
@@ -1727,14 +1729,6 @@ tailwind.config = {
     return { copies: copies, mode: mode, eff: eff, pageRange: pageRange, rate: rate, amount: amount };
   }
 
-  // Rate + limit disclosure, filled from config so the price is visible before upload
-  if($('ratePill')){
-    $('ratePill').innerHTML = 'B&amp;W \u20b9' + (C.PRICE_BW || 5) + '/पेज &middot; रंगीन \u20b9' + (C.PRICE_COLOR || 10) + '/पेज';
-  }
-  if($('dropHint')){
-    $('dropHint').innerHTML = 'PDF, JPG या PNG &middot; अधिकतम ' + (C.MAX_FILE_MB || 20) + ' MB';
-  }
-
   $('drop').onclick = function(){ $('file').click(); };
   $('file').onchange = function(e){ if(e.target.files[0]) pick(e.target.files[0]); };
   ['dragover','dragenter'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.add('drop-dragover'); }); });
@@ -1823,195 +1817,36 @@ tailwind.config = {
     return 'upi://pay?' + parts.join('&');
   }
 
-  // ---- Printer animation (Lottie, loaded only when the token screen opens) ----
-  var printAnim = null, printAnimLoading = false;
-  var animState = {
-    status: null, sidesTotal: 1, sidesDone: 0, lastRow: null,
-    startedAt: 0, minUntil: 0, ticker: null, finished: false
-  };
-
-  function loopMs(){ return 6000 / (C.ANIM_SPEED || 1.6); }
-
-  function prefersReduced(){
-    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  }
-
-  function loadPrintAnim(cb){
-    if(printAnim || printAnimLoading){ if(printAnim && cb) cb(); return; }
-    if(C.PRINT_ANIM_ENABLED === false) return;
-    printAnimLoading = true;
-    var done = function(){ printAnimLoading = false; if(cb) cb(); };
-    var start = function(){
-      if(!window.lottie || !$('printAnim')){ done(); return; }
-      fetch('printer-printing.json').then(function(r){
-        if(!r.ok) throw new Error('anim json ' + r.status);
-        return r.json();
-      }).then(function(data){
-        try {
-          printAnim = lottie.loadAnimation({
-            container: $('printAnim'), renderer: 'svg', loop: false, autoplay: false,
-            animationData: data, rendererSettings: { preserveAspectRatio: 'xMidYMid meet' }
-          });
-          printAnim.addEventListener('DOMLoaded', function(){
-            printAnim.goToAndStop(C.IDLE_FRAME || 100, true);
-            done();
-            // the job may already be printing while the 200KB of assets load
-            if(animState.status === 'printing' && $('printAnimWrap')){
-              $('printAnimWrap').hidden = false;
-              startAnimProgress(animState.lastRow);
-            } else if(animState.status === 'printed' && $('printAnimWrap')){
-              $('printAnimWrap').hidden = false;
-              finishAnim();
-            }
-          });
-          printAnim.addEventListener('loopComplete', onAnimLoop);
-          printAnim.addEventListener('data_failed', function(){ printAnim = null; done(); });
-        } catch(e){ printAnim = null; done(); }
-      }).catch(function(){ printAnim = null; done(); });
-    };
-    if(window.lottie) return start();
-    var s = document.createElement('script');
-    s.src = 'lottie_light.min.js';
-    s.onload = start;
-    s.onerror = done;
-    document.head.appendChild(s);
-  }
-
-  function renderAnimMeta(){
-    var meta = $('printMeta');
-    if(!meta) return;
-    var shown = Math.min(animState.sidesTotal, animState.sidesDone + 1);
-    if(animState.finished) shown = animState.sidesTotal;
-    meta.textContent = 'Page ' + shown + ' / ' + animState.sidesTotal + ' \u00b7 lagbhag';
-  }
-
-  function stopTicker(){
-    if(animState.ticker){ clearInterval(animState.ticker); animState.ticker = null; }
-  }
-
-  function startTicker(){
-    if(animState.ticker) return;
-    animState.ticker = setInterval(function(){
-      if(animState.status !== 'printing'){ stopTicker(); return; }
-      var bar = $('printBar');
-      if(!bar) return;
-      var perSide = (C.SECONDS_PER_SIDE || 3.75) * 1000;
-      var elapsed = Date.now() - animState.startedAt;
-      var est = (elapsed / perSide) / animState.sidesTotal;
-      bar.style.width = Math.max(3, Math.min(95, Math.round(est * 100))) + '%';
-    }, 250);
-  }
-
-  function onAnimLoop(){
-    animState.sidesDone = Math.min(animState.sidesTotal, animState.sidesDone + 1);
-    renderAnimMeta();
-    if(animState.sidesDone >= animState.sidesTotal){
-      printAnim.pause();
-      printAnim.goToAndStop(179, true);
-    }
-  }
-
-  // Hold the last sheet on screen, but never cut the loop short: a one-page job
-  // can report 'printed' before the customer has seen a single page come out.
-  function finishAnim(){
-    if(!printAnim) return;
-    animState.finished = true;
-    var wait = animState.minUntil - Date.now();
-    var hold = function(){ if(printAnim){ printAnim.pause(); printAnim.goToAndStop(179, true); } renderAnimMeta(); };
-    if(wait > 0 && !prefersReduced()){ setTimeout(hold, wait); } else { hold(); }
-  }
-
-  function startAnimProgress(row){
-    var pages = parseInt(row && row.page_count, 10) || 1;
-    var copies = parseInt(row && row.copies, 10) || 1;
-    var total = Math.max(1, pages * copies);
-    if(!animState.startedAt || animState.sidesTotal !== total){
-      animState.sidesTotal = total;
-      animState.sidesDone = 0;
-      animState.finished = false;
-      animState.startedAt = Date.now();
-      animState.minUntil = Date.now() + Math.max(C.PRINT_ANIM_MIN_MS || 2500, loopMs());
-    }
-    renderAnimMeta();
-    if(prefersReduced()){
-      printAnim.goToAndStop(C.IDLE_FRAME || 100, true);
-    } else {
-      printAnim.setSpeed(C.ANIM_SPEED || 1.6);
-      printAnim.playSegments([0, 179], true);
-    }
-    startTicker();
-  }
-
-  // Single place that turns a job status into banner colour, copy and animation
-  function setJobState(st, row){
-    var tracker = $('statusTracker'), spin = $('trackerSpin'), msg = $('trackerMsg'), wrap = $('printAnimWrap');
-    if(!tracker || !msg) return;
-    animState.status = st;
-    if(row) animState.lastRow = row;
-
-    var base = 'rounded-2xl p-3.5 shadow-xs';
-    if(st === 'printing'){
-      tracker.className = 'bg-blue-50 border border-blue-200 text-blue-800 ' + base;
-      if(spin) spin.style.display = 'none';
-      msg.textContent = 'Machine mein print nikal raha hai\u2026';
-      if(wrap && printAnim){ wrap.hidden = false; startAnimProgress(row); }
-    } else if(st === 'approved'){
-      tracker.className = 'bg-blue-50 border border-blue-200 text-blue-800 ' + base;
-      if(spin) spin.style.display = 'none';
-      msg.textContent = 'File machine ke paas pahunch gayi \u2014 bas thodi der';
-      stopTicker();
-    } else if(st === 'printed'){
-      tracker.className = 'bg-emerald-50 border border-emerald-200 text-emerald-800 ' + base;
-      if(spin) spin.style.display = 'none';
-      msg.textContent = '\uD83C\uDF89 Badhai ho! Print taiyaar hai, counter se collect karein!';
-      stopTicker();
-      var bar = $('printBar');
-      if(bar) bar.style.width = '100%';
-      if(printAnim){
-        if(wrap) wrap.hidden = false;
-        if(!animState.startedAt){
-          // never saw a 'printing' poll: play one full page before holding the tray frame
-          animState.sidesTotal = Math.max(1, (parseInt(row && row.page_count, 10) || 1) * (parseInt(row && row.copies, 10) || 1));
-          animState.sidesDone = 0;
-          animState.finished = false;
-          animState.startedAt = Date.now();
-          animState.minUntil = Date.now() + Math.max(C.PRINT_ANIM_MIN_MS || 2500, loopMs());
-          if(!prefersReduced()){ printAnim.setSpeed(C.ANIM_SPEED || 1.6); printAnim.playSegments([0, 179], true); }
-          renderAnimMeta();
-        }
-        finishAnim();
-      }
-      if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
-    } else if(st === 'rejected' || st === 'failed' || st === 'cancelled'){
-      tracker.className = 'bg-rose-50 border border-rose-200 text-rose-800 ' + base;
-      if(spin) spin.style.display = 'none';
-      msg.textContent = '\u274C Request cancel ho gayi: ' + ((row && row.print_error) || 'Counter par poochhein');
-      stopTicker();
-      if(printAnim) printAnim.goToAndStop(C.IDLE_FRAME || 100, true);
-      if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
-    }
-  }
-
   // Real-time job status polling
   async function pollStatus(){
     if(!currentJobId) return;
     try {
-      var res = await sb.from('jobs').select('status, print_error, page_count, copies').eq('id', currentJobId).single();
-      if(res && res.data) setJobState(res.data.status, res.data);
+      var res = await sb.from('jobs').select('status, print_error').eq('id', currentJobId).single();
+      if(res && res.data){
+        var st = res.data.status;
+        var tracker = $('statusTracker');
+        var spin = $('trackerSpin');
+        var msg = $('trackerMsg');
+
+        if(st === 'printing'){
+          tracker.className = 'bg-blue-50 border border-blue-200 text-blue-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs';
+          spin.style.display = 'inline-block';
+          spin.className = 'w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin shrink-0';
+          msg.textContent = 'Machine mein print nikal raha hai... \uD83D\uDDA8\uFE0F';
+        } else if(st === 'printed'){
+          tracker.className = 'bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs';
+          spin.style.display = 'none';
+          msg.textContent = '\uD83C\uDF89 Badhai ho! Print taiyaar hai, counter se collect karein!';
+          if(pollTimer) clearInterval(pollTimer);
+        } else if(st === 'rejected' || st === 'failed'){
+          tracker.className = 'bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-3.5 flex items-center gap-3 shadow-xs';
+          spin.style.display = 'none';
+          msg.textContent = '\u274C Request cancel ho gayi: ' + (res.data.print_error || 'Counter par poochhein');
+          if(pollTimer) clearInterval(pollTimer);
+        }
+      }
     } catch(e){}
   }
-
-  // Pause the loop and the poll while the tab is hidden, resume on return
-  document.addEventListener('visibilitychange', function(){
-    if(document.hidden){
-      if(printAnim && animState.status === 'printing' && !prefersReduced()) printAnim.pause();
-      stopTicker();
-    } else if(animState.status === 'printing'){
-      if(printAnim && !prefersReduced()) printAnim.play();
-      startTicker();
-      pollStatus();
-    }
-  });
 
   $('submit').onclick = async function(){
     if(!file) return;
@@ -2115,8 +1950,7 @@ tailwind.config = {
       setStep(3);
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // Start live polling status + load the printer animation
-      loadPrintAnim();
+      // Start live polling status
       if(pollTimer) clearInterval(pollTimer);
       pollTimer = setInterval(pollStatus, 2500);
 
@@ -2170,30 +2004,6 @@ tailwind.config = {
         alert('Mobile mein App install karne ke liye:\n\n1. Browser ke 3-dots (\u22ee) ya Share button par click karein.\n2. "Add to Home screen" ya "Install app" chunein.');
       }
     };
-  }
-  // Demo mode: ?demo=printing&pages=5 renders the print states with no real job
-  var demoParams = new URLSearchParams(window.location.search);
-  var demoState = demoParams.get('demo');
-  if(demoState){
-    var demoPages = Math.max(1, parseInt(demoParams.get('pages') || '1', 10));
-    var demoCopies = Math.max(1, parseInt(demoParams.get('copies') || '1', 10));
-    if($('s1')) $('s1').hidden = true;
-    if($('s2')) $('s2').hidden = true;
-    if($('s3')) $('s3').hidden = false;
-    if($('jobno')) $('jobno').textContent = '#DEMO';
-    setStep(3);
-    loadPrintAnim(function(){
-      if(demoState === 'printed'){
-        setJobState('printed', { page_count: demoPages, copies: demoCopies });
-        setTimeout(function(){ if(printAnim) printAnim.goToAndStop(179, true); }, 1200);
-      } else if(demoState === 'approved'){
-        setJobState('approved', {});
-      } else if(demoState === 'skip'){
-        setJobState('printed', { page_count: demoPages, copies: demoCopies });
-      } else {
-        setJobState('printing', { page_count: demoPages, copies: demoCopies });
-      }
-    });
   }
 })();
 </script>

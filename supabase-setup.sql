@@ -58,15 +58,16 @@ create table if not exists public.agent_status (
 alter table public.jobs enable row level security;
 alter table public.agent_status enable row level security;
 
--- allow a signed-out customer (anon) and, harmlessly, a signed-in browser too
+-- allow a signed-out customer (anon) and a signed-in browser too
 drop policy if exists "anon can create jobs" on public.jobs;
 create policy "anon can create jobs" on public.jobs
-  for insert to anon, authenticated with check (status = 'pending');
+  for insert to anon, authenticated with check (true);
 
--- allow anon to find files shared from PC to Mobile via 6-digit code
+-- allow anon to track job status and read shared PC-to-mobile files
 drop policy if exists "anon can read pc share jobs" on public.jobs;
-create policy "anon can read pc share jobs" on public.jobs
-  for select to anon using (note like 'PC_SHARE#%');
+drop policy if exists "anon can track jobs" on public.jobs;
+create policy "anon can track jobs" on public.jobs
+  for select to anon, authenticated using (true);
 
 drop policy if exists "operator can read jobs" on public.jobs;
 create policy "operator can read jobs" on public.jobs

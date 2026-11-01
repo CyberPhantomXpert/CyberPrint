@@ -1,0 +1,573 @@
+/**
+ * Ankit Handwriting Animated Signature Component v2.1
+ * Premium Motion-Design & Calligraphy Kinematics
+ *
+ * Features:
+ *   - Calibrated Human Calligraphy Pacing (~4.2s total sequence)
+ *   - Pen-Lift Air Gliding & Kinematic Interpolation between strokes
+ *   - 'i' Dot Pop with Spring Dampening & Flare Flash
+ *   - Electric Gradient Ink Flow (#00f2fe -> #38bdf8 -> #818cf8)
+ *   - Capillary Ink Bloom Settle (smooth 0.8s illumination)
+ *   - Micro-Sparkle Particle Burst on Interaction
+ *   - Developer Console Tribute Easter Egg (F12)
+ *
+ * Designed & Developed with Passion by Ankit
+ */
+(function(){
+  // Master SVG Path data for "Ankit" signature (9 discrete strokes)
+  var SVG_PATHS = [
+    // 0: 'A' left leg
+    'M 551.33,216.27 C 550.39 217.70, 550.12 219.37, 549.06 224.00 C 548.00 228.63, 547.54 231.69, 546.02 239.41 C 544.50 247.13, 543.63 252.07, 541.45 262.60 C 539.26 273.13, 537.98 279.38, 535.10 292.05 C 532.23 304.71, 530.44 311.94, 527.06 325.92 C 523.68 339.91, 521.67 347.71, 518.19 361.97 C 514.72 376.23, 512.81 383.84, 509.69 397.22 C 506.58 410.59, 505.02 417.41, 502.62 428.85 C 500.22 440.29, 499.25 445.66, 497.70 454.41 C 496.14 463.15, 495.59 466.85, 494.84 472.57 C 494.08 478.29, 493.46 480.37, 493.93 483.02 C 494.40 485.66, 495.80 486.82, 497.17 485.80 C 498.55 484.77, 499.65 482.34, 500.80 477.90 C 501.96 473.45, 502.30 469.13, 502.95 463.58 C 503.61 458.03, 504.58 452.93, 504.07 450.15 C 503.57 447.38, 501.61 447.14, 500.44 449.70 C 499.27 452.26, 499.08 457.47, 498.23 462.93 C 497.39 468.40, 496.74 472.62, 496.19 477.01 C 495.64 481.40, 495.31 483.70, 495.49 484.89 C 495.67 486.08, 496.72 485.37, 497.09 482.96 C 497.47 480.55, 496.89 478.50, 497.38 472.85 C 497.87 467.20, 498.18 463.45, 499.53 454.71 C 500.88 445.97, 501.81 440.59, 504.11 429.15 C 506.41 417.72, 507.95 410.90, 511.03 397.53 C 514.11 384.15, 516.02 376.54, 519.50 362.29 C 522.98 348.03, 525.00 340.23, 528.44 326.26 C 531.87 312.28, 533.68 305.06, 536.68 292.41 C 539.68 279.77, 541.05 273.52, 543.44 263.03 C 545.83 252.55, 546.87 247.63, 548.64 239.97 C 550.41 232.31, 551.26 229.35, 552.28 224.73 C 553.31 220.10, 553.93 218.54, 553.74 216.85 C 553.55 215.16, 552.27 214.84, 551.33 216.27',
+    // 1: 'A' right leg
+    'M 555.84,222.51 C 555.51 223.59, 555.49 224.06, 556.25 227.21 C 557.01 230.36, 558.00 232.08, 559.64 238.25 C 561.28 244.42, 562.41 248.59, 564.46 258.07 C 566.50 267.56, 567.74 273.68, 569.85 285.68 C 571.97 297.68, 573.04 304.75, 575.04 318.07 C 577.03 331.40, 578.00 338.69, 579.82 352.31 C 581.64 365.93, 582.50 373.19, 584.14 386.18 C 585.77 399.16, 586.54 405.74, 588.00 417.25 C 589.46 428.77, 590.20 434.33, 591.44 443.74 C 592.68 453.16, 593.28 457.41, 594.19 464.33 C 595.09 471.24, 595.53 473.95, 595.98 478.32 C 596.43 482.70, 596.16 484.02, 596.43 486.21 C 596.70 488.40, 597.01 488.69, 597.35 489.26 C 597.69 489.84, 597.79 489.47, 598.12 489.08 C 598.46 488.69, 599.07 487.84, 599.02 487.33 C 598.97 486.82, 598.81 486.24, 597.87 486.54 C 596.92 486.84, 594.90 487.99, 594.30 488.82 C 593.70 489.66, 594.19 490.33, 594.87 490.72 C 595.55 491.11, 596.75 491.00, 597.71 490.77 C 598.67 490.53, 599.12 490.53, 599.65 489.55 C 600.18 488.57, 600.47 488.21, 600.36 485.88 C 600.25 483.54, 599.87 482.26, 599.09 477.89 C 598.30 473.51, 597.60 470.87, 596.43 463.99 C 595.26 457.11, 594.60 452.88, 593.22 443.50 C 591.85 434.11, 591.07 428.55, 589.54 417.05 C 588.01 405.55, 587.22 398.98, 585.56 386.00 C 583.90 373.01, 583.03 365.75, 581.23 352.13 C 579.43 338.50, 578.47 331.20, 576.55 317.85 C 574.62 304.50, 573.58 297.43, 571.62 285.38 C 569.66 273.33, 568.51 267.19, 566.75 257.62 C 565.00 248.04, 564.09 243.82, 562.84 237.51 C 561.59 231.19, 561.49 229.17, 560.50 226.03 C 559.52 222.89, 558.85 222.52, 557.92 221.81 C 556.99 221.11, 556.18 221.43, 555.84 222.51',
+    // 2: 'A' crossbar + 'n'
+    'M 506.78,381.95 C 507.61 382.44, 508.10 382.91, 510.23 382.38 C 512.36 381.86, 513.69 381.19, 517.41 379.34 C 521.14 377.48, 523.53 376.07, 528.85 373.10 C 534.17 370.13, 537.66 368.27, 544.01 364.48 C 550.36 360.69, 554.05 358.36, 560.61 354.13 C 567.18 349.90, 570.67 347.49, 576.84 343.32 C 583.02 339.16, 586.12 336.94, 591.50 333.29 C 596.87 329.64, 599.46 327.79, 603.71 325.07 C 607.97 322.35, 610.05 321.25, 612.76 319.68 C 615.47 318.11, 616.05 317.07, 617.26 317.22 C 618.47 317.36, 618.12 317.48, 618.80 320.41 C 619.48 323.35, 620.12 325.62, 620.67 331.90 C 621.21 338.19, 621.36 342.59, 621.52 351.85 C 621.68 361.11, 621.59 367.27, 621.48 378.18 C 621.37 389.10, 621.15 395.65, 620.96 406.44 C 620.77 417.22, 620.62 422.95, 620.53 432.09 C 620.44 441.22, 620.39 445.53, 620.51 452.10 C 620.63 458.68, 620.38 461.36, 621.12 464.95 C 621.87 468.54, 622.77 469.68, 624.24 470.05 C 625.72 470.43, 627.23 469.91, 628.50 466.84 C 629.78 463.77, 629.54 461.18, 630.62 454.70 C 631.70 448.22, 632.15 443.70, 633.90 434.44 C 635.65 425.18, 636.71 419.01, 639.37 408.41 C 642.03 397.81, 643.74 391.41, 647.21 381.44 C 650.68 371.46, 652.85 366.25, 656.72 358.52 C 660.58 350.79, 662.83 347.44, 666.54 342.80 C 670.25 338.16, 672.31 336.90, 675.27 335.32 C 678.23 333.75, 679.01 333.61, 681.36 334.93 C 683.71 336.26, 684.88 337.32, 687.03 341.94 C 689.19 346.56, 690.38 350.09, 692.14 358.04 C 693.89 365.99, 694.73 371.48, 695.82 381.68 C 696.90 391.89, 697.13 398.33, 697.57 409.09 C 698.00 419.84, 697.88 425.92, 697.98 435.46 C 698.08 445.00, 697.93 449.63, 698.06 456.79 C 698.19 463.96, 698.07 466.88, 698.61 471.30 C 699.16 475.73, 699.61 477.02, 700.77 478.90 C 701.94 480.79, 703.26 480.66, 704.44 480.74 C 705.61 480.82, 706.39 479.85, 706.65 479.30 C 706.91 478.74, 706.13 478.07, 705.74 477.97 C 705.34 477.88, 705.07 478.91, 704.67 478.80 C 704.27 478.69, 704.33 479.00, 703.74 477.41 C 703.16 475.82, 702.42 475.00, 701.75 470.86 C 701.09 466.72, 700.77 463.80, 700.42 456.71 C 700.07 449.63, 700.17 444.97, 699.99 435.43 C 699.82 425.89, 699.93 419.80, 699.53 409.01 C 699.13 398.22, 698.94 391.77, 697.98 381.47 C 697.02 371.17, 696.33 365.68, 694.73 357.50 C 693.12 349.33, 692.30 345.72, 689.95 340.59 C 687.60 335.46, 686.20 333.46, 682.97 331.85 C 679.75 330.25, 677.51 330.68, 673.83 332.56 C 670.15 334.44, 668.36 336.26, 664.57 341.27 C 660.77 346.27, 658.70 349.70, 654.86 357.61 C 651.02 365.51, 648.89 370.75, 645.39 380.81 C 641.90 390.86, 640.18 397.28, 637.39 407.90 C 634.61 418.53, 633.46 424.71, 631.45 433.94 C 629.43 443.17, 628.72 447.73, 627.32 454.07 C 625.92 460.41, 624.98 462.66, 624.45 465.64 C 623.93 468.61, 624.71 469.18, 624.72 468.94 C 624.73 468.69, 624.83 467.81, 624.49 464.42 C 624.15 461.04, 623.39 458.47, 623.01 452.01 C 622.62 445.54, 622.59 441.20, 622.56 432.09 C 622.53 422.99, 622.67 417.24, 622.86 406.47 C 623.05 395.69, 623.29 389.14, 623.52 378.21 C 623.75 367.29, 623.92 361.14, 624.01 351.84 C 624.09 342.54, 624.17 338.23, 623.93 331.71 C 623.70 325.18, 624.05 322.73, 622.85 319.23 C 621.64 315.73, 620.34 314.84, 617.92 314.19 C 615.51 313.55, 613.98 314.37, 610.77 315.99 C 607.55 317.62, 606.02 319.32, 601.85 322.32 C 597.67 325.32, 595.19 327.23, 589.90 331.01 C 584.61 334.78, 581.54 337.01, 575.40 341.19 C 569.26 345.37, 565.77 347.77, 559.20 351.91 C 552.63 356.05, 548.94 358.34, 542.52 361.90 C 536.11 365.46, 532.58 367.19, 527.12 369.73 C 521.67 372.26, 519.02 373.04, 515.25 374.60 C 511.48 376.15, 510.12 376.44, 508.28 377.51 C 506.44 378.57, 506.37 379.03, 506.07 379.92 C 505.77 380.80, 505.94 381.45, 506.78 381.95',
+    // 3: 'k' stem
+    'M 759.06,257.49 C 758.58 260.60, 759.15 264.83, 759.06 273.06 C 758.97 281.30, 758.91 286.86, 758.60 298.67 C 758.28 310.47, 758.06 318.41, 757.48 332.09 C 756.91 345.76, 756.51 353.62, 755.72 367.06 C 754.92 380.50, 754.35 387.36, 753.51 399.30 C 752.67 411.24, 752.23 416.97, 751.50 426.74 C 750.78 436.51, 750.40 440.87, 749.88 448.16 C 749.37 455.45, 749.02 458.42, 748.93 463.18 C 748.84 467.95, 748.56 469.99, 749.43 472.00 C 750.30 474.02, 751.82 474.49, 753.28 473.28 C 754.73 472.07, 755.25 470.55, 756.72 465.94 C 758.18 461.32, 758.53 457.97, 760.59 450.20 C 762.65 442.43, 763.82 437.22, 767.01 427.09 C 770.20 416.97, 772.23 410.67, 776.56 399.58 C 780.88 388.49, 783.65 382.14, 788.62 371.66 C 793.60 361.17, 796.48 355.76, 801.43 347.16 C 806.38 338.55, 809.05 334.64, 813.37 328.64 C 817.69 322.64, 819.92 320.47, 823.05 317.17 C 826.17 313.87, 827.32 313.60, 828.99 312.13 C 830.67 310.66, 831.05 310.51, 831.41 309.83 C 831.77 309.14, 831.66 308.74, 830.81 308.71 C 829.96 308.68, 829.14 308.39, 827.15 309.67 C 825.15 310.96, 823.96 311.61, 820.84 315.15 C 817.72 318.69, 815.76 321.15, 811.56 327.37 C 807.36 333.59, 804.73 337.54, 799.83 346.25 C 794.94 354.96, 792.06 360.39, 787.07 370.92 C 782.08 381.46, 779.30 387.82, 774.89 398.92 C 770.47 410.02, 768.41 416.34, 764.99 426.43 C 761.57 436.53, 760.21 441.72, 757.80 449.39 C 755.39 457.06, 754.28 460.27, 752.95 464.78 C 751.62 469.30, 751.29 470.61, 751.15 471.95 C 751.01 473.29, 752.09 473.23, 752.27 471.48 C 752.44 469.73, 752.06 467.84, 752.02 463.20 C 751.98 458.56, 751.82 455.54, 752.06 448.27 C 752.31 441.00, 752.65 436.63, 753.24 426.86 C 753.84 417.09, 754.24 411.35, 755.03 399.41 C 755.82 387.46, 756.39 380.60, 757.20 367.15 C 758.01 353.70, 758.45 345.84, 759.09 332.16 C 759.74 318.47, 760.03 310.53, 760.42 298.72 C 760.82 286.91, 760.88 281.34, 761.09 273.10 C 761.30 264.86, 761.88 260.64, 761.48 257.52 C 761.07 254.40, 759.54 254.38, 759.06 257.49',
+    // 4: 'k' kick
+    'M 786.72,371.93 C 786.50 373.65, 787.08 375.72, 788.20 379.81 C 789.33 383.89, 790.46 386.67, 792.35 392.36 C 794.25 398.04, 795.52 401.75, 797.69 408.23 C 799.86 414.70, 801.13 418.22, 803.19 424.73 C 805.26 431.24, 806.25 434.65, 808.02 440.76 C 809.79 446.87, 810.53 449.96, 812.04 455.28 C 813.55 460.61, 814.22 463.14, 815.57 467.40 C 816.92 471.65, 817.29 473.67, 818.80 476.54 C 820.31 479.41, 821.51 480.39, 823.10 481.72 C 824.69 483.06, 825.61 483.04, 826.75 483.21 C 827.90 483.38, 828.41 482.97, 828.83 482.57 C 829.24 482.17, 829.02 481.60, 828.84 481.19 C 828.65 480.78, 828.39 481.07, 827.90 480.53 C 827.41 480.00, 827.33 479.81, 826.38 478.53 C 825.43 477.25, 824.59 476.63, 823.15 474.14 C 821.71 471.66, 820.78 470.06, 819.18 466.10 C 817.57 462.14, 816.80 459.59, 815.13 454.35 C 813.45 449.12, 812.65 446.04, 810.82 439.94 C 808.98 433.84, 807.97 430.40, 805.95 423.87 C 803.93 417.33, 802.75 413.77, 800.72 407.25 C 798.69 400.73, 797.54 396.97, 795.80 391.26 C 794.07 385.54, 793.33 382.67, 792.03 378.66 C 790.73 374.65, 790.37 372.57, 789.31 371.22 C 788.24 369.87, 786.94 370.21, 786.72 371.93',
+    // 5: 'i' stem
+    'M 867.82,351.82 C 867.25 352.97, 867.20 353.68, 867.23 357.43 C 867.25 361.17, 867.67 363.71, 867.95 370.56 C 868.23 377.42, 868.53 382.23, 868.64 391.70 C 868.75 401.17, 868.68 407.43, 868.50 417.91 C 868.32 428.40, 868.08 434.53, 867.75 444.13 C 867.41 453.72, 867.12 458.55, 866.83 465.88 C 866.55 473.21, 866.30 476.36, 866.31 480.78 C 866.32 485.19, 866.40 486.11, 866.90 487.94 C 867.39 489.78, 868.18 489.70, 868.77 489.93 C 869.35 490.15, 869.75 489.31, 869.80 489.07 C 869.85 488.83, 869.11 488.66, 869.03 488.73 C 868.95 488.80, 869.18 489.67, 869.38 489.43 C 869.58 489.19, 870.01 489.28, 870.04 487.53 C 870.06 485.79, 869.66 485.03, 869.49 480.71 C 869.33 476.39, 869.15 473.24, 869.22 465.94 C 869.28 458.64, 869.54 453.79, 869.82 444.19 C 870.10 434.60, 870.35 428.46, 870.61 417.96 C 870.86 407.46, 871.01 401.19, 871.12 391.70 C 871.23 382.21, 871.11 377.38, 871.14 370.50 C 871.16 363.62, 871.46 361.06, 871.25 357.30 C 871.04 353.54, 870.76 352.80, 870.08 351.71 C 869.39 350.61, 868.39 350.68, 867.82 351.82',
+    // 6: 'i' dot (feature: bounce & pop)
+    'M 879.79,266.33 C 880.15 265.70, 879.63 264.98, 878.92 265.13 C 878.22 265.27, 876.63 266.42, 876.27 267.04 C 875.91 267.66, 876.43 268.38, 877.14 268.24 C 877.84 268.10, 879.43 266.95, 879.79 266.33',
+    // 7: 't' stem
+    'M 948.45,238.88 C 947.95 240.34, 948.33 241.54, 948.31 246.06 C 948.29 250.58, 948.55 253.49, 948.36 261.48 C 948.16 269.47, 948.12 274.85, 947.34 285.99 C 946.56 297.12, 945.79 304.02, 944.46 317.17 C 943.12 330.31, 942.17 338.03, 940.66 351.71 C 939.15 365.39, 938.25 372.73, 936.91 385.57 C 935.56 398.40, 934.82 404.83, 933.92 415.89 C 933.03 426.95, 932.71 432.15, 932.44 440.88 C 932.17 449.61, 932.29 453.38, 932.56 459.54 C 932.83 465.70, 932.91 468.13, 933.79 471.68 C 934.66 475.23, 935.81 475.98, 936.94 477.27 C 938.06 478.56, 938.82 478.11, 939.43 478.12 C 940.04 478.12, 940.05 477.74, 940.00 477.29 C 939.94 476.84, 939.68 477.14, 939.14 475.85 C 938.60 474.55, 938.11 474.11, 937.29 470.81 C 936.48 467.51, 935.64 465.34, 935.05 459.36 C 934.46 453.38, 934.25 449.59, 934.35 440.92 C 934.44 432.25, 934.72 427.05, 935.52 416.01 C 936.33 404.97, 937.05 398.55, 938.37 385.72 C 939.69 372.89, 940.58 365.55, 942.12 351.87 C 943.66 338.20, 944.63 330.48, 946.08 317.34 C 947.53 304.19, 948.36 297.29, 949.35 286.15 C 950.34 275.00, 950.56 269.61, 951.02 261.59 C 951.48 253.57, 951.71 250.61, 951.67 246.05 C 951.63 241.48, 951.46 240.20, 950.81 238.76 C 950.17 237.33, 948.95 237.42, 948.45 238.88',
+    // 8: 't' crossbar
+    'M 914.55,372.24 C 915.53 372.84, 916.20 373.28, 918.98 372.99 C 921.77 372.70, 923.66 371.78, 928.47 370.80 C 933.29 369.82, 936.61 369.19, 943.07 368.08 C 949.53 366.97, 953.72 366.37, 960.79 365.27 C 967.86 364.17, 972.21 363.51, 978.42 362.57 C 984.63 361.63, 987.62 361.28, 991.85 360.58 C 996.07 359.88, 998.06 359.76, 999.55 359.07 C 1001.05 358.38, 1000.96 357.45, 999.33 357.12 C 997.70 356.79, 995.69 356.95, 991.41 357.41 C 987.14 357.87, 984.16 358.47, 977.94 359.43 C 971.72 360.39, 967.41 361.18, 960.33 362.21 C 953.25 363.24, 949.06 363.75, 942.55 364.58 C 936.03 365.41, 932.67 365.78, 927.76 366.38 C 922.84 366.97, 920.72 366.83, 917.98 367.56 C 915.25 368.28, 914.78 369.07, 914.09 370.01 C 913.41 370.95, 913.57 371.65, 914.55 372.24'
+  ];
+
+  // Motion-Design Choreography Schedule Config (dur = draw sec, lift = air glide sec, ease = bezier)
+  var STROKE_CONFIG = [
+    { dur: 0.52, lift: 0.07, ease: 'cubic-bezier(0.25, 0.1, 0.25, 1)' }, // 0: 'A' left leg
+    { dur: 0.46, lift: 0.07, ease: 'cubic-bezier(0.22, 0.1, 0.25, 1)' }, // 1: 'A' right leg
+    { dur: 0.78, lift: 0.09, ease: 'cubic-bezier(0.25, 0.1, 0.2, 1)' },  // 2: 'A' crossbar + 'n'
+    { dur: 0.48, lift: 0.04, ease: 'cubic-bezier(0.22, 0.1, 0.25, 1)' }, // 3: 'k' stem
+    { dur: 0.44, lift: 0.08, ease: 'cubic-bezier(0.25, 0.1, 0.25, 1)' }, // 4: 'k' loop & kick
+    { dur: 0.36, lift: 0.10, ease: 'cubic-bezier(0.25, 0.1, 0.25, 1)' }, // 5: 'i' stem
+    { dur: 0.32, lift: 0.09, ease: 'cubic-bezier(0.34, 1.56, 0.64, 1)' },// 6: 'i' dot pop
+    { dur: 0.48, lift: 0.07, ease: 'cubic-bezier(0.22, 0.1, 0.25, 1)' }, // 7: 't' stem
+    { dur: 0.42, lift: 0.00, ease: 'cubic-bezier(0.16, 1, 0.3, 1)' }   // 8: 't' crossbar flourish
+  ];
+
+  var styleInjected = false;
+  function injectStyles(){
+    if(styleInjected) return;
+    styleInjected = true;
+    var css = `
+      .ankit-sig-card {
+        position: relative;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 22px;
+        border-radius: 20px;
+        background: rgba(15, 23, 42, 0.88);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        box-shadow: 0 12px 30px -6px rgba(0, 0, 0, 0.45), 0 0 20px -3px rgba(56, 189, 248, 0.22);
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        cursor: pointer;
+        user-select: none;
+        overflow: visible;
+      }
+      .ankit-sig-card:hover {
+        transform: translateY(-3px) scale(1.025);
+        border-color: rgba(56, 189, 248, 0.75);
+        box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.55), 0 0 28px 4px rgba(56, 189, 248, 0.4);
+      }
+      .ankit-sig-card.theme-light {
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid rgba(186, 230, 253, 0.95);
+        box-shadow: 0 12px 28px -6px rgba(148, 163, 184, 0.25), 0 0 18px -2px rgba(37, 99, 235, 0.15);
+      }
+      .ankit-sig-card.theme-light:hover {
+        border-color: rgba(37, 99, 235, 0.6);
+        box-shadow: 0 18px 36px -6px rgba(37, 99, 235, 0.25), 0 0 24px 3px rgba(37, 99, 235, 0.22);
+      }
+      .ankit-sig-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        color: #94a3b8;
+        margin-bottom: 2px;
+      }
+      .ankit-sig-card.theme-light .ankit-sig-header {
+        color: #64748b;
+      }
+      .ankit-sig-heart {
+        display: inline-block;
+        color: #f43f5e;
+        filter: drop-shadow(0 0 4px rgba(244, 63, 94, 0.6));
+        animation: ankitHeartBeat 1.8s ease-in-out infinite;
+      }
+      @keyframes ankitHeartBeat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.25); }
+      }
+      .ankit-svg-box {
+        position: relative;
+        width: 175px;
+        height: 75px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 2px 0;
+      }
+      .ankit-svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        display: block;
+      }
+      .ankit-svg path {
+        fill: transparent;
+        stroke-width: 2.2px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: fill 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .ankit-svg.ankit-writing path {
+        filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.75));
+      }
+      .ankit-sig-card.theme-light .ankit-svg.ankit-writing path {
+        filter: drop-shadow(0 0 5px rgba(37, 99, 235, 0.55));
+      }
+
+      /* Capillary Ink Bloom */
+      .ankit-svg.ankit-filled path {
+        stroke-width: 1.6px;
+        filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.45));
+      }
+      .ankit-sig-card.theme-light .ankit-svg.ankit-filled path {
+        stroke-width: 1.6px;
+        filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.35));
+      }
+
+      /* 'i' Dot Pop & Spring Dampening */
+      .ankit-svg path.ankit-dot-pop {
+        transform-box: fill-box;
+        transform-origin: center center;
+        opacity: 1 !important;
+        animation: ankitDotBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+      }
+      @keyframes ankitDotBounce {
+        0% { transform: scale(0); opacity: 0; }
+        55% { transform: scale(1.85); opacity: 1; filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.9)); }
+        78% { transform: scale(0.88); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+
+      /* Pen Tip Flare Tracking */
+      .ankit-pen-tip {
+        pointer-events: none;
+        transition: opacity 0.18s ease;
+        will-change: transform, opacity;
+      }
+      .ankit-pen-tip-flare {
+        fill: #00f2fe;
+        opacity: 0.7;
+        filter: drop-shadow(0 0 9px #00f2fe);
+      }
+      .ankit-sig-card.theme-light .ankit-pen-tip-flare {
+        fill: #0284c7;
+        filter: drop-shadow(0 0 7px #0284c7);
+      }
+      .ankit-pen-tip-mid {
+        fill: #38bdf8;
+        opacity: 0.95;
+      }
+      .ankit-sig-card.theme-light .ankit-pen-tip-mid {
+        fill: #2563eb;
+      }
+      .ankit-pen-tip-core {
+        fill: #ffffff;
+      }
+
+      /* Footer & Replay */
+      .ankit-sig-footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .ankit-sig-tag {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #f1f5f9;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        padding: 2.5px 9px;
+        border-radius: 999px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+      .ankit-sig-card.theme-light .ankit-sig-tag {
+        color: #1e293b;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-color: rgba(203, 213, 225, 0.95);
+        box-shadow: 0 2px 4px rgba(148, 163, 184, 0.2);
+      }
+      .ankit-replay-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        color: #38bdf8;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 2px 7px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+      .ankit-sig-card.theme-light .ankit-replay-btn {
+        color: #2563eb;
+      }
+      .ankit-replay-btn:hover {
+        background: rgba(56, 189, 248, 0.18);
+        transform: scale(1.05);
+      }
+
+      /* Micro-Sparkles */
+      .ankit-particle {
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 100;
+        animation: ankitParticlePop 0.7s cubic-bezier(0.12, 0.8, 0.32, 1) forwards;
+      }
+      @keyframes ankitParticlePop {
+        0% { transform: translate(0, 0) scale(1); opacity: 1; }
+        100% { transform: translate(var(--tx), var(--ty)) scale(0.2); opacity: 0; }
+      }
+
+      @keyframes ankitStrokeDraw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+    `;
+    var styleEl = document.createElement('style');
+    styleEl.type = 'text/css';
+    styleEl.textContent = css;
+    document.head.appendChild(styleEl);
+  }
+
+  // Developer Console Easter Egg
+  var easterEggTriggered = false;
+  function triggerConsoleEasterEgg(){
+    if(easterEggTriggered) return;
+    easterEggTriggered = true;
+    console.log(
+      '%c ⚡ CRAFTED WITH PASSION BY ANKIT ⚡ %c\n' +
+      '  CyberPrint Pay • Lead Architect & Developer\n' +
+      '  Precision Calligraphy Handwriting Engine v2.1 (Calibrated Motion Pace)\n' +
+      '  "Zero-config LAN printing, seamless file drop, crafted to perfection." ✨',
+      'background: linear-gradient(135deg, #00f2fe 0%, #38bdf8 50%, #818cf8 100%); color: #020617; font-weight: 900; font-size: 13px; padding: 6px 14px; border-radius: 6px 6px 0 0; text-shadow: 0 1px 1px rgba(255,255,255,0.4);',
+      'background: #090d16; color: #38bdf8; font-size: 11px; font-weight: 500; padding: 8px 14px; border-radius: 0 0 6px 6px; border: 1px solid #1e293b; line-height: 1.6;'
+    );
+  }
+
+  // Micro-Sparkle Particle Burst
+  function spawnParticleBurst(cardEl, clientX, clientY){
+    var rect = cardEl.getBoundingClientRect();
+    var ox = (clientX !== undefined && clientX !== null) ? (clientX - rect.left) : (rect.width / 2);
+    var oy = (clientY !== undefined && clientY !== null) ? (clientY - rect.top) : (rect.height / 2);
+
+    var colors = ['#00f2fe', '#38bdf8', '#818cf8', '#f43f5e', '#fbbf24', '#c084fc'];
+    var count = 16;
+
+    for(var i = 0; i < count; i++){
+      var p = document.createElement('span');
+      p.className = 'ankit-particle';
+      var angle = (Math.PI * 2 / count) * i + (Math.random() * 0.4 - 0.2);
+      var dist = 36 + Math.random() * 48;
+      var tx = Math.cos(angle) * dist;
+      var ty = Math.sin(angle) * dist;
+      var size = 3 + Math.random() * 4;
+      var color = colors[Math.floor(Math.random() * colors.length)];
+
+      p.style.left = ox + 'px';
+      p.style.top = oy + 'px';
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.backgroundColor = color;
+      p.style.boxShadow = '0 0 8px ' + color;
+      p.style.setProperty('--tx', tx.toFixed(1) + 'px');
+      p.style.setProperty('--ty', ty.toFixed(1) + 'px');
+
+      cardEl.appendChild(p);
+
+      (function(elem){
+        setTimeout(function(){
+          if(elem.parentNode) elem.parentNode.removeChild(elem);
+        }, 700);
+      })(p);
+    }
+  }
+
+  // Calibrated Signature Player
+  function playSignature(cardEl){
+    if(!cardEl) return;
+    var svg = cardEl.querySelector('.ankit-svg');
+    if(!svg) return;
+
+    var gradId = cardEl.getAttribute('data-grad-id');
+    var penTip = cardEl.querySelector('.ankit-pen-tip');
+
+    // Reset previous timeouts & rAF if replay is clicked rapidly
+    if(cardEl._ankitTimeouts){
+      cardEl._ankitTimeouts.forEach(function(tid){ clearTimeout(tid); });
+    }
+    cardEl._ankitTimeouts = [];
+    if(cardEl._ankitRaf){
+      cancelAnimationFrame(cardEl._ankitRaf);
+      cardEl._ankitRaf = null;
+    }
+
+    svg.classList.remove('ankit-filled');
+    svg.classList.add('ankit-writing');
+
+    var paths = svg.querySelectorAll('path');
+    var schedule = [];
+    var currentTimeline = 0;
+
+    // Build timeline using calibrated human choreography
+    paths.forEach(function(p, i){
+      var cfg = STROKE_CONFIG[i] || { dur: 0.5, lift: 0.08, ease: 'ease-out' };
+      var len = 1200;
+      var startPt = { x: 500, y: 300 };
+      var endPt = { x: 500, y: 300 };
+
+      try {
+        len = Math.ceil(p.getTotalLength()) || 1200;
+        startPt = p.getPointAtLength(0);
+        endPt = p.getPointAtLength(len);
+      } catch(e){}
+
+      var item = {
+        path: p,
+        index: i,
+        len: len,
+        startPt: startPt,
+        endPt: endPt,
+        start: currentTimeline,
+        dur: cfg.dur,
+        lift: cfg.lift,
+        end: currentTimeline + cfg.dur,
+        nextStart: currentTimeline + cfg.dur + cfg.lift,
+        ease: cfg.ease
+      };
+      schedule.push(item);
+
+      // Advance clock by stroke duration plus lift gap
+      currentTimeline += (cfg.dur + cfg.lift);
+    });
+
+    // Animate stroke elements
+    paths.forEach(function(p, i){
+      var item = schedule[i];
+
+      if(i === 6){
+        // 'i' dot: snappy spring bounce
+        p.classList.remove('ankit-dot-pop');
+        p.style.opacity = '0';
+        p.style.fill = 'url(#' + gradId + ')';
+        p.style.stroke = 'url(#' + gradId + ')';
+
+        var dotTid = setTimeout(function(){
+          p.classList.add('ankit-dot-pop');
+        }, item.start * 1000);
+        cardEl._ankitTimeouts.push(dotTid);
+      } else {
+        // Line strokes: calibrated drawing with custom cubic-bezier
+        p.classList.remove('ankit-dot-pop');
+        p.style.fill = 'transparent';
+        p.style.stroke = 'url(#' + gradId + ')';
+        p.style.strokeDasharray = item.len;
+        p.style.strokeDashoffset = item.len;
+        p.style.animation = 'none';
+        void p.offsetWidth; // force reflow
+
+        p.style.animation = 'ankitStrokeDraw ' + item.dur.toFixed(2) + 's ' + item.ease + ' ' + item.start.toFixed(2) + 's forwards';
+      }
+    });
+
+    // 60 FPS Laser Pen-Tip Tracking with Air Glide Kinematics
+    if(penTip){
+      var animStart = performance.now();
+      var totalEnd = schedule[schedule.length - 1].end;
+      penTip.style.opacity = '1';
+
+      function trackPen(now){
+        var elapsed = (now - animStart) / 1000;
+        if(elapsed > totalEnd + 0.15){
+          penTip.style.opacity = '0';
+          return;
+        }
+
+        var matched = false;
+
+        // 1. Check if pen is currently drawing an active stroke
+        for(var k = 0; k < schedule.length; k++){
+          var item = schedule[k];
+          if(elapsed >= item.start && elapsed <= item.end){
+            var prog = (elapsed - item.start) / item.dur;
+            prog = Math.min(1, Math.max(0, prog));
+            try {
+              var pt = item.path.getPointAtLength(prog * item.len);
+              penTip.setAttribute('transform', 'translate(' + pt.x.toFixed(1) + ',' + pt.y.toFixed(1) + ')');
+              penTip.style.opacity = (k === 6) ? '1' : '0.95';
+              matched = true;
+            } catch(e){}
+            break;
+          }
+
+          // 2. Check if pen is lifting through air between this stroke and next stroke
+          if(elapsed > item.end && elapsed < item.nextStart && k < schedule.length - 1){
+            var nextItem = schedule[k + 1];
+            var liftProg = (elapsed - item.end) / (item.nextStart - item.end);
+            liftProg = Math.min(1, Math.max(0, liftProg));
+
+            // Smooth cosine air glide interpolation from stroke end to next stroke start
+            var smoothT = (1 - Math.cos(liftProg * Math.PI)) / 2;
+            var curX = item.endPt.x + (nextItem.startPt.x - item.endPt.x) * smoothT;
+            var curY = item.endPt.y + (nextItem.startPt.y - item.endPt.y) * smoothT;
+
+            penTip.setAttribute('transform', 'translate(' + curX.toFixed(1) + ',' + curY.toFixed(1) + ')');
+            // Dim pen-tip slightly during lift to simulate paper distance
+            penTip.style.opacity = '0.35';
+            matched = true;
+            break;
+          }
+        }
+
+        if(!matched && elapsed > totalEnd){
+          penTip.style.opacity = '0';
+        }
+
+        cardEl._ankitRaf = requestAnimationFrame(trackPen);
+      }
+      cardEl._ankitRaf = requestAnimationFrame(trackPen);
+    }
+
+    // Sequence completion: capillary ink bloom to solid illumination
+    var completionTid = setTimeout(function(){
+      svg.classList.remove('ankit-writing');
+      svg.classList.add('ankit-filled');
+      paths.forEach(function(p){
+        p.style.fill = 'url(#' + gradId + ')';
+        p.style.stroke = 'url(#' + gradId + ')';
+      });
+      if(penTip) penTip.style.opacity = '0';
+    }, (currentTimeline + 0.15) * 1000);
+    cardEl._ankitTimeouts.push(completionTid);
+  }
+
+  // Global Renderer
+  window.renderAnkitSignature = function(containerId, options){
+    injectStyles();
+    options = options || {};
+    var theme = options.theme || 'dark'; // 'dark' or 'light'
+    var subtitle = options.subtitle || 'Creator & Architect';
+
+    var container = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
+    if(!container) return;
+
+    var uid = 'ankitGrad_' + Math.random().toString(36).substring(2, 8);
+
+    var card = document.createElement('div');
+    card.className = 'ankit-sig-card ' + (theme === 'light' ? 'theme-light' : 'theme-dark');
+    card.setAttribute('data-grad-id', uid);
+    card.setAttribute('title', 'Crafted with passion by Ankit - Click to replay signature');
+
+    // Build SVG with gradient defs, paths, and glowing pen tip
+    var gradStops = (theme === 'light')
+      ? '<stop offset="0%" stop-color="#2563eb"/><stop offset="50%" stop-color="#0284c7"/><stop offset="100%" stop-color="#4f46e5"/>'
+      : '<stop offset="0%" stop-color="#00f2fe"/><stop offset="50%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#818cf8"/>';
+
+    var pathsHtml = SVG_PATHS.map(function(d){
+      return '<path d="' + d + '"/>';
+    }).join('');
+
+    var svgHtml = [
+      '<svg xmlns="http://www.w3.org/2000/svg" class="ankit-svg" viewBox="490.767 212.366 512.850 281.612">',
+        '<defs>',
+          '<linearGradient id="' + uid + '" x1="0%" y1="0%" x2="100%" y2="50%">',
+            gradStops,
+          '</linearGradient>',
+        '</defs>',
+        pathsHtml,
+        '<g class="ankit-pen-tip" style="opacity: 0;">',
+          '<circle class="ankit-pen-tip-flare" r="14"/>',
+          '<circle class="ankit-pen-tip-mid" r="6"/>',
+          '<circle class="ankit-pen-tip-core" r="3"/>',
+        '</g>',
+      '</svg>'
+    ].join('');
+
+    card.innerHTML = [
+      '<div class="ankit-sig-header">',
+        '<span>Designed &amp; Developed with</span>',
+        '<span class="ankit-sig-heart">❤️</span>',
+        '<span>by</span>',
+      '</div>',
+      '<div class="ankit-svg-box">',
+        svgHtml,
+      '</div>',
+      '<div class="ankit-sig-footer">',
+        '<span class="ankit-sig-tag">' + subtitle + '</span>',
+        '<button type="button" class="ankit-replay-btn" title="Replay signature">',
+          '<span>✍️</span> Replay',
+        '</button>',
+      '</div>'
+    ].join('');
+
+    container.innerHTML = '';
+    container.appendChild(card);
+
+    // Click handler with Particle Burst + Signature Replay + Console Easter Egg
+    card.onclick = function(e){
+      triggerConsoleEasterEgg();
+      spawnParticleBurst(card, e.clientX, e.clientY);
+      playSignature(card);
+    };
+
+    var replayBtn = card.querySelector('.ankit-replay-btn');
+    if(replayBtn){
+      replayBtn.onclick = function(e){
+        e.stopPropagation();
+        triggerConsoleEasterEgg();
+        spawnParticleBurst(card, e.clientX, e.clientY);
+        playSignature(card);
+      };
+    }
+
+    // Trigger on scroll or immediate
+    if('IntersectionObserver' in window){
+      var observer = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            triggerConsoleEasterEgg();
+            playSignature(card);
+            observer.unobserve(card);
+          }
+        });
+      }, { threshold: 0.2 });
+      observer.observe(card);
+    } else {
+      setTimeout(function(){
+        triggerConsoleEasterEgg();
+        playSignature(card);
+      }, 400);
+    }
+  };
+
+})();
