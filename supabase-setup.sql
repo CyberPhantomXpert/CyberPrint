@@ -99,6 +99,10 @@ drop policy if exists "anon can upload job files" on storage.objects;
 create policy "anon can upload job files" on storage.objects
   for insert to anon, authenticated with check (bucket_id = 'jobs');
 
+drop policy if exists "anon can update job files" on storage.objects;
+create policy "anon can update job files" on storage.objects
+  for update to anon, authenticated with check (bucket_id = 'jobs');
+
 drop policy if exists "operator can read job files" on storage.objects;
 create policy "operator can read job files" on storage.objects
   for select to authenticated using (bucket_id = 'jobs');

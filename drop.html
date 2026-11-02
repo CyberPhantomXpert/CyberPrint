@@ -379,7 +379,7 @@ tailwind.config = {
         progressTxt.textContent = 'Uploading (' + (i + 1) + '/' + total + '): ' + f.name;
         var up = await sb.storage.from(C.BUCKET || 'jobs').upload(path, f, {
           contentType: f.type || 'application/octet-stream',
-          upsert: true
+          upsert: false
         });
         if(up.error) throw up.error;
 
