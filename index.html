@@ -559,24 +559,27 @@ tailwind.config = {
         </div>
       </div>
 
-      <!-- UPI QR Code & Online Payment Card -->
+      <!-- UPI Payment Card (QR is optional, behind a button) -->
       <div class="bg-white border border-slate-200 rounded-3xl p-5 text-center shadow-xs">
         <div class="text-xs font-extrabold text-slate-800 mb-1">UPI Se Payment Karein</div>
-        <div class="text-[11px] text-slate-500 mb-3">Google Pay, PhonePe, Paytm ya Kisi bhi UPI App se scan karein</div>
+        <div class="text-[11px] text-slate-500 mb-3">Counter par cash ya UPI &mdash; dono chalega</div>
 
-        <div class="inline-block bg-white p-3 rounded-2xl border border-slate-200 shadow-inner my-1">
-          <div id="qrimg" class="flex items-center justify-center min-w-[200px] min-h-[200px]"></div>
-        </div>
-
-        <div class="mt-3 flex items-center justify-center gap-2">
+        <div class="flex items-center justify-center gap-2">
           <span class="text-xs text-slate-500 font-medium">Amount to Pay:</span>
           <span id="payamt" class="font-mono text-xl font-black text-slate-900">₹0</span>
         </div>
 
-        <!-- 1-Tap Pay CTA Button -->
-        <a id="paybtn" href="#" class="mt-3 w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2 no-underline">
-          <span>📲 GPay / PhonePe Se Pay Karein</span>
-        </a>
+        <!-- Optional QR: hidden until the customer taps -->
+        <button id="toggleUpiQrBtn" type="button" class="mt-3 w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 active:scale-[0.99] text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2">
+          <span>🔳</span><span id="toggleUpiQrText">UPI QR Dikhao</span>
+        </button>
+
+        <div id="upiQrBox" class="mt-3" hidden>
+          <div class="inline-block bg-white p-3 rounded-2xl border border-slate-200 shadow-inner">
+            <div id="qrimg" class="flex items-center justify-center min-w-[200px] min-h-[200px]"></div>
+          </div>
+          <div class="text-[11px] text-slate-500 mt-2">Google Pay, PhonePe, Paytm ya kisi bhi UPI App se scan karein</div>
+        </div>
 
         <!-- UPI ID Copy Row -->
         <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
@@ -1996,11 +1999,16 @@ tailwind.config = {
     if(st === 'pending' || st === 'approved'){
       // segment 1 loops until the operator approves or rejects
       tracker.className = 'bg-amber-50 border border-amber-200 text-amber-800 ' + base;
-      if(spin) spin.style.display = st === 'pending' ? 'inline-block' : 'none';
-      msg.textContent = st === 'pending'
-        ? 'Counter verification ka intezaar hai... (Payment check ho rahi hai)'
-        : 'File approve ho gayi \u2014 machine ka intezaar hai';
-      if(wrap && printAnim){ wrap.hidden = false; if(prog) prog.hidden = true; playSeg('connect'); }
+      msg.textContent = 'Connecting\u2026';
+      if(wrap && printAnim){
+        // the animation replaces the spinner while it is available
+        if(spin) spin.style.display = 'none';
+        wrap.hidden = false;
+        if(prog) prog.hidden = true;
+        playSeg('connect');
+      } else if(spin){
+        spin.style.display = 'inline-block';
+      }
       stopTicker();
     } else if(st === 'printing'){
       tracker.className = 'bg-blue-50 border border-blue-200 text-blue-800 ' + base;
@@ -2103,7 +2111,6 @@ tailwind.config = {
       currentJobId = id;
       var code = id.replace(/-/g, '').slice(0, 6).toUpperCase();
       var qrLink = upiLink(s.amount, 'Job#' + code, false);
-      var intentLink = upiLink(s.amount, 'Job#' + code, true);
 
       $('jobno').textContent = '#' + code;
       $('tokenRef').textContent = '#' + code;
@@ -2111,19 +2118,10 @@ tailwind.config = {
       $('payvpa').textContent = C.UPI_ID || '(Not configured)';
 
       if(!qrLink){
-        $('paybtn').style.display = 'none';
-        $('qrimg').innerHTML = '<div class="text-xs text-rose-600 font-bold p-3">UPI ID config.js mein set nahi hai &mdash; counter par cash de dijiye.</div>';
+        $('toggleUpiQrBtn').hidden = true;
+        $('upiQrBox').hidden = true;
       } else {
-        $('paybtn').style.display = 'flex';
-        $('paybtn').onclick = function(e){
-          e.preventDefault();
-          if(C.UPI_ID){
-            navigator.clipboard.writeText(C.UPI_ID).catch(function(){});
-          }
-          $('copyNotice').style.display = 'block';
-          window.location.href = intentLink;
-          setTimeout(function(){ $('copyNotice').style.display = 'none'; }, 6000);
-        };
+        $('toggleUpiQrBtn').hidden = false;
         try {
           var qr = qrcode(0, 'M');
           qr.addData(qrLink);
@@ -2162,6 +2160,13 @@ tailwind.config = {
       btn.disabled = false;
       btn.innerHTML = '<span>Print Request Bhejo 🚀</span>';
     }
+  };
+
+  $('toggleUpiQrBtn').onclick = function(){
+    var box = $('upiQrBox'), lbl = $('toggleUpiQrText');
+    var show = box.hidden;
+    box.hidden = !show;
+    if(lbl) lbl.textContent = show ? 'QR Chhupao' : 'UPI QR Dikhao';
   };
 
   $('copyUpiBtn').onclick = function(){
