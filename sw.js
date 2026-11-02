@@ -1,14 +1,16 @@
 // CyberPrint Pay - Service Worker for PWA installability
-const CACHE_NAME = 'cyberprint-v2';
+const CACHE_NAME = 'cyberprint-v3';
 const ASSETS = [
   './',
   './index.html',
   './admin.html',
-  './config.js?v=2',
+  './config.js?v=3',
   './manifest.json',
   './manifest-admin.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './lottie_light.min.js',
+  './printer-printing.json'
 ];
 
 self.addEventListener('install', (e) => {
