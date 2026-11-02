@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printer animation — test page</title>
+<style>
+  :root{
+    --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f1f5f9;
+    --blue:#2563eb; --amber:#f59e0b; --green:#10b981; --red:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+  h1{font-size:16px;margin:0 0 2px}
+  .sub{color:var(--muted);font-size:12px;margin-bottom:14px}
+  .grid{display:grid;grid-template-columns:minmax(320px,420px) minmax(280px,1fr);gap:18px;align-items:start}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}}
+
+  .phone{background:#fff;border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+  .token{text-align:center;background:linear-gradient(135deg,#eff6ff,#fff 60%,#eff6ff);border:2px solid #bfdbfe;border-radius:20px;padding:12px}
+  .token .lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#1d4ed8}
+  .token .no{font:800 34px/1.1 ui-monospace,monospace;color:#1e3a8a;letter-spacing:.05em;margin:2px 0}
+  .token .hint{font-size:11px;color:#2563eb;font-weight:600}
+
+  .tracker{margin-top:12px;border-radius:16px;padding:14px;border:1px solid;transition:background .2s,border-color .2s}
+  .tracker.amber{background:#fffbeb;border-color:#fde68a;color:#92400e}
+  .tracker.blue{background:#eff6ff;border-color:#bfdbfe;color:#1e40af}
+  .tracker.green{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+  .tracker.red{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
+  .row{display:flex;align-items:center;gap:10px}
+  .spin{width:15px;height:15px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:sp .8s linear infinite;flex:0 0 auto}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .msg{font-size:12px;font-weight:700}
+  #anim{width:200px;height:200px;margin:2px auto 0}
+  .barwrap{margin:2px 30px 0;display:none}
+  .barwrap.on{display:block}
+  .bar{height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden}
+  .bar > i{display:block;height:100%;width:0;border-radius:99px;
+           background:repeating-linear-gradient(45deg,var(--blue) 0 8px,#3b82f6 8px 16px);transition:width .3s}
+  .meta{font-size:11px;font-weight:600;color:var(--muted);text-align:center;margin-top:6px}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}
+  .panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  button{font:inherit;font-weight:700;font-size:12px;border-radius:10px;border:1px solid var(--line);
+         background:#f8fafc;color:var(--ink);padding:9px 12px;cursor:pointer;transition:.15s}
+  button:hover{background:#eef2f7}
+  button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  button.ghost{background:#fff}
+  .field{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;font-size:12px;color:var(--muted)}
+  .field input[type=number]{width:64px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;text-align:center}
+  .field input[type=range]{flex:1}
+  .readout{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .cell{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+  .cell b{display:block;font:700 15px/1.2 ui-monospace,monospace;color:var(--ink)}
+  .cell span{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5}
+  .warn{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:10px;padding:10px;font-size:12px;margin-bottom:12px;display:none}
+  .warn.on{display:block}
+</style>
+</head>
+<body>
+<h1>Printer animation — test page</h1>
+<div class="sub">Segment 1 loops while connecting, segment 2 loops while printing, frame 175 holds as the finished pose.</div>
+
+<div class="warn" id="warn">
+  <b>printer-printing.json load nahi hua.</b><br>
+  Agar aap yeh file seedha disk se khol rahe hain, browser fetch block karta hai — GitHub Pages se kholiye
+  (<code>/test.html</code>), ya neeche se JSON file choose kariye.
+  <div style="margin-top:8px"><input type="file" id="filePick" accept=".json,application/json"></div>
+</div>
+
+<div class="grid">
+  <div class="phone">
+    <div class="token">
+      <div class="lbl">Aapka Print Token Number</div>
+      <div class="no">#DEMO</div>
+      <div class="hint">Ye token counter operator ko batayein</div>
+    </div>
+
+    <div class="tracker amber" id="tracker">
+      <div class="row">
+        <div class="spin" id="spin"></div>
+        <div class="msg" id="msg">Connecting…</div>
+      </div>
+      <div id="anim"></div>
+      <div class="barwrap" id="barwrap">
+        <div class="bar"><i id="barfill"></i></div>
+        <div class="meta" id="meta">Page 1 / 1 · lagbhag</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>State</h2>
+    <div class="btns">
+      <button data-state="idle">Idle</button>
+      <button data-state="connecting" class="on">Connecting</button>
+      <button data-state="printing">Printing</button>
+      <button data-state="printed">Printed</button>
+      <button data-state="failed">Rejected</button>
+    </div>
+
+    <h2>Flow</h2>
+    <div class="btns">
+      <button id="flowBtn" class="ghost">▶ Full flow chalao</button>
+      <button id="pauseBtn" class="ghost">Pause</button>
+    </div>
+
+    <h2>Job</h2>
+    <div class="field"><span>Pages</span><input type="number" id="pages" value="2" min="1" max="50"></div>
+    <div class="field"><span>Copies</span><input type="number" id="copies" value="1" min="1" max="10"></div>
+    <div class="field"><span>Speed <b id="spdVal" style="color:var(--ink)">1.6×</b></span>
+      <input type="range" id="speed" min="0.4" max="3" step="0.1" value="1.6"></div>
+    <div class="field"><span>Reduced motion</span><input type="checkbox" id="reduced"></div>
+
+    <h2>Timeline</h2>
+    <div class="field"><span>Frame</span><input type="range" id="scrub" min="0" max="179" step="1" value="0"></div>
+
+    <div class="readout">
+      <div class="cell"><span>Frame</span><b id="rFrame">0</b></div>
+      <div class="cell"><span>Segment</span><b id="rSeg">connect</b></div>
+      <div class="cell"><span>Loops done</span><b id="rDone">0</b></div>
+      <div class="cell"><span>Bar</span><b id="rBar">0%</b></div>
+    </div>
+
+    <div class="note">
+      Segment frames asset ke markers se aate hain: <b id="rMarkers">connect 0–68 · print 68–179 · done 175</b>.<br>
+      "Full flow" wahi sequence chalata hai jo app mein hota hai: connecting → printing → printed.
+    </div>
+  </div>
+</div>
+
+<script src="lottie_light.min.js"></script>
+<script>
+(function(){
+  var SEG={connect:[0,68], print:[68,179], done:175, idle:0};
+  var anim=null, data=null;
+  var state={name:'connecting', seg:null, sidesTotal:1, sidesDone:0, startedAt:0, ticker:null, pendingFinish:false, flowTimer:null};
+
+  var $=function(id){ return document.getElementById(id); };
+  function speed(){ return parseFloat($('speed').value)||1.6; }
+  function reduced(){ return $('reduced').checked; }
+  function loopMs(){ return 6000/speed(); }
+
+  function readMarkers(d){
+    (d.markers||[]).forEach(function(m){
+      var len=m.dr||1;
+      if(m.cm==='connect') SEG.connect=[m.tm,m.tm+len];
+      else if(m.cm==='print') SEG.print=[m.tm,m.tm+len];
+      else if(m.cm==='done') SEG.done=m.tm;
+    });
+    SEG.idle=SEG.connect[0];
+    $('rMarkers').textContent='connect '+SEG.connect[0]+'–'+SEG.connect[1]+' · print '+SEG.print[0]+'–'+SEG.print[1]+' · done '+SEG.done;
+    $('scrub').max=Math.max(SEG.print[1],179);
+  }
+
+  function boot(json){
+    data=json;
+    readMarkers(data);
+    if(anim){ anim.destroy(); }
+    anim=lottie.loadAnimation({container:$('anim'),renderer:'svg',loop:false,autoplay:false,animationData:data});
+    anim.addEventListener('DOMLoaded',function(){
+      anim.setSpeed(speed());
+      anim.goToAndStop(SEG.idle,true);
+      setState(state.name);
+    });
+    anim.addEventListener('loopComplete',function(){
+      if(state.seg!=='print') return;
+      state.sidesDone=Math.min(state.sidesTotal,state.sidesDone+1);
+      render();
+      if(state.pendingFinish||state.sidesDone>=state.sidesTotal) holdDone();
+    });
+    anim.addEventListener('enterFrame',function(){
+      var f=Math.round(anim.currentFrame);
+      $('scrub').value=f; $('rFrame').textContent=f;
+      if(state.name==='printing' && state.seg==='print'){
+        var span=Math.max(1,SEG.print[1]-SEG.print[0]);
+        var within=Math.max(0,Math.min(1,(anim.currentFrame-SEG.print[0])/span));
+        var pct=Math.min(95,Math.round(((state.sidesDone+within)/state.sidesTotal)*100));
+        $('barfill').style.width=Math.max(3,pct)+'%';
+        $('rBar').textContent=pct+'%';
+      }
+    });
+  }
+
+  function playSeg(name){
+    if(!anim) return;
+    if(name==='done'){ anim.loop=false; anim.pause(); anim.goToAndStop(SEG.done,true); state.seg='done'; return; }
+    var seg=SEG[name]; if(!seg) return;
+    if(state.seg===name && !anim.isPaused) return;
+    state.seg=name;
+    if(reduced()){ anim.pause(); anim.goToAndStop(seg[0],true); return; }
+    anim.setSpeed(speed());
+    anim.loop=true;
+    anim.playSegments([seg[0],seg[1]],true);
+    if(anim.isPaused) anim.play();
+  }
+
+  function render(){
+    var done=state.sidesDone, total=state.sidesTotal;
+    var pct=state.name==='printed'?100:Math.round((done/total)*100);
+    $('barfill').style.width=Math.max(state.name==='printing'?4:0,pct)+'%';
+    $('rBar').textContent=pct+'%';
+    $('rDone').textContent=done+' / '+total;
+    $('rSeg').textContent=state.seg||'-';
+    $('meta').textContent='Page '+Math.min(total,done+1)+' / '+total+' · lagbhag';
+  }
+
+  function startTicker(){}
+  function stopTicker(){}
+
+  function holdDone(){
+    state.pendingFinish=false;
+    if(state.flowTimer){ clearTimeout(state.flowTimer); state.flowTimer=null; }
+    if(state.name==='printing'){ setTimeout(function(){ if(state.name==='printing') setState('printed'); }, 350); }
+    if(anim){ anim.loop=false; anim.pause(); anim.goToAndStop(SEG.done,true); }
+    state.seg='done';
+    $('barfill').style.width='100%'; $('rBar').textContent='100%';
+    render();
+  }
+
+  function setState(name){
+    state.name=name;
+    document.querySelectorAll('[data-state]').forEach(function(b){ b.classList.toggle('on', b.dataset.state===name); });
+    var t=$('tracker'), spin=$('spin'), msg=$('msg'), barwrap=$('barwrap');
+
+    if(name==='idle'){
+      t.className='tracker amber'; msg.textContent='Idle'; spin.style.display='none'; barwrap.classList.remove('on');
+      if(anim){ anim.loop=false; anim.pause(); anim.goToAndStop(SEG.idle,true); state.seg='idle'; }
+      state.sidesDone=0; state.startedAt=0; $('barfill').style.width='0%'; $('rBar').textContent='0%';
+      stopTicker();
+    } else if(name==='connecting'){
+      t.className='tracker amber'; msg.textContent='Connecting…'; spin.style.display='none'; barwrap.classList.remove('on');
+      playSeg('connect'); stopTicker();
+    } else if(name==='printing'){
+      t.className='tracker blue'; msg.textContent='Machine mein print nikal raha hai…'; spin.style.display='none';
+      barwrap.classList.add('on');
+      var total=Math.max(1,(parseInt($('pages').value,10)||1)*(parseInt($('copies').value,10)||1));
+      if(state.sidesTotal!==total||!state.startedAt){ state.sidesTotal=total; state.sidesDone=0; state.startedAt=Date.now(); }
+      state.pendingFinish=false;
+      playSeg('print'); startTicker(); render();
+    } else if(name==='printed'){
+      t.className='tracker green'; msg.textContent='🎉 Badhai ho! Print taiyaar hai, counter se collect karein!';
+      spin.style.display='none'; barwrap.classList.add('on');
+      if(state.seg==='print'){ state.pendingFinish=true; }
+      else holdDone();
+      stopTicker();
+    } else if(name==='failed'){
+      t.className='tracker red'; msg.textContent='❌ Request cancel ho gayi: counter par poochhein';
+      spin.style.display='none'; barwrap.classList.remove('on');
+      if(anim){ anim.loop=false; anim.pause(); anim.goToAndStop(SEG.idle,true); state.seg='idle'; }
+      state.sidesDone=0; state.startedAt=0; $('barfill').style.width='0%'; $('rBar').textContent='0%';
+      stopTicker();
+    }
+    render();
+  }
+
+  // ---- controls
+  document.querySelectorAll('[data-state]').forEach(function(b){
+    b.onclick=function(){ clearFlow(); setState(b.dataset.state); };
+  });
+  $('pauseBtn').onclick=function(){
+    if(!anim) return;
+    if(anim.isPaused){ if(state.seg!=='done'){ anim.play(); } this.textContent='Pause'; }
+    else { anim.pause(); this.textContent='Play'; }
+  };
+  $('speed').oninput=function(){
+    $('spdVal').textContent=parseFloat(this.value).toFixed(1)+'×';
+    if(anim) anim.setSpeed(parseFloat(this.value));
+  };
+  $('reduced').onchange=function(){ setState(state.name); };
+  $('scrub').oninput=function(){
+    if(!anim) return;
+    clearFlow(); anim.loop=false; anim.pause();
+    anim.goToAndStop(parseFloat(this.value),true);
+    state.seg='scrub'; $('rFrame').textContent=Math.round(anim.currentFrame);
+    $('rSeg').textContent='scrub';
+  };
+  function clearFlow(){ if(state.flowTimer){ clearTimeout(state.flowTimer); state.flowTimer=null; } $('flowBtn').textContent='▶ Full flow chalao'; }
+
+  $('flowBtn').onclick=function(){
+    clearFlow();
+    var self=this; self.textContent='⏳ chal raha hai…';
+    setState('connecting');
+    state.flowTimer=setTimeout(function(){
+      setState('printing');
+      state.flowTimer=null;
+      self.textContent='▶ Full flow chalao';
+    }, 2600);
+  };
+
+  // ---- load the asset
+  fetch('printer-printing.json').then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(boot)
+    .catch(function(){
+      $('warn').classList.add('on');
+      $('filePick').onchange=function(e){
+        var f=e.target.files[0]; if(!f) return;
+        var rd=new FileReader();
+        rd.onload=function(){ try{ boot(JSON.parse(rd.result)); $('warn').classList.remove('on'); }catch(err){ alert('JSON padha nahi ja saka'); } };
+        rd.readAsText(f);
+      };
+    });
+})();
+</script>
+</body>
+</html>
