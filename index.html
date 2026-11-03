@@ -250,27 +250,6 @@ tailwind.config = {
     <!-- ================= TOOL 1: PRINT & PAY VIEW ================= -->
     <div id="toolPrintView">
 
-    <!-- Stepper Navigation (3 Simple Steps) -->
-    <nav class="bg-white border border-slate-200/90 rounded-2xl p-2.5 shadow-xs mb-3.5">
-      <div class="grid grid-cols-3 gap-1 relative text-center">
-        <!-- Step 1 -->
-        <div id="stp1" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-brand-700 bg-brand-50 font-bold text-xs ring-1 ring-brand-200 transition-all">
-          <span class="step-num w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[11px]">1</span>
-          <span>फाइल चुनें</span>
-        </div>
-        <!-- Step 2 -->
-        <div id="stp2" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-slate-400 font-medium text-xs transition-all">
-          <span class="step-num w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[11px]">2</span>
-          <span>सेटिंग्स</span>
-        </div>
-        <!-- Step 3 -->
-        <div id="stp3" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-slate-400 font-medium text-xs transition-all">
-          <span class="step-num w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[11px]">3</span>
-          <span>टोकन व Pay</span>
-        </div>
-      </div>
-    </nav>
-
     <!-- ================= STEP 1: UPLOAD (Minimal & Direct) ================= -->
     <section id="s1" class="space-y-3.5 step-enter">
       <div id="drop" class="border-2 border-dashed border-slate-300 hover:border-brand-500 bg-white hover:bg-brand-50/30 rounded-2xl p-7 text-center cursor-pointer transition-all duration-200 shadow-xs flex flex-col items-center justify-center group tap-tactile">
@@ -343,6 +322,52 @@ tailwind.config = {
         <button type="button" onclick="location.reload()" class="text-xs text-brand-600 hover:text-brand-700 font-bold shrink-0 px-2.5 py-1.5 bg-brand-50 hover:bg-brand-100 rounded-lg transition active:scale-95">
           Change
         </button>
+      </div>
+
+      <!-- Document Live Preview Card (Auto Visible Above Print Type) -->
+      <div id="previewCard" class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs" >
+        <div class="flex items-center justify-between mb-2.5">
+          <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Live Print Preview
+          </span>
+          <span id="previewPageIndicator" class="text-[10px] font-bold text-brand-600 bg-brand-50 border border-brand-200 px-2.5 py-0.5 rounded-full">
+            Page 1 of 1
+          </span>
+        </div>
+
+        <!-- Preview Viewport / Desk Simulation -->
+        <div id="previewViewport" class="bg-slate-200/80 rounded-2xl p-3 flex flex-col items-center justify-center min-h-[220px] max-h-80 overflow-hidden border border-slate-300/70 relative shadow-inner">
+          <div id="previewLoading" class="text-xs text-slate-500 font-medium flex items-center gap-2">
+            <span class="spin border-slate-400 border-t-brand-600"></span> Document preview taiyaar ho raha hai...
+          </div>
+          
+          <!-- Realistic Simulated Paper Sheet -->
+          <div id="paperSheet" class="relative bg-white rounded-md shadow-lg border border-slate-300 flex items-center justify-center overflow-hidden transition-all duration-300 max-h-72 max-w-full" style="aspect-ratio: 210/297; display:none">
+            <!-- Image Element (JPG / PNG) -->
+            <img id="imgPreviewEl" class="max-h-full max-w-full object-contain transition-all duration-200" alt="Live Preview" />
+            <!-- PDF Canvas Element (PDF) -->
+            <canvas id="pdfCanvasEl" class="max-h-full max-w-full object-contain transition-all duration-200"></canvas>
+
+            <!-- Sheet Bottom Info Pill -->
+            <div id="sheetStatusBadge" class="absolute bottom-1.5 right-1.5 bg-slate-900/85 backdrop-blur-xs text-white text-[9px] font-mono font-bold px-2 py-0.5 rounded shadow pointer-events-none">
+              A4 · B&amp;W · Portrait
+            </div>
+
+            <!-- Warning if excluded from page range -->
+            <div id="excludedWarning" class="absolute inset-0 bg-slate-900/75 backdrop-blur-xs flex flex-col items-center justify-center text-white p-3 text-center" >
+              <span class="text-2xl mb-1">🚫</span>
+              <span class="text-xs font-black">Ye Page Print Nahi Hoga</span>
+              <span class="text-[10px] text-slate-300 mt-0.5">Selected range se bahar hai</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Multi-page PDF Page Selector Strip -->
+        <div id="pdfPagesStrip" class="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto pb-1" >
+          <span class="text-[11px] font-bold text-slate-500 shrink-0">Pages:</span>
+          <div id="pdfPagePills" class="flex items-center gap-1.5"></div>
+        </div>
       </div>
 
       <!-- Print Mode: B&W vs Color (Large Friendly Buttons) -->
@@ -457,61 +482,7 @@ tailwind.config = {
             <span id="total" class="font-mono text-3xl font-black text-emerald-400">₹5</span>
           </div>
         </div>
-      </div>
-
-      <!-- Show Live Preview Button at Bottom -->
-      <button type="button" id="togglePreviewBtn" class="w-full py-2.5 px-3 bg-white hover:bg-slate-50 border border-slate-300 hover:border-brand-500 text-slate-700 hover:text-brand-600 font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 active:scale-[0.99]">
-        <span id="togglePreviewIcon">👁️</span>
-        <span id="togglePreviewText">Show Live Preview (Kaisa Print Hoga Dekhein)</span>
-      </button>
-
-      <!-- Document Live Preview Card (Placed at Bottom, toggleable) -->
-      <div id="previewCard" class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs" style="display:none">
-        <div class="flex items-center justify-between mb-2.5">
-          <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Live Print Preview
-          </span>
-          <span id="previewPageIndicator" class="text-[10px] font-bold text-brand-600 bg-brand-50 border border-brand-200 px-2.5 py-0.5 rounded-full">
-            Page 1 of 1
-          </span>
-        </div>
-
-        <!-- Preview Viewport / Desk Simulation -->
-        <div id="previewViewport" class="bg-slate-200/80 rounded-2xl p-3 flex flex-col items-center justify-center min-h-[220px] max-h-80 overflow-hidden border border-slate-300/70 relative shadow-inner">
-          <div id="previewLoading" class="text-xs text-slate-500 font-medium flex items-center gap-2">
-            <span class="spin border-slate-400 border-t-brand-600"></span> Document preview taiyaar ho raha hai...
-          </div>
-          
-          <!-- Realistic Simulated Paper Sheet -->
-          <div id="paperSheet" class="relative bg-white rounded-md shadow-lg border border-slate-300 flex items-center justify-center overflow-hidden transition-all duration-300 max-h-72 max-w-full" style="aspect-ratio: 210/297; display:none">
-            <!-- Image Element (JPG / PNG) -->
-            <img id="imgPreviewEl" class="max-h-full max-w-full object-contain transition-all duration-200" alt="Live Preview" />
-            <!-- PDF Canvas Element (PDF) -->
-            <canvas id="pdfCanvasEl" class="max-h-full max-w-full object-contain transition-all duration-200"></canvas>
-
-            <!-- Sheet Bottom Info Pill -->
-            <div id="sheetStatusBadge" class="absolute bottom-1.5 right-1.5 bg-slate-900/85 backdrop-blur-xs text-white text-[9px] font-mono font-bold px-2 py-0.5 rounded shadow pointer-events-none">
-              A4 · B&amp;W · Portrait
-            </div>
-
-            <!-- Warning if excluded from page range -->
-            <div id="excludedWarning" class="absolute inset-0 bg-slate-900/75 backdrop-blur-xs flex flex-col items-center justify-center text-white p-3 text-center" style="display:none">
-              <span class="text-2xl mb-1">🚫</span>
-              <span class="text-xs font-black">Ye Page Print Nahi Hoga</span>
-              <span class="text-[10px] text-slate-300 mt-0.5">Selected range se bahar hai</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Multi-page PDF Page Selector Strip -->
-        <div id="pdfPagesStrip" class="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center gap-2 overflow-x-auto pb-1" style="display:none">
-          <span class="text-[11px] font-bold text-slate-500 shrink-0">Pages:</span>
-          <div id="pdfPagePills" class="flex items-center gap-1.5"></div>
-        </div>
-      </div>
-
-      <!-- Error Alert -->
+      </div><!-- Error Alert -->
       <div id="s2err" class="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-xl text-xs font-medium" hidden></div>
 
       <!-- Submit Button -->
@@ -1492,6 +1463,7 @@ tailwind.config = {
   function setStep(num){
     ['stp1','stp2','stp3'].forEach(function(id, idx){
       var el = $(id);
+      if(!el) return;
       var numSpan = el.querySelector('.step-num');
       if(idx + 1 === num){
         el.className = 'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-brand-700 bg-brand-50 font-bold text-xs ring-1 ring-brand-200 transition-all';
@@ -1789,33 +1761,6 @@ tailwind.config = {
   };
   $('from').oninput = recalc; $('to').oninput = recalc;
   $('paper').onchange = recalc; $('orient').onchange = recalc;
-
-  var togglePreviewBtn = $('togglePreviewBtn');
-  if(togglePreviewBtn){
-    togglePreviewBtn.onclick = function(){
-      var card = $('previewCard');
-      var isHidden = (card.style.display === 'none' || card.hasAttribute('hidden'));
-      if(isHidden){
-        card.style.display = 'block';
-        card.removeAttribute('hidden');
-        card.classList.remove('preview-reveal');
-        void card.offsetWidth;
-        card.classList.add('preview-reveal');
-        $('togglePreviewText').textContent = 'Hide Live Preview';
-        $('togglePreviewIcon').textContent = '✕';
-        togglePreviewBtn.classList.remove('bg-white', 'text-slate-700');
-        togglePreviewBtn.classList.add('bg-slate-200', 'text-slate-900');
-        updateLivePreviewAdjustment();
-        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      } else {
-        card.style.display = 'none';
-        $('togglePreviewText').textContent = 'Show Live Preview (Kaisa Print Hoga Dekhein)';
-        $('togglePreviewIcon').textContent = '👁️';
-        togglePreviewBtn.classList.remove('bg-slate-200', 'text-slate-900');
-        togglePreviewBtn.classList.add('bg-white', 'text-slate-700');
-      }
-    };
-  }
 
   function upiLink(amount, note, forIntent){
     var vpa = (C.UPI_ID || '').trim();

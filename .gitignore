@@ -2,6 +2,10 @@
 agent/config.json
 config.local.js
 
+# Customer downloaded files & local shares
+agent/downloads/
+agent/pc_shares/
+
 # Runtime logs, PIDs and temporary files
 agent/agent.pid
 agent/agent.log
