@@ -112,6 +112,11 @@ drop policy if exists "operator can delete job files" on storage.objects;
 create policy "operator can delete job files" on storage.objects
   for delete to authenticated using (bucket_id = 'jobs');
 
+-- customers can download PC shared files directly from cloud storage
+drop policy if exists "anyone can read pc_shares" on storage.objects;
+create policy "anyone can read pc_shares" on storage.objects
+  for select to anon, authenticated using (bucket_id = 'jobs' and name like 'pc_shares/%');
+
 -- 6. Tidy old status values, then lock the status rule -----------------------
 update public.jobs set status = 'approved'
   where status not in ('pending','approved','printing','printed','rejected','cancelled','failed');

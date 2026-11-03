@@ -309,12 +309,16 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split("?")[0].rstrip("/")
-        if path in ("", "/drop", "/index", "/drop.html"):
-            drop_file = Path(__file__).parent / "drop.html"
-            if not drop_file.exists():
-                drop_file = Path(__file__).parent.parent / "drop.html"
-            if drop_file.exists():
-                html = drop_file.read_bytes()
+        if path in ("", "/drop", "/index", "/drop.html", "/index.html"):
+            target_file = Path(__file__).parent.parent / "index.html"
+            if not target_file.exists():
+                target_file = Path(__file__).parent / "index.html"
+            if not target_file.exists():
+                target_file = Path(__file__).parent.parent / "drop.html"
+            if not target_file.exists():
+                target_file = Path(__file__).parent / "drop.html"
+            if target_file.exists():
+                html = target_file.read_bytes()
                 self.send_response(200)
                 self.send_cors_headers()
                 self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -322,7 +326,7 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(html)
             else:
-                self.send_error(404, "drop.html not found")
+                self.send_error(404, "index.html not found")
             return
 
         if path in ("/api/ip", "/api/info"):
