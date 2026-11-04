@@ -1,17 +1,6 @@
-# Secrets & local configuration
-agent/config.json
+# Keep print agent strictly local to the Counter PC (holds operator credentials & print spooler)
+agent/
 config.local.js
-
-# Customer downloaded files & local shares
-agent/downloads/
-agent/pc_shares/
-
-# Runtime logs, PIDs and temporary files
-agent/agent.pid
-agent/agent.log
-agent/tmp/
-agent/__pycache__/
-*.pyc
 
 # OS generated files
 Thumbs.db
