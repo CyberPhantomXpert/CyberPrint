@@ -1098,7 +1098,7 @@ tailwind.config = {
           console.warn('Direct Supabase storage upload warning:', up.error);
         } else {
           try {
-            var signRes = await sb.storage.from(B).createSignedUrl(path, 86400 * 7);
+            var signRes = await sb.storage.from(B).createSignedUrl(path, 86400 * 7, { download: f.name });
             if(signRes && signRes.data && signRes.data.signedUrl){
               cloudUrl = signRes.data.signedUrl;
             }
@@ -1107,11 +1107,14 @@ tailwind.config = {
           }
           if(!cloudUrl){
             try {
-              var pubData = sb.storage.from(B).getPublicUrl(path);
+              var pubData = sb.storage.from(B).getPublicUrl(path, { download: f.name });
               if(pubData && pubData.data && pubData.data.publicUrl){
                 cloudUrl = pubData.data.publicUrl;
               }
             } catch(pubErr){}
+          }
+          if(cloudUrl && !cloudUrl.includes('download=')){
+            cloudUrl += (cloudUrl.includes('?') ? '&' : '?') + 'download=' + encodeURIComponent(f.name);
           }
         }
       }
