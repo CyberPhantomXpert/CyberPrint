@@ -1,7 +1,22 @@
-# Keep print agent strictly local to the Counter PC (holds operator credentials & print spooler)
-agent/
+# Keep print agent secrets, spooler files and runtime logs strictly local
+agent/config.json
+agent/agent.log
+agent/agent.pid
+agent/downloads/
+agent/pc_shares/
+agent/tmp/
+agent/__pycache__/
 config.local.js
 
 # OS generated files
 Thumbs.db
 .DS_Store
+
+# Environment variables & secrets
+.env
+
+# Sarvam AI local test scripts
+test_sarvam.py
+
+
+
