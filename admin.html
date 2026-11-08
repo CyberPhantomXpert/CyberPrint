@@ -1272,7 +1272,7 @@ tailwind.config = {
       ? 'w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shadow-sm shadow-emerald-400/50 animate-pulse'
       : 'w-2.5 h-2.5 rounded-full bg-rose-500 inline-block';
   }
-  function codeOf(j){ return (j.id || '').replace(/-/g, '').slice(0, 6).toUpperCase(); }
+  function codeOf(j){ return ((j.batch_id && (j.batch_total_files > 1) ? j.batch_id : j.id) || '').replace(/-/g, '').slice(0, 6).toUpperCase(); }
   function find(id){ return jobs.filter(function(x){ return x.id === id; })[0]; }
 
   async function boot(){
@@ -1495,6 +1495,102 @@ tailwind.config = {
     '</div>';
   }
 
+  function groupJobs(list){
+    var groups = [];
+    var batchMap = {};
+
+    list.forEach(function(j){
+      if(j.batch_id && (j.batch_total_files > 1 || list.filter(function(x){ return x.batch_id === j.batch_id; }).length > 1)){
+        if(!batchMap[j.batch_id]){
+          var g = { isBatch: true, batchId: j.batch_id, jobs: [], created_at: j.created_at, status: j.status };
+          batchMap[j.batch_id] = g;
+          groups.push(g);
+        }
+        batchMap[j.batch_id].jobs.push(j);
+      } else {
+        groups.push({ isBatch: false, job: j, created_at: j.created_at, status: j.status });
+      }
+    });
+
+    return groups;
+  }
+
+  function batchCard(g){
+    var batchId = g.batchId;
+    var bJobs = g.jobs.sort(function(a, b){ return (a.batch_index || 0) - (b.batch_index || 0); });
+    var code = (batchId || '').replace(/-/g, '').slice(0, 6).toUpperCase();
+    var totalPrice = bJobs.reduce(function(acc, j){ return acc + (j.total_price || 0); }, 0);
+    var allPending = bJobs.every(function(j){ return j.status === 'pending'; });
+    var allPrinted = bJobs.every(function(j){ return j.status === 'printed'; });
+    var anyPrinting = bJobs.some(function(j){ return j.status === 'printing' || j.status === 'approved'; });
+    var anyFailed = bJobs.some(function(j){ return j.status === 'failed'; });
+    var anyRejected = bJobs.some(function(j){ return j.status === 'rejected' || j.status === 'cancelled'; });
+
+    var statusBadge = '';
+    if(allPrinted) statusBadge = '<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">Printed ✓ (' + bJobs.length + ' files)</span>';
+    else if(anyPrinting) statusBadge = '<span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">Printing...</span>';
+    else if(allPending) statusBadge = '<span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full animate-pulse">Pending Batch</span>';
+    else if(anyFailed) statusBadge = '<span class="bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">Error in Batch</span>';
+    else if(anyRejected) statusBadge = '<span class="bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">Cancelled</span>';
+    else statusBadge = '<span class="bg-slate-700 text-slate-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full">In Progress</span>';
+
+    var acts = [];
+    if(allPending || bJobs.some(function(j){ return j.status === 'pending'; })){
+      acts.push('<button class="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow-md shadow-emerald-600/30 transition active:scale-95" data-approve-batch="' + batchId + '">🖨️ Sabhi Print Nikalo (' + bJobs.length + ')</button>');
+    }
+    if(anyFailed){
+      acts.push('<button class="py-2 px-3.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl transition" data-requeue-batch="' + batchId + '">Batch Dobara Bhejo</button>');
+    }
+    if(allPending || anyPrinting || anyFailed){
+      acts.push('<button class="py-2 px-3 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 font-bold text-xs rounded-xl transition" data-reject-batch="' + batchId + '">Reject Batch</button>');
+    }
+
+    var filesHtml = bJobs.map(function(j, idx){
+      var colorLbl = j.color_mode === 'color' ? '🎨 Color' : '⚫ B&W';
+      var itemStatus = '';
+      if(j.status === 'printed') itemStatus = '<span class="text-emerald-400 font-bold">✓ Printed</span>';
+      else if(j.status === 'printing') itemStatus = '<span class="text-blue-400 font-bold">🖨️ Spooling</span>';
+      else if(j.status === 'approved') itemStatus = '<span class="text-blue-300 font-medium">Approved</span>';
+      else if(j.status === 'failed') itemStatus = '<span class="text-rose-400 font-bold">Failed</span>';
+      else itemStatus = '<span class="text-amber-400 font-medium">Pending</span>';
+
+      return '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 text-xs">' +
+        '<div class="flex items-center gap-2 min-w-0 flex-1">' +
+          '<span class="w-5 h-5 rounded-md bg-indigo-500/20 text-indigo-300 font-mono text-[10px] font-bold flex items-center justify-center shrink-0">' + (idx + 1) + '</span>' +
+          '<span class="font-bold text-white truncate" title="' + esc(j.file_name) + '">' + esc(j.file_name) + '</span>' +
+          '<span class="text-slate-400 text-[11px] shrink-0">' + j.page_count + ' pg \u00b7 ' + j.copies + 'c \u00b7 ' + colorLbl + ' \u00b7 ' + j.paper_size + '</span>' +
+        '</div>' +
+        '<div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">' +
+          '<span class="font-mono text-emerald-400 font-bold">' + money(j.total_price) + '</span>' +
+          itemStatus +
+          (j.file_path ? '<button class="py-1 px-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-medium transition" data-open="' + j.id + '">Kholo</button>' : '') +
+          (j.file_path ? '<button class="py-1 px-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] font-medium transition" data-dl="' + j.id + '">DL</button>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    return '<div class="bg-slate-850 border-2 border-indigo-500/30 hover:border-indigo-500/50 rounded-2xl p-4 sm:p-5 shadow-md shadow-indigo-950/20 transition flex flex-col gap-4">' +
+      '<div class="flex items-center justify-between gap-3 flex-wrap border-b border-slate-800 pb-3">' +
+        '<div class="flex items-center gap-2.5 flex-wrap">' +
+          '<span class="font-mono text-base font-black text-indigo-400">#' + code + '</span>' +
+          '<span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider">📦 Batch (' + bJobs.length + ' Files)</span>' +
+          statusBadge +
+          '<span class="text-xs text-slate-400 font-medium">' + time(g.created_at) + '</span>' +
+        '</div>' +
+        '<div class="flex items-center gap-3">' +
+          '<div class="text-right">' +
+            '<span class="text-[10px] uppercase font-bold text-slate-400 block">Total Batch Collect</span>' +
+            '<span class="font-mono text-2xl font-black text-emerald-400">' + money(totalPrice) + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="space-y-2">' +
+        filesHtml +
+      '</div>' +
+      (acts.length ? '<div class="flex items-center justify-end gap-2 flex-wrap pt-2 border-t border-slate-800/80">' + acts.join('') + '</div>' : '') +
+    '</div>';
+  }
+
   function render(){
     renderTabs(); summary();
     var tab = TABS.filter(function(t){ return t.k === filter; })[0];
@@ -1503,12 +1599,19 @@ tailwind.config = {
       $('list').innerHTML = '<div class="bg-slate-850/60 border border-slate-800/80 rounded-2xl p-8 text-center text-slate-500 text-xs font-medium">Abhi koi job nahi hai iss category mein.</div>';
       return;
     }
-    $('list').innerHTML = list.map(card).join('');
+    var groups = groupJobs(list);
+    $('list').innerHTML = groups.map(function(item){
+      return item.isBatch ? batchCard(item) : card(item.job);
+    }).join('');
+
     $('list').querySelectorAll('[data-approve]').forEach(function(b){ b.onclick = function(){ approveJob(b.dataset.approve, b); }; });
+    $('list').querySelectorAll('[data-approve-batch]').forEach(function(b){ b.onclick = function(){ approveBatch(b.dataset.approveBatch, b); }; });
     $('list').querySelectorAll('[data-requeue]').forEach(function(b){ b.onclick = function(){ requeue(b.dataset.requeue); }; });
+    $('list').querySelectorAll('[data-requeue-batch]').forEach(function(b){ b.onclick = function(){ requeueBatch(b.dataset.requeueBatch); }; });
     $('list').querySelectorAll('[data-open]').forEach(function(b){ b.onclick = function(){ openFile(b.dataset.open); }; });
     $('list').querySelectorAll('[data-dl]').forEach(function(b){ b.onclick = function(){ downloadFile(b.dataset.dl); }; });
     $('list').querySelectorAll('[data-reject]').forEach(function(b){ b.onclick = function(){ reject(b.dataset.reject); }; });
+    $('list').querySelectorAll('[data-reject-batch]').forEach(function(b){ b.onclick = function(){ rejectBatch(b.dataset.rejectBatch); }; });
   }
 
   async function signedUrl(j, download){
@@ -1561,6 +1664,33 @@ tailwind.config = {
     if(!confirm('Job #' + codeOf(j) + ' ko reject karna hai?')) return;
     var u = await sb.from('jobs').update({ status: 'rejected' }).eq('id', id);
     if(u.error){ alert('Reject failed: ' + u.error.message); return; }
+    load();
+  }
+
+  async function approveBatch(batchId, btn){
+    if(btn){ btn.disabled = true; btn.textContent = 'Spooling Batch...'; }
+    var u = await sb.from('jobs').update({ status: 'approved' }).eq('batch_id', batchId).eq('status', 'pending');
+    if(u.error){
+      alert('Batch approve error: ' + u.error.message);
+      if(btn){ btn.disabled = false; btn.textContent = '🖨️ Sabhi Print Nikalo'; }
+      return;
+    }
+    load();
+  }
+
+  async function requeueBatch(batchId){
+    var code = (batchId || '').replace(/-/g, '').slice(0, 6).toUpperCase();
+    if(!confirm('Batch #' + code + ' ko dobara printer par bhejna hai?')) return;
+    var u = await sb.from('jobs').update({ status: 'pending', print_error: null }).eq('batch_id', batchId);
+    if(u.error){ alert('Requeue batch failed: ' + u.error.message); return; }
+    load();
+  }
+
+  async function rejectBatch(batchId){
+    var code = (batchId || '').replace(/-/g, '').slice(0, 6).toUpperCase();
+    if(!confirm('Batch #' + code + ' ki sabhi files ko reject karna hai?')) return;
+    var u = await sb.from('jobs').update({ status: 'rejected' }).eq('batch_id', batchId);
+    if(u.error){ alert('Reject batch failed: ' + u.error.message); return; }
     load();
   }
 

@@ -988,7 +988,7 @@ class PrintAgent:
                 except Exception:
                     pass
 
-    def show_job_popup(self, job, code, color_lbl, range_text):
+    def show_job_popup(self, jobs_input, code=None, color_lbl=None, range_text=None):
         """Displays a sleek floating notification card at bottom-right corner of screen."""
         decision = [None]
         try:
@@ -997,13 +997,26 @@ class PrintAgent:
             log(f"GUI not available ({e}) - will check console")
             return None
 
-        root.title(f"CyberPrint Pay - Job #{code}")
+        jobs_list = jobs_input if isinstance(jobs_input, list) else [jobs_input]
+        is_batch = len(jobs_list) > 1
+        first_job = jobs_list[0]
+        batch_id = first_job.get("batch_id")
+        if not code:
+            code = (batch_id.replace("-", "")[:6].upper()) if batch_id else first_job["id"].replace("-", "")[:6].upper()
+
+        total_price = sum(float(j.get("total_price", 0) or 0) for j in jobs_list)
+        total_price_str = f"{int(total_price) if total_price.is_integer() else total_price}"
+
+        if is_batch:
+            root.title(f"CyberPrint Pay - Batch #{code} ({len(jobs_list)} Files)")
+        else:
+            root.title(f"CyberPrint Pay - Job #{code}")
         root.attributes("-topmost", True)
         root.resizable(False, False)
 
         # Position in bottom-right corner above taskbar
-        w = 440
-        h = 250
+        w = 460 if is_batch else 440
+        h = min(420, 260 + (len(jobs_list) - 1) * 36) if is_batch else 250
         try:
             sw = root.winfo_screenwidth()
             sh = root.winfo_screenheight()
@@ -1055,8 +1068,9 @@ class PrintAgent:
         hdr.pack(fill="x")
         hdr.pack_propagate(False)
 
+        header_title = f"🖨️ CyberPrint Pay — BATCH #{code} ({len(jobs_list)} Files)" if is_batch else f"🖨️ CyberPrint Pay — NAYA PRINT JOB #{code}"
         title_lbl = tk.Label(
-            hdr, text=f"🖨️ CyberPrint Pay — NAYA PRINT JOB #{code}",
+            hdr, text=header_title,
             fg="#ffffff", bg="#0f172a", font=("Segoe UI", 11, "bold")
         )
         title_lbl.pack(side="left", padx=14, pady=9)
@@ -1065,27 +1079,50 @@ class PrintAgent:
         body = tk.Frame(root, bg="#ffffff", padx=16, pady=12)
         body.pack(fill="both", expand=True)
 
-        raw_name = job.get("file_name", "document")
-        file_name = (raw_name[:34] + "...") if len(raw_name) > 36 else raw_name
+        if is_batch:
+            list_box = tk.Frame(body, bg="#f8fafc", padx=8, pady=6, highlightbackground="#e2e8f0", highlightthickness=1)
+            list_box.pack(fill="both", expand=True, pady=(0, 8))
+            for idx, j in enumerate(jobs_list[:6], 1):
+                raw_name = j.get("file_name", "document")
+                f_name = (raw_name[:26] + "...") if len(raw_name) > 28 else raw_name
+                c_mode = "Color" if j.get("color_mode") == "color" else "B&W"
+                row_text = f"{idx}. {f_name}  ({j.get('page_count')}p · {j.get('copies')}c · {c_mode} · ₹{j.get('total_price', 0)})"
+                row_lbl = tk.Label(
+                    list_box, text=row_text,
+                    fg="#1e293b", bg="#f8fafc", font=("Segoe UI", 9, "bold"), anchor="w"
+                )
+                row_lbl.pack(fill="x", pady=1)
+            if len(jobs_list) > 6:
+                more_lbl = tk.Label(
+                    list_box, text=f"...aur {len(jobs_list) - 6} documents",
+                    fg="#64748b", bg="#f8fafc", font=("Segoe UI", 8, "italic"), anchor="w"
+                )
+                more_lbl.pack(fill="x")
+        else:
+            raw_name = first_job.get("file_name", "document")
+            file_name = (raw_name[:34] + "...") if len(raw_name) > 36 else raw_name
 
-        fn_lbl = tk.Label(
-            body, text=file_name,
-            fg="#0f172a", bg="#ffffff", font=("Segoe UI", 12, "bold"), anchor="w"
-        )
-        fn_lbl.pack(fill="x")
+            fn_lbl = tk.Label(
+                body, text=file_name,
+                fg="#0f172a", bg="#ffffff", font=("Segoe UI", 12, "bold"), anchor="w"
+            )
+            fn_lbl.pack(fill="x")
 
-        specs_text = f"📄 {job.get('page_count')} Page{range_text} · {job.get('copies')} Copy · {color_lbl} · {job.get('paper_size')}"
-        specs_lbl = tk.Label(
-            body, text=specs_text,
-            fg="#64748b", bg="#ffffff", font=("Segoe UI", 10), anchor="w"
-        )
-        specs_lbl.pack(fill="x", pady=(2, 8))
+            c_lbl = color_lbl or ("Rangeen (Color)" if first_job.get("color_mode") == "color" else "Kala-Safed (B&W)")
+            r_txt = range_text or (f" (pages {first_job.get('page_range')})" if first_job.get("page_range") else "")
+            specs_text = f"📄 {first_job.get('page_count')} Page{r_txt} · {first_job.get('copies')} Copy · {c_lbl} · {first_job.get('paper_size')}"
+            specs_lbl = tk.Label(
+                body, text=specs_text,
+                fg="#64748b", bg="#ffffff", font=("Segoe UI", 10), anchor="w"
+            )
+            specs_lbl.pack(fill="x", pady=(2, 8))
 
         amt_frame = tk.Frame(body, bg="#f0fdf4", padx=10, pady=6, highlightbackground="#86efac", highlightthickness=1)
         amt_frame.pack(fill="x", pady=(0, 10))
 
+        amt_desc = f"Kul {len(jobs_list)} files ka total" if is_batch else "UPI ya Cash check karein"
         amt_lbl = tk.Label(
-            amt_frame, text=f"COLLECT KAREIN : ₹{job.get('total_price', 0)} (UPI ya Cash check karein)",
+            amt_frame, text=f"COLLECT KAREIN : ₹{total_price_str} ({amt_desc})",
             fg="#15803d", bg="#f0fdf4", font=("Segoe UI", 10, "bold")
         )
         amt_lbl.pack(side="left")
@@ -1114,16 +1151,18 @@ class PrintAgent:
 
         root.protocol("WM_DELETE_WINDOW", safe_close)
 
+        btn_print_text = "✅ Sabhi Print Nikalo (Y)" if is_batch else "✅ Print Nikalo (Y)"
         print_btn = tk.Button(
-            btn_frame, text="✅ Print Nikalo (Y)",
+            btn_frame, text=btn_print_text,
             bg="#16a34a", fg="#ffffff", activebackground="#15803d", activeforeground="#ffffff",
             font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=7, cursor="hand2",
             command=on_print
         )
         print_btn.pack(side="left", expand=True, fill="x", padx=(0, 6))
 
+        btn_reject_text = "❌ Sabhi Reject Karo (N)" if is_batch else "❌ Reject Karo (N)"
         reject_btn = tk.Button(
-            btn_frame, text="❌ Reject Karo (N)",
+            btn_frame, text=btn_reject_text,
             bg="#fee2e2", fg="#dc2626", activebackground="#fecaca", activeforeground="#b91c1c",
             font=("Segoe UI", 10, "bold"), relief="flat", padx=12, pady=7, cursor="hand2",
             command=on_reject
@@ -1140,24 +1179,43 @@ class PrintAgent:
 
         def poll_external_worker():
             """Runs external status checks asynchronously so slow network never freezes GUI."""
+            job_ids = [j["id"] for j in jobs_list]
             while not is_closing[0]:
                 try:
                     self.heartbeat("awaiting confirmation")
-                    chk = self.api_request(
-                        "GET",
-                        f"/rest/v1/jobs?id=eq.{job['id']}&select=status"
-                    )
-                    if chk and not is_closing[0]:
-                        st = chk[0].get("status")
-                        if st == "approved":
-                            log("job was approved via mobile admin panel while popup was open - printing!")
-                            decision[0] = "Y"
-                            root.after(0, safe_close)
-                            return
-                        elif st != "pending":
-                            log(f"job was marked '{st}' externally - dialog closing")
-                            root.after(0, safe_close)
-                            return
+                    if is_batch:
+                        chk = self.api_request(
+                            "GET",
+                            f"/rest/v1/jobs?id=in.({','.join(job_ids)})&select=id,status"
+                        )
+                        if chk and not is_closing[0]:
+                            all_appr = len(chk) == len(job_ids) and all(item.get("status") == "approved" for item in chk)
+                            any_rej = any(item.get("status") in ("cancelled", "rejected", "failed") for item in chk)
+                            if all_appr:
+                                log("batch was approved via mobile admin panel while popup was open - printing!")
+                                decision[0] = "Y"
+                                root.after(0, safe_close)
+                                return
+                            elif any_rej:
+                                log("one or more jobs in batch was rejected/cancelled externally - dialog closing")
+                                root.after(0, safe_close)
+                                return
+                    else:
+                        chk = self.api_request(
+                            "GET",
+                            f"/rest/v1/jobs?id=eq.{first_job['id']}&select=status"
+                        )
+                        if chk and not is_closing[0]:
+                            st = chk[0].get("status")
+                            if st == "approved":
+                                log("job was approved via mobile admin panel while popup was open - printing!")
+                                decision[0] = "Y"
+                                root.after(0, safe_close)
+                                return
+                            elif st != "pending":
+                                log(f"job was marked '{st}' externally - dialog closing")
+                                root.after(0, safe_close)
+                                return
                 except Exception:
                     pass
                 time.sleep(2)
@@ -1168,36 +1226,61 @@ class PrintAgent:
         root.mainloop()
         return decision[0]
 
-    def notify_job(self, job):
+    def notify_job(self, jobs_input):
         self.beep()
-        code = job["id"].replace("-", "")[:6].upper()
-        page_range = job.get("page_range")
-        range_text = f" (pages {page_range})" if page_range else ""
-        color_lbl = "Rangeen (Color)" if job.get("color_mode") == "color" else "Kala-Safed (B&W)"
-        raw_name = job.get("file_name", "document")
-        file_name = re.sub(r'[\r\n\t]+', ' ', str(raw_name)).strip()
-        price = job.get("total_price", 0)
+        jobs_list = jobs_input if isinstance(jobs_input, list) else [jobs_input]
+        is_batch = len(jobs_list) > 1
+        first_job = jobs_list[0]
+        batch_id = first_job.get("batch_id")
+        code = (batch_id.replace("-", "")[:6].upper()) if batch_id else first_job["id"].replace("-", "")[:6].upper()
+        total_price = sum(float(j.get("total_price", 0) or 0) for j in jobs_list)
+        total_price_str = f"{int(total_price) if total_price.is_integer() else total_price}"
 
         # 1. Console Log
         print("", flush=True)
         print("=" * 64)
-        print(f"  NAYA PRINT JOB #{code}   -- kripya payment check karein")
-        print(f"  File    : {file_name}")
-        print(f"  Specs   : {job.get('page_count')} page{range_text} | {job.get('copies')} copy | {color_lbl} | {job.get('paper_size')}")
-        print(f"  COLLECT : Rs {price} (UPI ya Cash)")
-        print("  Customer ka payment check karein, phir key dabayein:")
-        print("      Y  = Print nikalo (Approve)")
-        print("      N  = Reject karo (Cancel)")
+        if is_batch:
+            print(f"  NAYA PRINT BATCH #{code} ({len(jobs_list)} Files) -- kripya payment check karein")
+            for idx, j in enumerate(jobs_list, 1):
+                p_range = j.get("page_range")
+                r_txt = f" (pages {p_range})" if p_range else ""
+                c_lbl = "Color" if j.get("color_mode") == "color" else "B&W"
+                f_name = re.sub(r'[\r\n\t]+', ' ', str(j.get("file_name", "document"))).strip()
+                print(f"  [{idx}/{len(jobs_list)}] {f_name}")
+                print(f"       {j.get('page_count')} page{r_txt} | {j.get('copies')} copy | {c_lbl} | {j.get('paper_size')} | ₹{j.get('total_price', 0)}")
+            print(f"  KUL COLLECT : Rs {total_price_str} (UPI ya Cash)")
+            print("  Customer ka payment check karein, phir key dabayein:")
+            print("      Y  = Sabhi Print nikalo (Approve Batch)")
+            print("      N  = Sabhi Reject karo (Cancel Batch)")
+        else:
+            page_range = first_job.get("page_range")
+            range_text = f" (pages {page_range})" if page_range else ""
+            color_lbl = "Rangeen (Color)" if first_job.get("color_mode") == "color" else "Kala-Safed (B&W)"
+            raw_name = first_job.get("file_name", "document")
+            file_name = re.sub(r'[\r\n\t]+', ' ', str(raw_name)).strip()
+            print(f"  NAYA PRINT JOB #{code}   -- kripya payment check karein")
+            print(f"  File    : {file_name}")
+            print(f"  Specs   : {first_job.get('page_count')} page{range_text} | {first_job.get('copies')} copy | {color_lbl} | {first_job.get('paper_size')}")
+            print(f"  COLLECT : Rs {total_price_str} (UPI ya Cash)")
+            print("  Customer ka payment check karein, phir key dabayein:")
+            print("      Y  = Print nikalo (Approve)")
+            print("      N  = Reject karo (Cancel)")
         print("=" * 64, flush=True)
 
         # 2. Windows 10/11 Action Center Toast Notification (sanitized)
-        send_windows_toast(
-            f"🖨️ CyberPrint Pay — Naya Job #{code}",
-            f"{file_name} · COLLECT : Rs {price}"
-        )
+        if is_batch:
+            send_windows_toast(
+                f"🖨️ CyberPrint Pay — Naya Batch #{code} ({len(jobs_list)} Files)",
+                f"{len(jobs_list)} files · KUL COLLECT : Rs {total_price_str}"
+            )
+        else:
+            send_windows_toast(
+                f"🖨️ CyberPrint Pay — Naya Job #{code}",
+                f"{first_job.get('file_name', 'document')} · COLLECT : Rs {total_price_str}"
+            )
 
         # 3. Interactive Floating Popup Card
-        decision = self.show_job_popup(job, code, color_lbl, range_text)
+        decision = self.show_job_popup(jobs_list, code)
         return decision
 
     def print_gdi_image(self, hdc, img, color_mode="color", orientation="portrait"):
@@ -1506,17 +1589,31 @@ class PrintAgent:
                         continue
                     if "FILE_DROP" in note:
                         self.process_cloud_file_drop(first)
-                    elif first.get("status") == "approved":
-                        code = first["id"].replace("-", "")[:6].upper()
-                        log(f"job #{code} was approved via mobile admin panel - printing directly...")
-                        self.process_print(first)
+                        time.sleep(0.5)
+                        continue
+
+                    # Group batch jobs if batch_id exists
+                    batch_id = first.get("batch_id")
+                    if batch_id:
+                        batch_jobs = [j for j in pending if j.get("batch_id") == batch_id]
                     else:
-                        decision = self.notify_job(first)
+                        batch_jobs = [first]
+
+                    all_approved = all(j.get("status") == "approved" for j in batch_jobs)
+                    if all_approved:
+                        code = (batch_id.replace("-", "")[:6].upper()) if batch_id else first["id"].replace("-", "")[:6].upper()
+                        log(f"job(s) #{code} ({len(batch_jobs)} file(s)) approved via admin panel - printing sequentially...")
+                        for j in batch_jobs:
+                            self.process_print(j)
+                    else:
+                        decision = self.notify_job(batch_jobs)
                         if decision == "Y":
-                            self.process_print(first)
+                            for j in batch_jobs:
+                                self.process_print(j)
                         elif decision == "N":
-                            self.reject_job(first["id"])
-                            log(f"rejected #{first['id']}")
+                            for j in batch_jobs:
+                                self.reject_job(j["id"])
+                                log(f"rejected #{j['id']}")
             except Exception as e:
                 log(f"loop error: {e}")
 

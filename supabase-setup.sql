@@ -23,6 +23,9 @@ create table if not exists public.jobs (
   printed_at   timestamptz,              -- set by the print agent when it finishes
   print_error  text,                     -- set by the print agent on failure
   page_range   text,                     -- e.g. '2-5', set if customer selected a range
+  batch_id     uuid,                     -- shared UUID for multi-document print requests
+  batch_index  int not null default 1,   -- sequence order in the batch (1, 2, 3...)
+  batch_total_files int not null default 1, -- total count of documents in the batch
   note         text,
   -- Price is calculated by the database, not the browser.
   -- Keep the 5 and 10 here in sync with config.js (PRICE_BW / PRICE_COLOR).
@@ -36,6 +39,10 @@ alter table public.jobs add column if not exists file_deleted boolean not null d
 alter table public.jobs add column if not exists printed_at   timestamptz;
 alter table public.jobs add column if not exists print_error  text;
 alter table public.jobs add column if not exists page_range   text;
+alter table public.jobs add column if not exists batch_id     uuid;
+alter table public.jobs add column if not exists batch_index  int default 1;
+alter table public.jobs add column if not exists batch_total_files int default 1;
+create index if not exists idx_jobs_batch_id on public.jobs(batch_id);
 alter table public.jobs alter column file_path drop not null;
 
 -- 2. Keep updated_at fresh on every change -----------------------------------

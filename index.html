@@ -258,14 +258,15 @@ tailwind.config = {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
         </div>
-        <div class="text-base font-black text-slate-800">अपनी फाइल चुनें (Photo या PDF)</div>
-        <p class="text-xs text-slate-500 mt-1">PDF डॉक्यूमेंट, फोटो, एडमिट कार्ड या फॉर्म</p>
+        <div class="text-base font-black text-slate-800">अपनी फाइलें चुनें (Photo या PDF)</div>
+        <p class="text-xs text-slate-500 mt-1">PDF डॉक्यूमेंट, फोटो, एडमिट कार्ड (एक साथ कई फाइलें चुन सकते हैं)</p>
         <span class="mt-3.5 inline-flex items-center gap-1.5 bg-brand-600 group-hover:bg-brand-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition">
-          <span>📁</span> फाइल चुनें (Browse File)
+          <span>📁</span> फाइलें चुनें (Browse Files)
         </span>
-        <span class="text-[11px] text-slate-400 mt-2 font-medium">बड़ी से बड़ी फोटो या PDF फाइल भेज सकते हैं</span>
+        <span class="text-[11px] text-slate-400 mt-2 font-medium">बड़ी से बड़ी फोटो या एक से अधिक PDF फाइलें भेज सकते हैं</span>
       </div>
-      <input id="file" type="file" accept="application/pdf,image/jpeg,image/png" class="hidden" />
+      <input id="file" type="file" accept="application/pdf,image/jpeg,image/png" multiple class="hidden" />
+      <input id="addMoreFileInput" type="file" accept="application/pdf,image/jpeg,image/png" multiple class="hidden" />
 
       <!-- Error Alert -->
       <div id="s1err" class="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-xl text-xs font-medium" hidden></div>
@@ -308,30 +309,45 @@ tailwind.config = {
     <!-- ================= STEP 2: SETTINGS (Clean & Easy) ================= -->
     <section id="s2" class="space-y-3.5" hidden>
       
-      <!-- Loaded File Card -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div id="fic" class="w-10 h-10 rounded-xl bg-red-50 border border-red-200 text-red-600 font-black text-xs flex items-center justify-center shrink-0">
-            PDF
+      <!-- Multi-Document Queue Tray -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs space-y-2.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <span>📚</span> Chune Gaye Documents (<span id="queueCount">1</span>)
+            </span>
           </div>
-          <div class="min-w-0">
-            <div id="fname" class="text-xs font-bold text-slate-800 truncate">document.pdf</div>
-            <div id="fmeta" class="text-[11px] text-slate-500 font-medium">2 Pages &bull; 0.45 MB</div>
+          <div class="flex items-center gap-1.5">
+            <button type="button" id="addMoreFileBtn" class="text-xs text-brand-600 hover:text-brand-700 font-extrabold px-2.5 py-1 bg-brand-50 hover:bg-brand-100 rounded-lg transition active:scale-95 flex items-center gap-1">
+              <span>➕</span> Aur File Jodein
+            </button>
+            <button type="button" onclick="location.reload()" class="text-xs text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded-lg">
+              Reset
+            </button>
           </div>
         </div>
-        <button type="button" onclick="location.reload()" class="text-xs text-brand-600 hover:text-brand-700 font-bold shrink-0 px-2.5 py-1.5 bg-brand-50 hover:bg-brand-100 rounded-lg transition active:scale-95">
-          Change
-        </button>
+
+        <!-- Scrollable Document Cards List -->
+        <div id="fileQueueList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
+
+        <!-- Global vs Individual Settings Toggle (Visible when >1 file) -->
+        <div id="batchSettingsBanner" class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2" style="display:none">
+          <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 select-none">
+            <input type="checkbox" id="batchApplyAllCheckbox" checked class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300" />
+            <span>Sabhi files par ek sath settings apply karein</span>
+          </label>
+        </div>
       </div>
 
       <!-- Document Live Preview Card (Auto Visible Above Print Type) -->
       <div id="previewCard" class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs" >
         <div class="flex items-center justify-between mb-2.5">
-          <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Live Print Preview
+          <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 min-w-0">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+            <span class="shrink-0">Live Preview:</span>
+            <span id="previewDocName" class="text-brand-600 font-black truncate max-w-[150px] inline-block">document.pdf</span>
           </span>
-          <span id="previewPageIndicator" class="text-[10px] font-bold text-brand-600 bg-brand-50 border border-brand-200 px-2.5 py-0.5 rounded-full">
+          <span id="previewPageIndicator" class="text-[10px] font-bold text-brand-600 bg-brand-50 border border-brand-200 px-2.5 py-0.5 rounded-full shrink-0">
             Page 1 of 1
           </span>
         </div>
@@ -528,6 +544,19 @@ tailwind.config = {
             <div id="printMeta" class="text-[11px] text-slate-500 font-semibold text-center mt-1.5">Page 1 / 1 &middot; lagbhag</div>
           </div>
         </div>
+      </div>
+
+      <!-- Batch Documents Progress List (Visible when multiple files) -->
+      <div id="batchProgressCard" class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs" style="display:none">
+        <div class="flex items-center justify-between mb-2.5">
+          <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <span>📑</span> Batch Documents (<span id="batchTotalCountTxt">0</span>)
+          </span>
+          <span id="batchCompletedBadge" class="text-[10px] font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full">
+            0 Done
+          </span>
+        </div>
+        <div id="batchProgressItems" class="space-y-2"></div>
       </div>
 
       <!-- UPI Payment Card (QR is optional, behind a button) -->
@@ -812,8 +841,10 @@ tailwind.config = {
   });
   if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 
-  var file = null, unitPages = 1;
-  var currentJobId = null, pollTimer = null;
+  var selectedFiles = []; // Array of { id, file, name, size, type, pages, copies, mode, paper, orient, from, to, pageRange, effPages }
+  var activeFileIndex = 0;
+  var currentJobId = null, currentBatchId = null, pollTimer = null;
+  var currentBatchJobs = [];
   var $ = function(id){ return document.getElementById(id); };
   var money = function(n){ return '\u20b9' + (n || 0); };
 
@@ -1688,15 +1719,11 @@ tailwind.config = {
         $('previewPageIndicator').textContent = 'Photo (1 of 1)';
         updateLivePreviewAdjustment();
       };
-      unitPages = 1;
-      updateFileMeta(f, 1);
     } else if(f.type === 'application/pdf'){
       try {
         var buf = await f.arrayBuffer();
         currentPdfDoc = await pdfjsLib.getDocument({data: buf}).promise;
         var total = currentPdfDoc.numPages || 1;
-        unitPages = total;
-        updateFileMeta(f, total);
 
         if(total > 1){
           var pills = '';
@@ -1719,26 +1746,165 @@ tailwind.config = {
         await renderPdfPage(1);
       } catch(e){
         $('previewLoading').textContent = 'PDF Preview available nahi hai';
-        unitPages = 1;
-        updateFileMeta(f, 1);
       }
     }
   }
 
-  function updateFileMeta(f, pages){
-    $('fic').textContent = f.type==='application/pdf' ? 'PDF' : (f.name.split('.').pop()||'IMG').toUpperCase();
-    $('fname').textContent = f.name;
-    $('fmeta').textContent = (f.size/1024/1024).toFixed(2) + ' MB \u00b7 ' + pages + ' page' + (pages > 1 ? 's' : '');
-    $('ptot').textContent = '(' + pages + ' Pages)';
-    $('from').max = pages; $('to').max = pages; $('to').value = pages;
+  function renderFileQueue(){
+    var listEl = $('fileQueueList');
+    var countEl = $('queueCount');
+    var bannerEl = $('batchSettingsBanner');
+    if(!listEl) return;
+    if(countEl) countEl.textContent = selectedFiles.length + ' File' + (selectedFiles.length > 1 ? 's' : '');
+    if(bannerEl) bannerEl.style.display = selectedFiles.length > 1 ? 'flex' : 'none';
+
+    var html = '';
+    selectedFiles.forEach(function(item, idx){
+      var isActive = (idx === activeFileIndex);
+      var isPdf = item.type === 'application/pdf';
+      var modeBadge = item.mode === 'color' ? '<span class="text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded text-[10px] font-bold">Color</span>' : '<span class="text-slate-600 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-[10px] font-bold">B&W</span>';
+      var copyBadge = item.copies > 1 ? '<span class="text-brand-600 bg-brand-50 border border-brand-200 px-1.5 py-0.5 rounded text-[10px] font-bold">' + item.copies + ' Copies</span>' : '';
+      var rangeBadge = item.pageRange ? '<span class="text-purple-600 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded text-[10px] font-bold">p.' + item.pageRange + '</span>' : '';
+
+      html += '<div class="file-item-card flex items-center justify-between p-2.5 rounded-xl border transition cursor-pointer ' +
+        (isActive ? 'border-brand-500 bg-brand-50/50 ring-1 ring-brand-300' : 'border-slate-200 bg-white hover:border-slate-300') + '" data-idx="' + idx + '">' +
+        '<div class="flex items-center gap-2.5 min-w-0 flex-1">' +
+          '<div class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-[11px] shrink-0 ' +
+            (isPdf ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-blue-50 text-blue-600 border border-blue-200') + '">' +
+            (isPdf ? 'PDF' : 'IMG') +
+          '</div>' +
+          '<div class="min-w-0 flex-1">' +
+            '<div class="text-xs font-bold text-slate-800 truncate">' + esc(item.name) + '</div>' +
+            '<div class="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5 flex-wrap">' +
+              '<span>' + item.effPages + ' pg' + (item.effPages > 1 ? 's' : '') + '</span>' +
+              '<span>&bull;</span>' +
+              '<span>' + (item.size / 1024 / 1024).toFixed(2) + ' MB</span>' +
+              modeBadge +
+              copyBadge +
+              rangeBadge +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="flex items-center gap-1.5 shrink-0 ml-2">' +
+          (isActive ? '<span class="text-[10px] font-bold text-brand-600 bg-brand-100 px-2 py-0.5 rounded-full">Viewing</span>' : '') +
+          (selectedFiles.length > 1 ? '<button type="button" class="del-file-btn w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center text-sm font-bold transition" data-del="' + idx + '" title="Hatao">&times;</button>' : '') +
+        '</div>' +
+      '</div>';
+    });
+    listEl.innerHTML = html;
+
+    listEl.querySelectorAll('.file-item-card').forEach(function(card){
+      card.onclick = function(e){
+        if(e.target.closest('.del-file-btn')) return;
+        var idx = parseInt(card.dataset.idx, 10);
+        switchActiveFile(idx);
+      };
+    });
+
+    listEl.querySelectorAll('.del-file-btn').forEach(function(btn){
+      btn.onclick = function(e){
+        e.stopPropagation();
+        var idx = parseInt(btn.dataset.del, 10);
+        removeFile(idx);
+      };
+    });
+  }
+
+  function switchActiveFile(idx){
+    if(idx < 0 || idx >= selectedFiles.length) return;
+    activeFileIndex = idx;
+    var item = selectedFiles[activeFileIndex];
+    if(!item) return;
+
+    if($('previewDocName')) $('previewDocName').textContent = item.name;
+
+    // Sync input controls with active file
+    $('copies').value = item.copies;
+    document.querySelectorAll('input[name=mode]').forEach(function(r){
+      r.checked = (r.value === item.mode);
+      var card = r.closest('.mode-card');
+      if(card){
+        card.className = (r.value === item.mode)
+          ? 'mode-card relative flex flex-col p-3 border-2 border-brand-500 bg-brand-50/50 rounded-xl cursor-pointer transition'
+          : 'mode-card relative flex flex-col p-3 border border-slate-200 bg-white hover:border-slate-300 rounded-xl cursor-pointer transition';
+      }
+    });
+
+    if($('paper')) $('paper').value = item.paper || 'A4';
+    if($('orient')) $('orient').value = item.orient || 'portrait';
+
+    if(item.pageRange){
+      $('rangeInputsBox').hidden = false;
+      $('allpages').className = 'py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-xs hover:border-slate-300 transition';
+      $('rangeLbl').className = 'py-2.5 px-3 rounded-xl border-2 border-brand-500 bg-brand-50/50 text-brand-700 font-bold text-xs transition';
+      $('from').value = item.from || 1;
+      $('to').value = item.to || item.pages;
+    } else {
+      $('rangeInputsBox').hidden = true;
+      $('allpages').className = 'py-2.5 px-3 rounded-xl border-2 border-brand-500 bg-brand-50/50 text-brand-700 font-bold text-xs transition';
+      $('rangeLbl').className = 'py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-xs hover:border-slate-300 transition';
+    }
+
+    $('from').max = item.pages;
+    $('to').max = item.pages;
+    $('ptot').textContent = '(' + item.pages + ' Pages)';
+
+    renderFileQueue();
+    showPreview(item.file);
     recalc();
   }
 
-  async function pick(f){
-    var err = allowed(f);
-    if(err){ $('s1err').hidden=false; $('s1err').textContent=err; return; }
-    $('s1err').hidden=true;
-    file = f;
+  function removeFile(idx){
+    if(selectedFiles.length <= 1) return;
+    selectedFiles.splice(idx, 1);
+    if(activeFileIndex >= selectedFiles.length){
+      activeFileIndex = selectedFiles.length - 1;
+    }
+    switchActiveFile(activeFileIndex);
+  }
+
+  async function addFiles(fileList){
+    var filesArray = Array.from(fileList);
+    var addedCount = 0;
+    for(var i = 0; i < filesArray.length; i++){
+      var f = filesArray[i];
+      var err = allowed(f);
+      if(err){
+        $('s1err').hidden = false;
+        $('s1err').textContent = f.name + ': ' + err;
+        continue;
+      }
+      var pageCount = 1;
+      if(f.type === 'application/pdf'){
+        try {
+          var buf = await f.arrayBuffer();
+          var pdfDoc = await pdfjsLib.getDocument({data: buf}).promise;
+          pageCount = pdfDoc.numPages || 1;
+        } catch(e){
+          pageCount = 1;
+        }
+      }
+      var first = selectedFiles[0];
+      selectedFiles.push({
+        id: genUUID(),
+        file: f,
+        name: f.name,
+        size: f.size,
+        type: f.type,
+        pages: pageCount,
+        copies: first ? first.copies : 1,
+        mode: first ? first.mode : 'bw',
+        paper: first ? first.paper : 'A4',
+        orient: first ? first.orient : 'portrait',
+        from: 1,
+        to: pageCount,
+        pageRange: null,
+        effPages: pageCount
+      });
+      addedCount++;
+    }
+    if(selectedFiles.length === 0) return;
+    $('s1err').hidden = true;
     $('s1').hidden = true;
     var s2 = $('s2');
     s2.hidden = false;
@@ -1746,7 +1912,8 @@ tailwind.config = {
     void s2.offsetWidth;
     s2.classList.add('step-enter');
     setStep(2);
-    showPreview(f);
+    renderFileQueue();
+    switchActiveFile(selectedFiles.length - 1);
   }
 
   function genUUID(){
@@ -1758,49 +1925,89 @@ tailwind.config = {
   }
 
   function recalc(){
+    var applyAll = $('batchApplyAllCheckbox') ? $('batchApplyAllCheckbox').checked : true;
     var copies = Math.max(1, parseInt($('copies').value || '1', 10));
     var modeRadio = document.querySelector('input[name=mode]:checked');
     var mode = modeRadio ? modeRadio.value : 'bw';
+    var paper = $('paper') ? $('paper').value : 'A4';
+    var orient = $('orient') ? $('orient').value : 'portrait';
     var usingRange = !$('rangeInputsBox').hidden;
-    var eff = unitPages;
-    var pageRange = null;
 
-    if(usingRange){
-      var f = Math.max(1, Math.min(unitPages, parseInt($('from').value || '1', 10)));
-      var t = Math.max(1, Math.min(unitPages, parseInt($('to').value || String(unitPages), 10)));
-      if(f > t){ var tmp = f; f = t; t = tmp; }
-      $('from').value = f;
-      $('to').value = t;
-      eff = (t - f + 1);
-      pageRange = f + '-' + t;
+    var curr = selectedFiles[activeFileIndex];
+    if(curr){
+      curr.copies = copies;
+      curr.mode = mode;
+      curr.paper = paper;
+      curr.orient = orient;
+      if(usingRange && curr.type === 'application/pdf' && curr.pages > 1){
+        var f = Math.max(1, Math.min(curr.pages, parseInt($('from').value || '1', 10)));
+        var t = Math.max(1, Math.min(curr.pages, parseInt($('to').value || String(curr.pages), 10)));
+        if(f > t){ var tmp = f; f = t; t = tmp; }
+        curr.from = f;
+        curr.to = t;
+        curr.pageRange = f + '-' + t;
+        curr.effPages = (t - f + 1);
+      } else {
+        curr.pageRange = null;
+        curr.effPages = curr.pages;
+      }
     }
 
-    var rate = mode === 'color' ? (C.PRICE_COLOR || 10) : (C.PRICE_BW || 5);
-    var amount = eff * copies * rate;
+    if(applyAll && selectedFiles.length > 1){
+      selectedFiles.forEach(function(item, idx){
+        if(idx !== activeFileIndex){
+          item.copies = copies;
+          item.mode = mode;
+          item.paper = paper;
+          item.orient = orient;
+        }
+      });
+    }
 
-    $('total').textContent = money(amount);
-    $('billFormula').textContent = eff + ' page' + (eff > 1 ? 's' : '') + ' \u00d7 ' + copies + ' copy \u00d7 \u20b9' + rate + (mode === 'color' ? ' (Color)' : ' (B&W)');
+    var totalAmount = 0;
+    var totalSheets = 0;
+    selectedFiles.forEach(function(item){
+      var r = item.mode === 'color' ? (C.PRICE_COLOR || 10) : (C.PRICE_BW || 5);
+      var itemAmt = item.effPages * item.copies * r;
+      item.amount = itemAmt;
+      totalAmount += itemAmt;
+      totalSheets += (item.effPages * item.copies);
+    });
+
+    $('total').textContent = money(totalAmount);
+    if(selectedFiles.length > 1){
+      $('billFormula').textContent = selectedFiles.length + ' documents \u00b7 Total ' + totalSheets + ' sheets to print';
+    } else if(curr){
+      var sRate = curr.mode === 'color' ? (C.PRICE_COLOR || 10) : (C.PRICE_BW || 5);
+      $('billFormula').textContent = curr.effPages + ' page' + (curr.effPages > 1 ? 's' : '') + ' \u00d7 ' + curr.copies + ' copy \u00d7 \u20b9' + sRate + (curr.mode === 'color' ? ' (Color)' : ' (B&W)');
+    }
 
     updateLivePreviewAdjustment();
-
-    return { copies: copies, mode: mode, eff: eff, pageRange: pageRange, rate: rate, amount: amount };
+    return { amount: totalAmount, totalSheets: totalSheets };
   }
 
   $('drop').onclick = function(){ $('file').click(); };
-  $('file').onchange = function(e){ if(e.target.files[0]) pick(e.target.files[0]); };
+  $('file').onchange = function(e){ if(e.target.files.length) addFiles(e.target.files); };
   ['dragover','dragenter'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.add('drop-dragover'); }); });
   ['dragleave','drop'].forEach(function(ev){ $('drop').addEventListener(ev, function(e){ e.preventDefault(); $('drop').classList.remove('drop-dragover'); }); });
-  $('drop').addEventListener('drop', function(e){ if(e.dataTransfer.files[0]) pick(e.dataTransfer.files[0]); });
+  $('drop').addEventListener('drop', function(e){ if(e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+
+  if($('addMoreFileBtn')) $('addMoreFileBtn').onclick = function(){ $('addMoreFileInput').click(); };
+  if($('addMoreFileInput')) $('addMoreFileInput').onchange = function(e){
+    if(e.target.files.length) addFiles(e.target.files);
+    e.target.value = '';
+  };
+  if($('batchApplyAllCheckbox')) $('batchApplyAllCheckbox').onchange = function(){ recalc(); renderFileQueue(); };
 
   $('copyMinus').onclick = function(){
     var val = Math.max(1, parseInt($('copies').value || '1', 10) - 1);
-    $('copies').value = val; recalc();
+    $('copies').value = val; recalc(); renderFileQueue();
   };
   $('copyPlus').onclick = function(){
     var val = Math.min(50, parseInt($('copies').value || '1', 10) + 1);
-    $('copies').value = val; recalc();
+    $('copies').value = val; recalc(); renderFileQueue();
   };
-  $('copies').oninput = recalc;
+  $('copies').oninput = function(){ recalc(); renderFileQueue(); };
 
   document.querySelectorAll('input[name=mode]').forEach(function(r){
     r.onchange = function(){
@@ -1812,6 +2019,7 @@ tailwind.config = {
         card.className = 'mode-card relative flex flex-col p-3 border-2 border-brand-500 bg-brand-50/50 rounded-xl cursor-pointer transition';
       }
       recalc();
+      renderFileQueue();
     };
   });
 
@@ -1820,12 +2028,14 @@ tailwind.config = {
     $('rangeLbl').className = 'py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-xs hover:border-slate-300 transition';
     $('rangeInputsBox').hidden = true;
     recalc();
+    renderFileQueue();
   };
   $('rangeLbl').onclick = function(){
     $('rangeLbl').className = 'py-2.5 px-3 rounded-xl border-2 border-brand-500 bg-brand-50/50 text-brand-700 font-bold text-xs transition';
     $('allpages').className = 'py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold text-xs hover:border-slate-300 transition';
     $('rangeInputsBox').hidden = false;
     recalc();
+    renderFileQueue();
   };
   $('from').oninput = recalc; $('to').oninput = recalc;
   $('paper').onchange = recalc; $('orient').onchange = recalc;
@@ -2050,13 +2260,88 @@ tailwind.config = {
     }
   }
 
-  // Real-time job status polling
+  // Real-time job status polling (supports both single file and multi-document batches)
   async function pollStatus(){
-    if(!currentJobId) return;
+    if(!currentBatchId && !currentJobId) return;
     try {
-      var res = await sb.from('jobs').select('status, print_error, page_count, copies').eq('id', currentJobId).single();
-      if(res && res.data) setJobState(res.data.status, res.data);
+      if(currentBatchId){
+        var res = await sb.from('jobs')
+          .select('id, file_name, status, print_error, page_count, copies')
+          .eq('batch_id', currentBatchId)
+          .order('batch_index', { ascending: true });
+
+        if(res && res.data && res.data.length){
+          currentBatchJobs = res.data;
+          renderBatchProgress();
+
+          var allPrinted = res.data.every(function(j){ return j.status === 'printed'; });
+          var anyPrinting = res.data.some(function(j){ return j.status === 'printing' || j.status === 'approved'; });
+          var anyFailed = res.data.some(function(j){ return j.status === 'failed' || j.status === 'rejected'; });
+
+          if(allPrinted){
+            setJobState('printed', res.data[0]);
+          } else if(anyPrinting){
+            setJobState('printing', res.data[0]);
+          } else if(anyFailed){
+            var failedJob = res.data.find(function(j){ return j.status === 'failed' || j.status === 'rejected'; });
+            setJobState('failed', failedJob || res.data[0]);
+          } else {
+            setJobState('pending', res.data[0]);
+          }
+        }
+      } else {
+        var res = await sb.from('jobs').select('status, print_error, page_count, copies').eq('id', currentJobId).single();
+        if(res && res.data) setJobState(res.data.status, res.data);
+      }
     } catch(e){}
+  }
+
+  function renderBatchProgress(){
+    var card = $('batchProgressCard');
+    var itemsBox = $('batchProgressItems');
+    var countTxt = $('batchTotalCountTxt');
+    var badge = $('batchCompletedBadge');
+    if(!card || !itemsBox) return;
+
+    if(!currentBatchJobs || currentBatchJobs.length <= 1){
+      card.style.display = 'none';
+      return;
+    }
+
+    card.style.display = 'block';
+    if(countTxt) countTxt.textContent = currentBatchJobs.length + ' Files';
+
+    var doneCount = currentBatchJobs.filter(function(j){ return j.status === 'printed'; }).length;
+    if(badge){
+      badge.textContent = doneCount + ' / ' + currentBatchJobs.length + ' Done';
+      badge.className = (doneCount === currentBatchJobs.length)
+        ? 'text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full'
+        : 'text-[10px] font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full';
+    }
+
+    var html = '';
+    currentBatchJobs.forEach(function(j, idx){
+      var st = j.status;
+      var stPill = '';
+      if(st === 'printed'){
+        stPill = '<span class="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full text-[10px] font-bold">Printed ✓</span>';
+      } else if(st === 'printing' || st === 'approved'){
+        stPill = '<span class="text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1"><span class="spin border-blue-400 border-t-blue-600"></span> Chhap Raha Hai</span>';
+      } else if(st === 'failed' || st === 'rejected'){
+        stPill = '<span class="text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full text-[10px] font-bold">Cancel</span>';
+      } else {
+        stPill = '<span class="text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full text-[10px] font-bold">Queue</span>';
+      }
+
+      html += '<div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">' +
+        '<div class="flex items-center gap-2 min-w-0 flex-1">' +
+          '<span class="font-bold text-slate-400 font-mono text-[11px]">' + (idx + 1) + '.</span>' +
+          '<span class="font-bold text-slate-800 truncate">' + esc(j.file_name) + '</span>' +
+        '</div>' +
+        '<div class="shrink-0 ml-2">' + stPill + '</div>' +
+      '</div>';
+    });
+    itemsBox.innerHTML = html;
   }
 
   document.addEventListener('visibilitychange', function(){
@@ -2071,64 +2356,81 @@ tailwind.config = {
   });
 
   $('submit').onclick = async function(){
-    if(!file) return;
-    var btn = $('submit'); var s = recalc();
+    if(!selectedFiles || selectedFiles.length === 0) return;
+    var btn = $('submit');
+    var s = recalc();
     btn.disabled = true;
-    btn.innerHTML = '<span class="spin mr-2"></span> File upload ho rahi hai\u2026';
     $('s2err').hidden = true;
+
     try {
       var params = new URLSearchParams(window.location.search);
       var isLocalStorage = params.get('storage') === 'local';
       var agentHost = params.get('agent') || (window.location.port === '8085' ? window.location.host : '10.202.100.233:8085');
 
-      var id = genUUID();
-      var safe = file.name.replace(/[^\w.\-]+/g, '_');
-      var path = '';
+      var batchId = genUUID();
+      var code = batchId.replace(/-/g, '').slice(0, 6).toUpperCase();
+      var uploadedList = [];
 
-      if(isLocalStorage){
-        var fd = new FormData();
-        fd.append('file', file, safe);
-        var upRes = await fetch('http://' + agentHost + '/local-print-upload?id=' + id, {
-          method: 'POST',
-          body: fd
-        });
-        if(!upRes.ok) throw new Error('Local PC transfer fail hua (HTTP ' + upRes.status + '). Check karein ki phone Wi-Fi se juda hai.');
-        var upJson = await upRes.json();
-        path = upJson.file_path || ('local://' + id + '_' + safe);
-      } else {
-        path = id + '/' + safe;
-        var up = await sb.storage.from(C.BUCKET || 'jobs').upload(path, file, { contentType: file.type, upsert: false });
-        if(up.error) throw up.error;
-      }
+      for(var i = 0; i < selectedFiles.length; i++){
+        var item = selectedFiles[i];
+        btn.innerHTML = '<span class="spin mr-2"></span> File ' + (i + 1) + '/' + selectedFiles.length + ' upload ho rahi hai\u2026';
+        var fileId = genUUID();
+        var safe = item.name.replace(/[^\w.\-]+/g, '_');
+        var path = '';
 
-      var ins = await sb.from('jobs').insert({
-        id: id,
-        file_name: file.name,
-        file_path: path,
-        file_type: file.type,
-        page_count: s.eff,
-        copies: s.copies,
-        color_mode: s.mode,
-        paper_size: $('paper').value,
-        orientation: $('orient').value,
-        page_range: s.pageRange,
-        status: 'pending'
-      });
-      if(ins.error){
-        if(!isLocalStorage){
-          try{ await sb.storage.from(C.BUCKET || 'jobs').remove([path]); }catch(_){}
+        if(isLocalStorage){
+          var fd = new FormData();
+          fd.append('file', item.file, safe);
+          var upRes = await fetch('http://' + agentHost + '/local-print-upload?id=' + fileId, {
+            method: 'POST',
+            body: fd
+          });
+          if(!upRes.ok) throw new Error('Local PC transfer fail hua (' + item.name + ').');
+          var upJson = await upRes.json();
+          path = upJson.file_path || ('local://' + fileId + '_' + safe);
+        } else {
+          path = fileId + '/' + safe;
+          var up = await sb.storage.from(C.BUCKET || 'jobs').upload(path, item.file, { contentType: item.type, upsert: false });
+          if(up.error) throw up.error;
         }
-        throw ins.error;
+
+        var ins = await sb.from('jobs').insert({
+          id: fileId,
+          batch_id: batchId,
+          batch_index: i + 1,
+          batch_total_files: selectedFiles.length,
+          file_name: item.name,
+          file_path: path,
+          file_type: item.type,
+          page_count: item.effPages,
+          copies: item.copies,
+          color_mode: item.mode,
+          paper_size: item.paper,
+          orientation: item.orient,
+          page_range: item.pageRange,
+          status: 'pending'
+        });
+        if(ins.error) throw ins.error;
+
+        uploadedList.push({
+          id: fileId,
+          file_name: item.name,
+          status: 'pending'
+        });
       }
 
-      currentJobId = id;
-      var code = id.replace(/-/g, '').slice(0, 6).toUpperCase();
-      var qrLink = upiLink(s.amount, 'Job#' + code, false);
+      currentBatchId = batchId;
+      currentJobId = uploadedList[0].id;
+      currentBatchJobs = uploadedList;
+
+      var qrLink = upiLink(s.amount, 'Batch#' + code, false);
 
       $('jobno').textContent = '#' + code;
       $('tokenRef').textContent = '#' + code;
       $('payamt').textContent = money(s.amount);
       $('payvpa').textContent = C.UPI_ID || '(Not configured)';
+
+      renderBatchProgress();
 
       if(!qrLink){
         $('toggleUpiQrBtn').hidden = true;
