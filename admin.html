@@ -293,6 +293,25 @@ tailwind.config = {
                 <span id="pcShareBadgeCount" class="bg-slate-700 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full font-mono">0</span>
               </button>
 
+              <!-- Transfer Mode Selector: Local Wi-Fi (No Cloud) vs Cloud + Wi-Fi -->
+              <div class="mb-3 p-1.5 bg-slate-950/90 rounded-xl border border-slate-800 text-left">
+                <div class="flex items-center justify-between px-1 mb-1.5">
+                  <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Share Mode</span>
+                  <span id="pcShareModeBadge" class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-1.5 py-0.2 rounded">⚡ Zero Cloud Storage</span>
+                </div>
+                <div class="grid grid-cols-2 gap-1.5">
+                  <button type="button" id="pcShareLocalModeBtn" class="py-1.5 px-2 rounded-lg bg-emerald-600 text-white font-bold text-[11px] shadow-xs transition flex items-center justify-center gap-1">
+                    <span>⚡</span> <span>Local Wi-Fi (No Cloud)</span>
+                  </button>
+                  <button type="button" id="pcShareCloudModeBtn" class="py-1.5 px-2 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 font-semibold text-[11px] transition flex items-center justify-center gap-1">
+                    <span>☁️</span> <span>Cloud + Wi-Fi</span>
+                  </button>
+                </div>
+                <div id="pcShareModeDesc" class="text-[10px] text-slate-400 px-1 mt-1.5 font-medium leading-tight">
+                  ⚡ <b>Local Mode:</b> File PC disk par rahegi, direct Wi-Fi se phone mein transfer hogi. Cloud quota <b>0 KB</b> kharch hoga.
+                </div>
+              </div>
+
               <!-- Upload Drag/Drop Box -->
               <div id="pcShareBox" class="border-2 border-dashed border-slate-750 hover:border-emerald-500 bg-slate-950/60 hover:bg-emerald-950/20 rounded-xl p-4 cursor-pointer transition text-center group">
                 <div class="text-2xl mb-1 text-emerald-400">📄</div>
@@ -313,10 +332,16 @@ tailwind.config = {
                 <div id="pcShareFileName" class="text-[11px] text-slate-300 font-bold truncate">file.pdf</div>
                 <div id="pcShareActiveDownloads" class="text-[10px] font-bold text-emerald-400 my-1 bg-emerald-950/80 border border-emerald-800/80 rounded-md py-0.5 px-2 inline-block">📥 0 Downloads</div>
                 <div id="pcShareModeTags" class="flex flex-wrap items-center justify-center gap-1.5 my-1.5 text-[10px] font-semibold">
-                  <span id="pcShareCloudTag" class="bg-blue-900/60 text-blue-300 border border-blue-700/60 px-2 py-0.5 rounded-md">☁️ बिना Wi-Fi (4G/5G) चलेगा</span>
-                  <span id="pcShareLanTag" class="bg-emerald-900/60 text-emerald-300 border border-emerald-700/60 px-2 py-0.5 rounded-md">⚡ Wi-Fi डायरेक्ट चलेगा</span>
+                  <span id="pcShareCloudTag" class="bg-blue-900/60 text-blue-300 border border-blue-700/60 px-2 py-0.5 rounded-md" style="display:none">☁️ बिना Wi-Fi (4G/5G) चलेगा</span>
+                  <span id="pcShareLanTag" class="bg-emerald-900/60 text-emerald-300 border border-emerald-700/60 px-2 py-0.5 rounded-md">⚡ Local Wi-Fi (0 KB Cloud)</span>
+                </div>
+                <!-- QR Type Toggle: Direct File Download vs Web Page -->
+                <div id="pcShareQrTypeBar" class="flex items-center justify-center gap-1 my-1">
+                  <button type="button" id="pcShareQrTypeDirectBtn" class="text-[10px] font-bold py-1 px-2.5 rounded-lg bg-emerald-600 text-white shadow-xs transition">⚡ Direct Download QR</button>
+                  <button type="button" id="pcShareQrTypeWebBtn" class="text-[10px] font-semibold py-1 px-2.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition">📱 Web Page QR</button>
                 </div>
                 <div id="pcShareQRHolder" class="qr-canvas-holder my-2 bg-white p-2 rounded-xl inline-block shadow-sm"></div>
+                <div id="pcShareQrHint" class="text-[10px] text-slate-400 mb-1">Camera scan karte hi file phone me download ho jayegi</div>
                 <div class="flex gap-1.5 mt-2">
                   <button id="pcShareCopyLinkBtn" type="button" class="flex-1 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded-lg transition">
                     📋 Copy Link
@@ -849,10 +874,14 @@ tailwind.config = {
       var icon = getFileIcon(item.name);
       var sz = formatBytes(item.size);
       var dls = item.downloads || 0;
+      var isLocalOnly = !item.cloud_url || item.storage === 'local';
+      var modeBadge = isLocalOnly
+        ? '<span class="bg-emerald-950/80 text-emerald-300 border border-emerald-800/80 px-1.5 py-0.2 rounded text-[9px] font-bold">⚡ Local (0 KB Cloud)</span>'
+        : '<span class="bg-blue-950/80 text-blue-300 border border-blue-800/80 px-1.5 py-0.2 rounded text-[9px] font-bold">☁️ Cloud</span>';
       var pBase = (publicBaseUrl || C.PUBLIC_URL || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
-      var shareLink = pBase + '/index.html?receive=' + item.code + '&name=' + encodeURIComponent(item.name) + '&size=' + item.size;
-      if(item.cloud_url) shareLink += '&url=' + encodeURIComponent(item.cloud_url);
-      if(item.local_url) shareLink += '&local=' + encodeURIComponent(item.local_url);
+      var shareLink = isLocalOnly
+        ? (item.local_url || ('http://' + lanIp + ':' + lanPort + '/api/pc-share-download/' + item.code))
+        : (pBase + '/index.html?receive=' + item.code + '&name=' + encodeURIComponent(item.name) + '&size=' + item.size + (item.cloud_url ? '&url=' + encodeURIComponent(item.cloud_url) : ''));
 
       html += '<div class="p-3 bg-slate-950/70 border border-slate-800 rounded-xl flex items-center justify-between gap-3 hover:border-slate-700 transition">' +
         '<div class="flex items-center gap-2.5 min-w-0 flex-1">' +
@@ -863,6 +892,8 @@ tailwind.config = {
               '<span class="text-xs font-bold text-slate-200 truncate" title="' + item.name + '">' + item.name + '</span>' +
             '</div>' +
             '<div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 mt-0.5">' +
+              modeBadge +
+              '<span>•</span>' +
               '<span>' + sz + '</span>' +
               '<span>•</span>' +
               '<span>' + (item.created_at || 'Recently') + '</span>' +
@@ -913,15 +944,71 @@ tailwind.config = {
     });
   }
 
+  var pcShareMode = localStorage.getItem('cyberprint_pc_share_mode') || 'local';
+  var pcShareQrType = 'direct'; // 'direct' or 'web'
+
+  function updatePcShareModeUI(){
+    var isLocal = pcShareMode === 'local';
+    var localBtn = $('pcShareLocalModeBtn');
+    var cloudBtn = $('pcShareCloudModeBtn');
+    var badge = $('pcShareModeBadge');
+    var desc = $('pcShareModeDesc');
+
+    if(localBtn && cloudBtn){
+      if(isLocal){
+        localBtn.className = 'py-1.5 px-2 rounded-lg bg-emerald-600 text-white font-bold text-[11px] shadow-xs transition flex items-center justify-center gap-1';
+        cloudBtn.className = 'py-1.5 px-2 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 font-semibold text-[11px] transition flex items-center justify-center gap-1';
+      } else {
+        cloudBtn.className = 'py-1.5 px-2 rounded-lg bg-blue-600 text-white font-bold text-[11px] shadow-xs transition flex items-center justify-center gap-1';
+        localBtn.className = 'py-1.5 px-2 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 font-semibold text-[11px] transition flex items-center justify-center gap-1';
+      }
+    }
+    if(badge){
+      if(isLocal){
+        badge.textContent = '⚡ Zero Cloud Storage';
+        badge.className = 'text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-1.5 py-0.2 rounded';
+      } else {
+        badge.textContent = '☁️ Supabase Cloud';
+        badge.className = 'text-[9px] font-bold text-blue-400 bg-blue-950/80 border border-blue-800/80 px-1.5 py-0.2 rounded';
+      }
+    }
+    if(desc){
+      if(isLocal){
+        desc.innerHTML = '⚡ <b>Local Mode:</b> File PC disk par rahegi, direct Wi-Fi se phone mein transfer hogi. Cloud quota <b>0 KB</b> kharch hoga.';
+      } else {
+        desc.innerHTML = '☁️ <b>Cloud Mode:</b> File Supabase Cloud Storage mein upload hogi, grahak 4G/5G mobile data se bhi download kar sakta hai.';
+      }
+    }
+  }
+
+  if($('pcShareLocalModeBtn')){
+    $('pcShareLocalModeBtn').onclick = function(){
+      pcShareMode = 'local';
+      localStorage.setItem('cyberprint_pc_share_mode', 'local');
+      updatePcShareModeUI();
+    };
+  }
+  if($('pcShareCloudModeBtn')){
+    $('pcShareCloudModeBtn').onclick = function(){
+      pcShareMode = 'cloud';
+      localStorage.setItem('cyberprint_pc_share_mode', 'cloud');
+      updatePcShareModeUI();
+    };
+  }
+  updatePcShareModeUI();
+
   function showShareInResultCard(code){
     var item = activeSharesData.find(function(s){ return s.code === code; });
     if(!item) return;
     activeShareCode = code;
 
+    var isLocalOnly = !item.cloud_url || item.storage === 'local';
     var pBase = (publicBaseUrl || C.PUBLIC_URL || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
-    var customerShareUrl = pBase + '/index.html?receive=' + item.code + '&name=' + encodeURIComponent(item.name) + '&size=' + item.size;
-    if(item.cloud_url) customerShareUrl += '&url=' + encodeURIComponent(item.cloud_url);
-    if(item.local_url) customerShareUrl += '&local=' + encodeURIComponent(item.local_url);
+    var localDirectUrl = item.local_url || ('http://' + lanIp + ':' + lanPort + '/api/pc-share-download/' + item.code);
+    var localWebUrl = 'http://' + lanIp + ':' + lanPort + '/index.html?receive=' + item.code;
+    var cloudWebUrl = pBase + '/index.html?receive=' + item.code + '&name=' + encodeURIComponent(item.name) + '&size=' + item.size;
+    if(item.cloud_url) cloudWebUrl += '&url=' + encodeURIComponent(item.cloud_url);
+    if(item.local_url) cloudWebUrl += '&local=' + encodeURIComponent(item.local_url);
 
     if(pcShareBox) pcShareBox.style.display = 'none';
     if(pcShareResultCard) pcShareResultCard.style.display = 'block';
@@ -931,21 +1018,49 @@ tailwind.config = {
       var dls = item.downloads || 0;
       pcShareActiveDownloads.textContent = '📥 ' + dls + (dls === 1 ? ' Download' : ' Downloads');
     }
+
     if($('pcShareCloudTag')) $('pcShareCloudTag').style.display = item.cloud_url ? 'inline-block' : 'none';
-    if($('pcShareLanTag')) $('pcShareLanTag').style.display = item.local_url ? 'inline-block' : 'none';
-
-    if(window.QRCode && pcShareQRHolder){
-      pcShareQRHolder.innerHTML = '';
-      new QRCode(pcShareQRHolder, { text: customerShareUrl, width: 170, height: 170, correctLevel: QRCode.CorrectLevel.L });
+    if($('pcShareLanTag')){
+      $('pcShareLanTag').style.display = 'inline-block';
+      $('pcShareLanTag').textContent = isLocalOnly ? '⚡ Local Wi-Fi (0 KB Cloud Storage)' : '⚡ Wi-Fi डायरेक्ट चलेगा';
     }
 
-    if(pcShareCopyLinkBtn){
-      pcShareCopyLinkBtn.onclick = function(){
-        navigator.clipboard.writeText(customerShareUrl).then(function(){
-          alert('Customer Download Link copy ho gaya!');
-        }).catch(function(){});
-      };
+    function renderActiveQR(){
+      var textToEncode = '';
+      if(pcShareQrType === 'direct'){
+        textToEncode = item.cloud_url || localDirectUrl;
+        if($('pcShareQrTypeDirectBtn')) $('pcShareQrTypeDirectBtn').className = 'text-[10px] font-bold py-1 px-2.5 rounded-lg bg-emerald-600 text-white shadow-xs transition';
+        if($('pcShareQrTypeWebBtn')) $('pcShareQrTypeWebBtn').className = 'text-[10px] font-semibold py-1 px-2.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition';
+        if($('pcShareQrHint')) $('pcShareQrHint').textContent = isLocalOnly ? '⚡ Camera scan karte hi direct phone me download hogi' : '⚡ Direct download link (No Portal needed)';
+      } else {
+        textToEncode = isLocalOnly ? localWebUrl : cloudWebUrl;
+        if($('pcShareQrTypeWebBtn')) $('pcShareQrTypeWebBtn').className = 'text-[10px] font-bold py-1 px-2.5 rounded-lg bg-emerald-600 text-white shadow-xs transition';
+        if($('pcShareQrTypeDirectBtn')) $('pcShareQrTypeDirectBtn').className = 'text-[10px] font-semibold py-1 px-2.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition';
+        if($('pcShareQrHint')) $('pcShareQrHint').textContent = '📱 Phone par CyberPrint portal khulega (Code pre-filled)';
+      }
+
+      if(window.QRCode && pcShareQRHolder){
+        pcShareQRHolder.innerHTML = '';
+        new QRCode(pcShareQRHolder, { text: textToEncode, width: 170, height: 170, correctLevel: QRCode.CorrectLevel.L });
+      }
+
+      if(pcShareCopyLinkBtn){
+        pcShareCopyLinkBtn.onclick = function(){
+          navigator.clipboard.writeText(textToEncode).then(function(){
+            alert('Download Link copy ho gaya!');
+          }).catch(function(){});
+        };
+      }
     }
+
+    if($('pcShareQrTypeDirectBtn')){
+      $('pcShareQrTypeDirectBtn').onclick = function(){ pcShareQrType = 'direct'; renderActiveQR(); };
+    }
+    if($('pcShareQrTypeWebBtn')){
+      $('pcShareQrTypeWebBtn').onclick = function(){ pcShareQrType = 'web'; renderActiveQR(); };
+    }
+
+    renderActiveQR();
   }
 
   async function deleteSinglePcShare(code, name){
@@ -1064,9 +1179,25 @@ tailwind.config = {
 
   async function handlePcShareFile(f){
     if(!f) return;
-    if(f.size > 100 * 1024 * 1024){
-      alert('फाइल बहुत बड़ी है (अधिकतम 100MB)');
+    if(f.size > 200 * 1024 * 1024){
+      alert('फाइल बहुत बड़ी है (अधिकतम 200MB)');
       return;
+    }
+
+    var isLocalMode = pcShareMode === 'local';
+    var isHttps = window.location.protocol === 'https:';
+
+    // If operator chose Local Wi-Fi mode while viewing dashboard on HTTPS (e.g. GitHub pages)
+    if(isLocalMode && isHttps){
+      var goLocal = confirm('⚠️ Local Wi-Fi Sharing (Without Cloud) ke liye browser security ki wajah se Admin Dashboard ko Local PC par kholna zaroori hai:\n\n👉 http://localhost:8085/admin.html\n\nKya aap abhi http://localhost:8085/admin.html kholna chahte hain?\n\n(OK = Local Dashboard Kholein, Cancel = Cloud Mode se bhejein)');
+      if(goLocal){
+        window.open('http://localhost:8085/admin.html', '_blank');
+        return;
+      } else {
+        pcShareMode = 'cloud';
+        updatePcShareModeUI();
+        isLocalMode = false;
+      }
     }
 
     var shareBox = $('pcShareBox');
@@ -1087,128 +1218,126 @@ tailwind.config = {
       var cloudUrl = '';
       var localUrl = '';
 
-      // 1. Direct Supabase Storage Upload (Cloud first - works everywhere)
-      if(sb && sb.storage){
-        if(progTxt) progTxt.textContent = 'Cloud me upload ho raha hai...';
-        var up = await sb.storage.from(B).upload(path, f, {
-          contentType: f.type || 'application/octet-stream',
-          upsert: false
+      if(isLocalMode){
+        // ================= 100% LOCAL WI-FI (ZERO CLOUD STORAGE) =================
+        if(progTxt) progTxt.textContent = '⚡ Local PC disk par save ho raha hai (Zero Cloud)...';
+        var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+        var fd = new FormData();
+        fd.append('file', f, f.name);
+        var ctrl = new AbortController();
+        var tId = setTimeout(function(){ ctrl.abort(); }, 45000);
+        var upRes = await fetch('http://' + agentHost + '/api/pc-share-upload?local_only=1&code=' + shareCode, {
+          method: 'POST',
+          body: fd,
+          signal: ctrl.signal
         });
-        if(up && up.error){
-          console.warn('Direct Supabase storage upload warning:', up.error);
-        } else {
+        clearTimeout(tId);
+        if(!upRes.ok) throw new Error('Local agent upload error: ' + upRes.status);
+        var upData = await upRes.json();
+        localUrl = upData.local_url || ('http://' + lanIp + ':' + lanPort + '/api/pc-share-download/' + shareCode);
+        cloudUrl = '';
+
+        // Register lightweight DB record in Supabase (NO storage upload - 0 bytes in bucket)
+        if(sb){
           try {
-            var signRes = await sb.storage.from(B).createSignedUrl(path, 86400 * 7, { download: f.name });
-            if(signRes && signRes.data && signRes.data.signedUrl){
-              cloudUrl = signRes.data.signedUrl;
-            }
-          } catch(signErr){
-            console.warn('Signed URL warning:', signErr);
-          }
-          if(!cloudUrl){
+            await sb.from('jobs').insert({
+              id: id,
+              file_name: f.name,
+              file_path: 'local://' + shareCode + '_' + safeName,
+              file_type: f.type || 'application/octet-stream',
+              page_count: 1,
+              copies: 1,
+              color_mode: 'bw',
+              status: 'pending',
+              customer_name: 'PC_TO_MOBILE',
+              note: 'PC_SHARE#' + shareCode + '#local://' + localUrl
+            });
+          } catch(sbErr){}
+        }
+      } else {
+        // ================= CLOUD MODE (SUPABASE STORAGE) =================
+        if(sb && sb.storage){
+          if(progTxt) progTxt.textContent = 'Cloud me upload ho raha hai...';
+          var up = await sb.storage.from(B).upload(path, f, {
+            contentType: f.type || 'application/octet-stream',
+            upsert: false
+          });
+          if(up && up.error){
+            console.warn('Direct Supabase storage upload warning:', up.error);
+          } else {
             try {
-              var pubData = sb.storage.from(B).getPublicUrl(path, { download: f.name });
-              if(pubData && pubData.data && pubData.data.publicUrl){
-                cloudUrl = pubData.data.publicUrl;
+              var signRes = await sb.storage.from(B).createSignedUrl(path, 86400 * 7, { download: f.name });
+              if(signRes && signRes.data && signRes.data.signedUrl){
+                cloudUrl = signRes.data.signedUrl;
               }
-            } catch(pubErr){}
-          }
-          if(cloudUrl && !cloudUrl.includes('download=')){
-            cloudUrl += (cloudUrl.includes('?') ? '&' : '?') + 'download=' + encodeURIComponent(f.name);
+            } catch(signErr){}
+            if(!cloudUrl){
+              try {
+                var pubData = sb.storage.from(B).getPublicUrl(path, { download: f.name });
+                if(pubData && pubData.data && pubData.data.publicUrl){
+                  cloudUrl = pubData.data.publicUrl;
+                }
+              } catch(pubErr){}
+            }
+            if(cloudUrl && !cloudUrl.includes('download=')){
+              cloudUrl += (cloudUrl.includes('?') ? '&' : '?') + 'download=' + encodeURIComponent(f.name);
+            }
           }
         }
-      }
 
-      // 2. Optional local agent sync (only if on HTTP, not HTTPS)
-      var isHttps = window.location.protocol === 'https:';
-      if(!isHttps){
-        try {
-          if(progTxt) progTxt.textContent = 'Local PC sync...';
-          var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
-          var fd = new FormData();
-          fd.append('file', f, f.name);
-          var ctrl = new AbortController();
-          var tId = setTimeout(function(){ ctrl.abort(); }, 2500);
-          var upRes = await fetch('http://' + agentHost + '/api/pc-share-upload?code=' + shareCode, {
-            method: 'POST',
-            body: fd,
-            signal: ctrl.signal
-          });
-          clearTimeout(tId);
-          if(upRes.ok){
-            var upData = await upRes.json();
-            if(!cloudUrl && upData.cloud_url) cloudUrl = upData.cloud_url;
-            localUrl = upData.local_url || upData.url || '';
-          }
-        } catch(agentErr){
-          console.warn('Local agent sync optional step skipped:', agentErr.message || agentErr);
+        // Also sync local copy if on HTTP
+        if(!isHttps){
+          try {
+            var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+            var fd = new FormData();
+            fd.append('file', f, f.name);
+            var ctrl = new AbortController();
+            var tId = setTimeout(function(){ ctrl.abort(); }, 4000);
+            var upRes = await fetch('http://' + agentHost + '/api/pc-share-upload?code=' + shareCode, {
+              method: 'POST',
+              body: fd,
+              signal: ctrl.signal
+            });
+            clearTimeout(tId);
+            if(upRes.ok){
+              var upData = await upRes.json();
+              localUrl = upData.local_url || upData.url || '';
+            }
+          } catch(agentErr){}
         }
-      }
 
-      // 3. Register in Supabase jobs table for 6-digit code discovery
-      if(sb && (cloudUrl || path)){
-        try {
-          if(progTxt) progTxt.textContent = 'Code generate ho raha hai...';
-          await sb.from('jobs').insert({
-            id: id,
-            file_name: f.name,
-            file_path: path,
-            file_type: f.type || 'application/octet-stream',
-            page_count: 1,
-            copies: 1,
-            color_mode: 'bw',
-            status: 'pending',
-            customer_name: 'PC_TO_MOBILE',
-            note: 'PC_SHARE#' + shareCode + '#' + (cloudUrl || '')
-          });
-        } catch(sbErr) {
-          console.warn('Supabase job record insert skipped:', sbErr);
+        if(sb && (cloudUrl || path)){
+          try {
+            await sb.from('jobs').insert({
+              id: id,
+              file_name: f.name,
+              file_path: path,
+              file_type: f.type || 'application/octet-stream',
+              page_count: 1,
+              copies: 1,
+              color_mode: 'bw',
+              status: 'pending',
+              customer_name: 'PC_TO_MOBILE',
+              note: 'PC_SHARE#' + shareCode + '#' + (cloudUrl || '')
+            });
+          } catch(sbErr){}
         }
       }
 
       if(!cloudUrl && !localUrl){
-        throw new Error('फाइल अपलोड नहीं हो सकी। कृपया इंटरनेट या Supabase सेटिंग्स चेक करें।');
+        throw new Error('फाइल अपलोड नहीं हो सकी। कृपया लोकल एजेंट या Supabase सेटिंग्स चेक करें।');
       }
 
       activeShareCode = shareCode;
-      loadPcSharesStats();
+      await loadPcSharesStats();
 
       if(prog) prog.style.display = 'none';
-      if(resultCard) resultCard.style.display = 'block';
-      if($('pcShareCodeDisplay')) $('pcShareCodeDisplay').textContent = '#' + shareCode;
-      if($('pcShareFileName')) $('pcShareFileName').textContent = f.name + ' (' + (f.size / 1024 / 1024).toFixed(2) + ' MB)';
-      if($('pcShareActiveDownloads')) $('pcShareActiveDownloads').textContent = '📥 0 Downloads';
-
-      if($('pcShareCloudTag')) $('pcShareCloudTag').style.display = cloudUrl ? 'inline-block' : 'none';
-      if($('pcShareLanTag')) $('pcShareLanTag').style.display = localUrl ? 'inline-block' : 'none';
-
-      var pBase = (publicBaseUrl || (window.CYBERPRINT_CONFIG && window.CYBERPRINT_CONFIG.PUBLIC_URL) || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
-      var customerShareUrl = pBase + '/index.html?receive=' + shareCode + '&name=' + encodeURIComponent(f.name) + '&size=' + f.size;
-      if(cloudUrl) customerShareUrl += '&url=' + encodeURIComponent(cloudUrl);
-      if(localUrl) customerShareUrl += '&local=' + encodeURIComponent(localUrl);
-
-      if(window.QRCode && $('pcShareQRHolder')){
-        $('pcShareQRHolder').innerHTML = '';
-        new QRCode($('pcShareQRHolder'), { 
-          text: customerShareUrl, 
-          width: 170, 
-          height: 170, 
-          correctLevel: QRCode.CorrectLevel.L 
-        });
-      }
-
-      if($('pcShareCopyLinkBtn')){
-        $('pcShareCopyLinkBtn').onclick = function(){
-          navigator.clipboard.writeText(customerShareUrl).then(function(){
-            alert('Customer Download Link copy ho gaya!');
-          }).catch(function(){});
-        };
-      }
+      showShareInResultCard(shareCode);
 
     } catch(err){
       if(prog) prog.style.display = 'none';
       if(shareBox) shareBox.style.display = 'block';
-      alert('File share nahi ho saki: ' + (err.message || err));
+      alert('Upload failed: ' + (err.message || err));
     }
   }
 

@@ -160,10 +160,23 @@ def get_pc_shares_meta():
     # Auto-index any existing files on disk
     if PC_SHARES_DIR.exists():
         for p in PC_SHARES_DIR.iterdir():
-            if p.is_file() and p.name != "shares_meta.json" and "_" in p.name:
-                parts = p.name.split("_", 1)
-                code = parts[0].upper()
-                raw_name = parts[1]
+            if p.is_file() and p.name != "shares_meta.json":
+                if "_" in p.name:
+                    parts = p.name.split("_", 1)
+                    code = parts[0].upper()
+                    raw_name = parts[1]
+                else:
+                    code = str(random.randint(100000, 999999))
+                    raw_name = p.name
+                    safe_name = re.sub(r'[^\w.\-]+', '_', raw_name)
+                    new_path = PC_SHARES_DIR / f"{code}_{safe_name}"
+                    try:
+                        p.rename(new_path)
+                        p = new_path
+                        raw_name = safe_name
+                        send_windows_toast("📤 PC to Phone Share Ready", f"{raw_name} -> #{code} (Local Wi-Fi)")
+                    except Exception:
+                        pass
                 if code not in meta:
                     try:
                         mtime_str = datetime.datetime.fromtimestamp(p.stat().st_mtime).strftime("%Y-%m-%d %H:%M:%S")
@@ -178,6 +191,7 @@ def get_pc_shares_meta():
                         "disk_path": str(p.resolve()),
                         "cloud_url": "",
                         "local_url": "",
+                        "storage": "local",
                         "storage_path": f"pc_shares/{code}/{raw_name}"
                     }
                     changed = True
@@ -380,6 +394,7 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 item_copy["local_url"] = f"http://{lan_ip}:{port}/api/pc-share-download/{code}"
                 if not item_copy.get("url"):
                     item_copy["url"] = item_copy.get("cloud_url") or item_copy["local_url"]
+                item_copy["storage"] = item.get("storage", "cloud" if item.get("cloud_url") else "local")
                 shares_list.append(item_copy)
             shares_list.sort(key=lambda x: x.get("created_at", ""), reverse=True)
             resp = json.dumps({
@@ -636,9 +651,11 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 return
 
             code = ""
+            local_only = False
             if "?" in self.path:
                 qs = urllib.parse.parse_qs(self.path.split("?")[1])
                 code = qs.get("code", [""])[0].strip().upper()
+                local_only = qs.get("local_only", ["0"])[0] in ("1", "true", "True") or qs.get("no_cloud", ["0"])[0] in ("1", "true", "True")
             if not code:
                 code = str(random.randint(100000, 999999))
 
@@ -655,7 +672,10 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
             local_download_url = f"http://{lan_ip}:{port}/api/pc-share-download/{code}"
 
             cloud_download_url = ""
-            if self.agent_ref and self.agent_ref.sb_url:
+            storage_path = ""
+            storage_type = "local" if local_only else "cloud"
+
+            if not local_only and self.agent_ref and self.agent_ref.sb_url:
                 try:
                     self.agent_ref.ensure_token()
                     storage_path = f"pc_shares/{code}/{safe_name}"
@@ -693,6 +713,29 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                             log(f"☁️ Cloud Signed URL created for PC Share #{code}")
                 except Exception as e:
                     log(f"Warning: Cloud upload for share #{code} failed: {e}")
+            elif local_only:
+                log(f"⚡ Local-Only PC Share #{code} '{raw_name}' created (Zero Cloud Storage used)")
+
+            # Optional: Register lightweight job record in Supabase DB for code lookup without storage usage
+            if self.agent_ref and getattr(self.agent_ref, "sb_url", None):
+                try:
+                    self.agent_ref.api_request(
+                        "POST",
+                        "/rest/v1/jobs",
+                        body={
+                            "file_name": raw_name,
+                            "file_path": storage_path if cloud_download_url else f"local://{code}_{safe_name}",
+                            "file_type": "application/octet-stream",
+                            "page_count": 1,
+                            "copies": 1,
+                            "color_mode": "bw",
+                            "status": "pending",
+                            "customer_name": "PC_TO_MOBILE",
+                            "note": f"PC_SHARE#{code}#{cloud_download_url or ('local://' + local_download_url)}"
+                        }
+                    )
+                except Exception as db_ex:
+                    pass
 
             GLOBAL_PC_SHARES[code] = {
                 "name": raw_name,
@@ -700,6 +743,7 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 "url": cloud_download_url or local_download_url,
                 "local_url": local_download_url,
                 "cloud_url": cloud_download_url,
+                "storage": storage_type,
                 "disk_path": str(target_path)
             }
             # Also record in persistent shares_meta.json
@@ -713,11 +757,12 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 "cloud_url": cloud_download_url,
                 "local_url": local_download_url,
                 "url": cloud_download_url or local_download_url,
+                "storage": storage_type,
                 "disk_path": str(target_path),
                 "storage_path": storage_path if cloud_download_url else ""
             }
             save_pc_shares_meta(meta)
-            log(f"📤 PC to Mobile Share created: #{code} '{raw_name}' ({len(f['data'])} bytes)")
+            log(f"📤 PC to Mobile Share created: #{code} '{raw_name}' ({len(f['data'])} bytes) [{storage_type.upper()}]")
 
             resp = json.dumps({
                 "ok": True,
@@ -725,6 +770,7 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 "url": cloud_download_url or local_download_url,
                 "cloud_url": cloud_download_url,
                 "local_url": local_download_url,
+                "storage": storage_type,
                 "name": raw_name,
                 "size": len(f["data"])
             }).encode("utf-8")

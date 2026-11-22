@@ -1074,8 +1074,9 @@ tailwind.config = {
       var fn = preloadedName || 'shared_file';
       activeReceiveFileName = fn;
       nameEl.textContent = fn;
+      var isDirectLocal = primaryUrl.includes('/api/pc-share-download/') || (!activeReceiveCloudUrl && !!activeReceiveLocalUrl);
       var szStr = preloadedSize ? formatBytes(preloadedSize) : 'तैयार है';
-      metaEl.textContent = szStr + ' • सीधे डाउनलोड करें';
+      metaEl.textContent = szStr + (isDirectLocal ? ' • ⚡ Wi-Fi डायरेक्ट से तैयार है (बिना क्लाउड)' : ' • सीधे डाउनलोड करें');
       dlBtn.setAttribute('data-url', primaryUrl);
       dlBtn.setAttribute('data-name', fn);
       iconEl.textContent = getDropFileIcon(fn);
@@ -1110,7 +1111,20 @@ tailwind.config = {
 
     try {
       var searchParams = new URLSearchParams(window.location.search);
-      var agentHost = searchParams.get('agent') || (window.location.port === '8085' ? window.location.host : '10.202.100.233:8085');
+      var agentHost = searchParams.get('agent') || (window.location.port === '8085' ? window.location.host : '');
+
+      // Dynamic LAN IP discovery from Supabase agent_status if not explicitly provided
+      if(!agentHost && sb){
+        try {
+          var ra = await sb.from('agent_status').select('note, last_seen').order('last_seen', { ascending: false }).limit(1);
+          if(ra && ra.data && ra.data.length && ra.data[0].note){
+            var m = ra.data[0].note.match(/http:\/\/([0-9.]+):([0-9]+)/);
+            if(m && m[1]) agentHost = m[1] + ':' + (m[2] || '8085');
+          }
+        } catch(e){}
+      }
+      if(!agentHost) agentHost = '127.0.0.1:8085';
+
       // 1. Try local agent first (Wi-Fi)
       var agentFound = false;
       try {
@@ -1124,7 +1138,7 @@ tailwind.config = {
             load.style.display = 'none';
             nameEl.textContent = aData.file.name;
             activeReceiveFileName = aData.file.name;
-            metaEl.textContent = formatBytes(aData.file.size) + ' • Wi-Fi डायरेक्ट से तैयार है';
+            metaEl.textContent = formatBytes(aData.file.size) + ' • ⚡ Wi-Fi डायरेक्ट से तैयार है (बिना क्लाउड)';
             activeReceiveLocalUrl = aData.file.url;
             dlBtn.setAttribute('data-url', aData.file.url);
             dlBtn.setAttribute('data-name', aData.file.name);
@@ -1151,6 +1165,25 @@ tailwind.config = {
           var j = query.data[0];
           var parts = (j.note || '').split('#');
           var cloudDlUrl = parts.slice(2).join('#') || '';
+          var isLocalRecord = cloudDlUrl.startsWith('local://') || (j.file_path && j.file_path.startsWith('local://'));
+
+          if(isLocalRecord){
+            var localTarget = cloudDlUrl.replace(/^local:\/\//, '') || ('http://' + agentHost + '/api/pc-share-download/' + code);
+            load.style.display = 'none';
+            nameEl.textContent = j.file_name;
+            activeReceiveFileName = j.file_name;
+            metaEl.textContent = 'तैयार है • ⚡ दुकान के Wi-Fi से डायरेक्ट डाउनलोड (बिना क्लाउड)';
+            activeReceiveLocalUrl = localTarget;
+            dlBtn.setAttribute('data-url', localTarget);
+            dlBtn.setAttribute('data-name', j.file_name);
+            iconEl.textContent = getDropFileIcon(j.file_name);
+            card.style.display = 'block';
+            card.classList.remove('token-reveal');
+            void card.offsetWidth;
+            card.classList.add('token-reveal');
+            return;
+          }
+
           if(!cloudDlUrl){
             try {
               var signRes = await sb.storage.from(C.BUCKET || 'jobs').createSignedUrl(j.file_path, 86400 * 7, { download: j.file_name });
