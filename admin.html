@@ -482,19 +482,21 @@ tailwind.config = {
     } catch(e) {}
   }
 
+  function agentBase(){
+    return window.location.port === '8085' ? window.location.host : '127.0.0.1:8085';
+  }
+
   // Storage Mode & QR Management
   var storageMode = localStorage.getItem('cyberprint_storage_mode') || 'cloud';
   var qrAccessMode = localStorage.getItem('cyberprint_qr_access') || 'public';
   var savedUrl = localStorage.getItem('cyberprint_public_url');
-  if(savedUrl && savedUrl.includes('ankit8556')) savedUrl = '';
   var publicBaseUrl = savedUrl || C.PUBLIC_URL || (window.location.protocol.startsWith('http') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') : 'https://cyberphantomxpert.github.io/CyberPrint');
   var lanIp = '127.0.0.1';
   var lanPort = 8085;
 
   async function autoDetectAgentLanIp(){
     try {
-      var agentOrigin = window.location.port === '8085' ? '' : 'http://127.0.0.1:8085';
-      var r = await fetch(agentOrigin + '/api/info');
+      var r = await fetch('http://' + agentBase() + '/api/info');
       var d = await r.json();
       if(d && d.ip && d.ip !== '127.0.0.1'){
         lanIp = d.ip;
@@ -577,7 +579,7 @@ tailwind.config = {
       // 1. Check local agent directly if on HTTP
       if(window.location.protocol !== 'https:'){
         try {
-          var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+          var agentHost = agentBase();
           var ctrl = new AbortController();
           var tId = setTimeout(function(){ ctrl.abort(); }, 1500);
           var r = await fetch('http://' + agentHost + '/api/info', { signal: ctrl.signal });
@@ -631,7 +633,7 @@ tailwind.config = {
       }
       return base;
     }
-    var pBase = (publicBaseUrl || (window.CYBERPRINT_CONFIG && window.CYBERPRINT_CONFIG.PUBLIC_URL) || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
+    var pBase = publicBaseUrl.replace(/\/+$/, '');
     var query = storageMode === 'local' ? ('?storage=local&agent=' + lanIp + ':' + lanPort) : ('?agent=' + lanIp + ':' + lanPort);
     return pBase + '/index.html' + query;
   }
@@ -640,7 +642,7 @@ tailwind.config = {
     if(qrAccessMode === 'lan'){
       return 'http://' + lanIp + ':' + lanPort + '/index.html?tool=drop';
     }
-    var pBase = (publicBaseUrl || (window.CYBERPRINT_CONFIG && window.CYBERPRINT_CONFIG.PUBLIC_URL) || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
+    var pBase = publicBaseUrl.replace(/\/+$/, '');
     return pBase + '/index.html?tool=drop&agent=' + lanIp + ':' + lanPort;
   }
 
@@ -690,7 +692,7 @@ tailwind.config = {
     // 1. Try local HTTP endpoint directly if on localhost or HTTP
     if(window.location.protocol !== 'https:'){
       try {
-        var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+        var agentHost = agentBase();
         var ctrl = new AbortController();
         var tId = setTimeout(function(){ ctrl.abort(); }, 1200);
         var r = await fetch('http://' + agentHost + '/api/open-downloads', { signal: ctrl.signal });
@@ -787,7 +789,7 @@ tailwind.config = {
   }
 
   async function loadPcSharesStats(){
-    var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+    var agentHost = agentBase();
     var fetchedFromAgent = false;
     if(window.location.protocol !== 'https:'){
       try {
@@ -879,7 +881,7 @@ tailwind.config = {
       var modeBadge = isLocalOnly
         ? '<span class="bg-emerald-950/80 text-emerald-300 border border-emerald-800/80 px-1.5 py-0.2 rounded text-[9px] font-bold">⚡ Local (0 KB Cloud)</span>'
         : '<span class="bg-blue-950/80 text-blue-300 border border-blue-800/80 px-1.5 py-0.2 rounded text-[9px] font-bold">☁️ Cloud</span>';
-      var pBase = (publicBaseUrl || C.PUBLIC_URL || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
+      var pBase = publicBaseUrl.replace(/\/+$/, '');
       var shareLink = isLocalOnly
         ? (item.local_url || ('http://' + lanIp + ':' + lanPort + '/api/pc-share-download/' + item.code))
         : (pBase + '/index.html?receive=' + item.code + '&name=' + encodeURIComponent(item.name) + '&size=' + item.size + (item.cloud_url ? '&url=' + encodeURIComponent(item.cloud_url) : ''));
@@ -1004,7 +1006,7 @@ tailwind.config = {
     activeShareCode = code;
 
     var isLocalOnly = !item.cloud_url || item.storage === 'local';
-    var pBase = (publicBaseUrl || C.PUBLIC_URL || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
+    var pBase = publicBaseUrl.replace(/\/+$/, '');
     var localDirectUrl = item.local_url || ('http://' + lanIp + ':' + lanPort + '/api/pc-share-download/' + item.code);
     var localWebUrl = 'http://' + lanIp + ':' + lanPort + '/index.html?receive=' + item.code;
     var cloudWebUrl = pBase + '/index.html?receive=' + item.code + '&name=' + encodeURIComponent(item.name) + '&size=' + item.size;
@@ -1068,7 +1070,7 @@ tailwind.config = {
     if(!confirm('Kya aap #' + code + ' (' + (name || 'file') + ') ko delete karna chahte hain?\nYe list aur cloud dono se hat jayegi.')){
       return;
     }
-    var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+    var agentHost = agentBase();
     try {
       if(window.location.protocol !== 'https:'){
         try {
@@ -1101,7 +1103,7 @@ tailwind.config = {
     if(!confirm('Kya aap sach me SABHI uploaded PC files ko delete karna chahte hain?\nSabhi files permanently delete ho jayengi.')){
       return;
     }
-    var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+    var agentHost = agentBase();
     try {
       var res = await fetch('http://' + agentHost + '/api/pc-shares-delete-all', {
         method: 'POST'
@@ -1222,7 +1224,7 @@ tailwind.config = {
       if(isLocalMode){
         // ================= 100% LOCAL WI-FI (ZERO CLOUD STORAGE) =================
         if(progTxt) progTxt.textContent = '⚡ Local PC disk par save ho raha hai (Zero Cloud)...';
-        var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+        var agentHost = agentBase();
         var fd = new FormData();
         fd.append('file', f, f.name);
         var ctrl = new AbortController();
@@ -1289,7 +1291,7 @@ tailwind.config = {
         // Also sync local copy if on HTTP
         if(!isHttps){
           try {
-            var agentHost = (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
+            var agentHost = agentBase();
             var fd = new FormData();
             fd.append('file', f, f.name);
             var ctrl = new AbortController();
@@ -1427,61 +1429,70 @@ tailwind.config = {
   $('logout').onclick = async function(){ await sb.auth.signOut(); if(timer) clearInterval(timer); showLogin(); };
   $('refresh').onclick = load;
 
-  function fetchJobs(){ return sb.from('jobs').select('*').order('created_at', { ascending: false }).limit(300); }
+  var loading = false;
+  function fetchJobs(){
+    return sb.from('jobs')
+      .select('id,created_at,file_name,file_path,file_type,page_count,copies,color_mode,paper_size,orientation,page_range,status,print_error,total_price,batch_id,batch_index,batch_total_files,note')
+      .order('created_at', { ascending: false })
+      .limit(300);
+  }
 
   async function cleanupExpired(){
     var cutoff = Date.now() - RETAIN * 60000;
     var stale = jobs.filter(function(j){
       return j.file_path && new Date(j.created_at).getTime() < cutoff;
     });
-    var changed = false;
-    for(var i = 0; i < stale.length; i++){
-      var j = stale[i];
-      try { await sb.storage.from(B).remove([j.file_path]); } catch(e){}
-      var patch = { file_path: null, file_deleted: true };
-      if(j.status === 'pending'){ patch.status = 'cancelled'; }
-      else if(j.status === 'approved' || j.status === 'printing'){ patch.status = 'failed'; patch.print_error = 'file expired before printing'; }
-      var u = await sb.from('jobs').update(patch).eq('id', j.id);
-      if(!u.error) changed = true;
-    }
-    return changed;
+    if(!stale.length) return false;
+    var stalePaths = stale.map(function(j){ return j.file_path; }).filter(Boolean);
+    var staleIds = stale.map(function(j){ return j.id; });
+    try {
+      if(stalePaths.length) await sb.storage.from(B).remove(stalePaths);
+    } catch(e){}
+    var u = await sb.from('jobs').update({ file_path: null, file_deleted: true }).in('id', staleIds);
+    return !u.error;
   }
 
   async function load(){
-    var rj = await fetchJobs();
-    if(rj.error){ setConn(false); $('agenttxt').textContent = 'Agent: offline'; return; }
-    jobs = rj.data || [];
-    var ra = await sb.from('agent_status').select('*');
-    agent = (ra && ra.data && ra.data.length)
-      ? ra.data.slice().sort(function(a,b){ return new Date(b.last_seen) - new Date(a.last_seen); })[0]
-      : null;
-    var cleaned = await cleanupExpired();
-    if(cleaned){ var r2 = await fetchJobs(); if(!r2.error) jobs = r2.data || []; }
-    var online = agentOnline();
-    setConn(online);
-    $('agenttxt').textContent = online
-      ? ('Online' + (agent.printer ? ' \u00b7 ' + agent.printer : ''))
-      : 'Offline';
+    if(loading) return;
+    loading = true;
+    try {
+      var rj = await fetchJobs();
+      if(rj.error){ setConn(false); $('agenttxt').textContent = 'Agent: offline'; return; }
+      jobs = rj.data || [];
+      var ra = await sb.from('agent_status').select('*');
+      agent = (ra && ra.data && ra.data.length)
+        ? ra.data.slice().sort(function(a,b){ return new Date(b.last_seen) - new Date(a.last_seen); })[0]
+        : null;
+      var cleaned = await cleanupExpired();
+      if(cleaned){ var r2 = await fetchJobs(); if(!r2.error) jobs = r2.data || []; }
+      var online = agentOnline();
+      setConn(online);
+      $('agenttxt').textContent = online
+        ? ('Online' + (agent.printer ? ' \u00b7 ' + agent.printer : ''))
+        : 'Offline';
 
-    if(agent && agent.note){
-      var m = agent.note.match(/http:\/\/([0-9.]+):([0-9]+)/);
-      if(m && m[1] && m[1] !== lanIp){
-        lanIp = m[1];
-        lanPort = parseInt(m[2], 10) || 8085;
-        if($('lanIpInput')) $('lanIpInput').value = lanIp;
-        updateQRs();
+      if(agent && agent.note){
+        var m = agent.note.match(/http:\/\/([0-9.]+):([0-9]+)/);
+        if(m && m[1] && m[1] !== lanIp){
+          lanIp = m[1];
+          lanPort = parseInt(m[2], 10) || 8085;
+          if($('lanIpInput')) $('lanIpInput').value = lanIp;
+          updateQRs();
+        }
       }
-    }
 
-    // Play chime on new pending arrivals
-    var currentPending = jobs.filter(function(j){ return j.status === 'pending'; });
-    if(lastPendingIds !== null){
-      var hasNew = currentPending.some(function(j){ return !lastPendingIds.has(j.id); });
-      if(hasNew) playChime();
-    }
-    lastPendingIds = new Set(currentPending.map(function(j){ return j.id; }));
+      // Play chime on new pending arrivals
+      var currentPending = jobs.filter(function(j){ return j.status === 'pending'; });
+      if(lastPendingIds !== null){
+        var hasNew = currentPending.some(function(j){ return !lastPendingIds.has(j.id); });
+        if(hasNew) playChime();
+      }
+      lastPendingIds = new Set(currentPending.map(function(j){ return j.id; }));
 
-    render();
+      render();
+    } finally {
+      loading = false;
+    }
   }
 
   function renderTabs(){
@@ -1507,47 +1518,25 @@ tailwind.config = {
     var bwPages = printed.filter(function(j){ return j.color_mode === 'bw'; }).reduce(function(a, j){ return a + ((j.page_count || 1) * (j.copies || 1)); }, 0);
     var colorPages = printed.filter(function(j){ return j.color_mode === 'color'; }).reduce(function(a, j){ return a + ((j.page_count || 1) * (j.copies || 1)); }, 0);
 
-    $('summary').innerHTML =
-      '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
+    var tiles = [
+      { label: 'Incoming Queue', pill: 'Needs Action', pillCls: 'bg-amber-500/10 text-amber-400', val: pendingCount, valCls: pendingCount > 0 ? 'text-amber-400 animate-pulse' : 'text-slate-200', note: 'orders pending' },
+      { label: "Today's Revenue", pill: 'UPI / Cash', pillCls: 'bg-emerald-500/10 text-emerald-400', val: money(rev), valCls: 'text-emerald-400', note: printed.length + ' printed' },
+      { label: 'Pages Printed', pill: 'Sheets', pillCls: 'bg-brand-500/10 text-brand-400', val: bwPages + colorPages, valCls: 'text-white', note: '(' + bwPages + ' B&W / ' + colorPages + ' Color)' },
+      { label: 'File Drops', pill: 'PC Saved', pillCls: 'bg-purple-500/10 text-purple-400', val: dropJobs.length, valCls: 'text-purple-400', note: 'files received' }
+    ];
+
+    $('summary').innerHTML = tiles.map(function(tile){
+      return '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
         '<div class="flex items-center justify-between">' +
-          '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Incoming Queue</span>' +
-          '<span class="p-1 bg-amber-500/10 text-amber-400 rounded-lg text-[10px] font-bold">Needs Action</span>' +
+          '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">' + tile.label + '</span>' +
+          '<span class="p-1 rounded-lg text-[10px] font-bold ' + tile.pillCls + '">' + tile.pill + '</span>' +
         '</div>' +
         '<div class="mt-2 flex items-baseline gap-2">' +
-          '<span class="font-mono text-3xl font-black ' + (pendingCount > 0 ? 'text-amber-400 animate-pulse' : 'text-slate-200') + '">' + pendingCount + '</span>' +
-          '<span class="text-xs text-slate-400">orders pending</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
-        '<div class="flex items-center justify-between">' +
-          '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Today\'s Revenue</span>' +
-          '<span class="p-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-[10px] font-bold">UPI / Cash</span>' +
-        '</div>' +
-        '<div class="mt-2 flex items-baseline gap-2">' +
-          '<span class="font-mono text-3xl font-black text-emerald-400">' + money(rev) + '</span>' +
-          '<span class="text-xs text-slate-400">' + printed.length + ' printed</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
-        '<div class="flex items-center justify-between">' +
-          '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pages Printed</span>' +
-          '<span class="p-1 bg-brand-500/10 text-brand-400 rounded-lg text-[10px] font-bold">Sheets</span>' +
-        '</div>' +
-        '<div class="mt-2 flex items-baseline gap-2">' +
-          '<span class="font-mono text-3xl font-black text-white">' + (bwPages + colorPages) + '</span>' +
-          '<span class="text-xs text-slate-400">(' + bwPages + ' B&W / ' + colorPages + ' Color)</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="bg-slate-850 border border-slate-800 rounded-2xl p-4 shadow-sm">' +
-        '<div class="flex items-center justify-between">' +
-          '<span class="text-xs font-bold uppercase tracking-wider text-slate-400">File Drops</span>' +
-          '<span class="p-1 bg-purple-500/10 text-purple-400 rounded-lg text-[10px] font-bold">PC Saved</span>' +
-        '</div>' +
-        '<div class="mt-2 flex items-baseline gap-2">' +
-          '<span class="font-mono text-3xl font-black text-purple-400">' + dropJobs.length + '</span>' +
-          '<span class="text-xs text-slate-400">files received</span>' +
+          '<span class="font-mono text-3xl font-black ' + tile.valCls + '">' + tile.val + '</span>' +
+          '<span class="text-xs text-slate-400">' + tile.note + '</span>' +
         '</div>' +
       '</div>';
+    }).join('');
   }
 
   function time(iso){ return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
@@ -1633,9 +1622,13 @@ tailwind.config = {
   function groupJobs(list){
     var groups = [];
     var batchMap = {};
+    var counts = {};
+    list.forEach(function(x){
+      if(x.batch_id) counts[x.batch_id] = (counts[x.batch_id] || 0) + 1;
+    });
 
     list.forEach(function(j){
-      if(j.batch_id && (j.batch_total_files > 1 || list.filter(function(x){ return x.batch_id === j.batch_id; }).length > 1)){
+      if(j.batch_id && (j.batch_total_files > 1 || (counts[j.batch_id] || 0) > 1)){
         if(!batchMap[j.batch_id]){
           var g = { isBatch: true, batchId: j.batch_id, jobs: [], created_at: j.created_at, status: j.status };
           batchMap[j.batch_id] = g;

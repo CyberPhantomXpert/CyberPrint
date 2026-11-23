@@ -140,13 +140,17 @@ def parse_multipart(data_bytes, content_type_header):
     return files
 
 
-GLOBAL_PC_SHARES = {}
+_META_CACHE = {"mtime": None, "data": {}}
 PC_SHARES_DIR = Path(__file__).parent / "pc_shares"
 PC_SHARES_META_FILE = PC_SHARES_DIR / "shares_meta.json"
 
 
 def get_pc_shares_meta():
     PC_SHARES_DIR.mkdir(parents=True, exist_ok=True)
+    mtime = PC_SHARES_META_FILE.stat().st_mtime if PC_SHARES_META_FILE.exists() else None
+    if _META_CACHE["mtime"] == mtime and _META_CACHE["data"]:
+        return dict(_META_CACHE["data"])
+
     meta = {}
     if PC_SHARES_META_FILE.exists():
         try:
@@ -200,6 +204,9 @@ def get_pc_shares_meta():
                     changed = True
     if changed:
         save_pc_shares_meta(meta)
+    else:
+        _META_CACHE["mtime"] = mtime
+        _META_CACHE["data"] = meta
     return meta
 
 
@@ -207,6 +214,8 @@ def save_pc_shares_meta(meta):
     try:
         PC_SHARES_DIR.mkdir(parents=True, exist_ok=True)
         PC_SHARES_META_FILE.write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
+        _META_CACHE["mtime"] = PC_SHARES_META_FILE.stat().st_mtime
+        _META_CACHE["data"] = meta
     except Exception as e:
         log(f"Warning: Failed to save shares_meta.json: {e}")
 
@@ -278,7 +287,6 @@ def delete_pc_share(code, agent_ref=None):
     # 3. Clean from memory & meta
     meta.pop(code, None)
     save_pc_shares_meta(meta)
-    GLOBAL_PC_SHARES.pop(code, None)
     log(f"🗑️ PC Share #{code} deleted")
     return True
 
@@ -288,7 +296,6 @@ def delete_all_pc_shares(agent_ref=None):
     codes = list(meta.keys())
     for code in codes:
         delete_pc_share(code, agent_ref=agent_ref)
-    GLOBAL_PC_SHARES.clear()
     save_pc_shares_meta({})
     log("🗑️ All PC Shares deleted")
     return True
@@ -309,13 +316,21 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(204)
         self.send_cors_headers()
-        self.send_header("Access-Control-Allow-Private-Network", "true")
         self.end_headers()
 
     def do_HEAD(self):
         self.send_response(200)
         self.send_cors_headers()
         self.end_headers()
+
+    def _json(self, obj, status=200):
+        body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_cors_headers()
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def find_share(self, code):
         code = (code or "").strip().upper()
@@ -329,7 +344,6 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
             rec["local_url"] = f"http://{lan_ip}:{port}/api/pc-share-download/{code}"
             if not rec.get("url"):
                 rec["url"] = rec.get("cloud_url") or rec["local_url"]
-            GLOBAL_PC_SHARES[code] = rec
             return rec
         return None
 
@@ -339,10 +353,6 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
             target_file = Path(__file__).parent.parent / "index.html"
             if not target_file.exists():
                 target_file = Path(__file__).parent / "index.html"
-            if not target_file.exists():
-                target_file = Path(__file__).parent.parent / "drop.html"
-            if not target_file.exists():
-                target_file = Path(__file__).parent / "drop.html"
             if target_file.exists():
                 html = target_file.read_bytes()
                 self.send_response(200)
@@ -356,33 +366,20 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
             return
 
         if path in ("/api/ip", "/api/info"):
-            info = {
+            self._json({
                 "ip": self.agent_ref.lan_ip if self.agent_ref else get_lan_ip(),
                 "port": self.agent_ref.http_port if self.agent_ref else 8085,
                 "printer": self.agent_ref.printer_name if self.agent_ref else "",
                 "status": "online"
-            }
-            body = json.dumps(info).encode("utf-8")
-            self.send_response(200)
-            self.send_cors_headers()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            })
             return
 
         if path == "/api/open-downloads":
             try:
                 os.startfile(str(self.agent_ref.downloads_dir))
-                resp = json.dumps({"ok": True}).encode("utf-8")
+                self._json({"ok": True})
             except Exception as e:
-                resp = json.dumps({"ok": False, "error": str(e)}).encode("utf-8")
-            self.send_response(200)
-            self.send_cors_headers()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(resp)))
-            self.end_headers()
-            self.wfile.write(resp)
+                self._json({"ok": False, "error": str(e)})
             return
 
         if path in ("/api/pc-shares", "/api/pc-share-list"):
@@ -400,18 +397,12 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 item_copy["storage"] = item.get("storage", "cloud" if item.get("cloud_url") else "local")
                 shares_list.append(item_copy)
             shares_list.sort(key=lambda x: x.get("created_at", ""), reverse=True)
-            resp = json.dumps({
+            self._json({
                 "ok": True,
                 "total_sent": len(shares_list),
                 "total_downloads": total_downloads,
                 "shares": shares_list
-            }).encode("utf-8")
-            self.send_response(200)
-            self.send_cors_headers()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(resp)))
-            self.end_headers()
-            self.wfile.write(resp)
+            })
             return
 
         if path in ("/api/pc-share-download-ping", "/api/pc-share-download-count"):
@@ -420,13 +411,7 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 qs = urllib.parse.parse_qs(self.path.split("?")[1])
                 code = qs.get("code", [""])[0].strip().upper()
             new_count = record_share_download(code)
-            resp = json.dumps({"ok": True, "code": code, "downloads": new_count}).encode("utf-8")
-            self.send_response(200)
-            self.send_cors_headers()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(resp)))
-            self.end_headers()
-            self.wfile.write(resp)
+            self._json({"ok": True, "code": code, "downloads": new_count})
             return
 
         if path in ("/api/get-share", "/api/pc-share-info"):
@@ -436,16 +421,9 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 code = qs.get("code", [""])[0].strip().upper()
             share = self.find_share(code)
             if share:
-                resp = json.dumps({"ok": True, "file": share}).encode("utf-8")
-                self.send_response(200)
+                self._json({"ok": True, "file": share})
             else:
-                resp = json.dumps({"ok": False, "error": "Share not found"}).encode("utf-8")
-                self.send_response(404)
-            self.send_cors_headers()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(resp)))
-            self.end_headers()
-            self.wfile.write(resp)
+                self._json({"ok": False, "error": "Share not found"}, status=404)
             return
 
         if path.startswith("/api/pc-share-download/"):
@@ -527,50 +505,43 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
         except Exception:
             content_length = 0
 
-        if path in ("/api/pc-share-delete", "/api/pc-shares/delete", "/api/pc-shares-delete-all", "/api/pc-shares/delete-all"):
+        if path in ("/api/pc-shares-delete-all", "/api/pc-shares/delete-all"):
             body = self.rfile.read(content_length) if content_length > 0 else b""
-            if path in ("/api/pc-shares-delete-all", "/api/pc-shares/delete-all"):
-                delete_all_pc_shares(self.agent_ref)
-                resp = json.dumps({
-                    "ok": True,
-                    "message": "All PC shared files deleted",
-                    "total_sent": 0,
-                    "total_downloads": 0,
-                    "shares": []
-                }).encode("utf-8")
-            else:
-                code = ""
-                if "?" in self.path:
-                    qs = urllib.parse.parse_qs(self.path.split("?")[1])
-                    code = qs.get("code", [""])[0].strip().upper()
-                if not code and body:
-                    try:
-                        data = json.loads(body.decode("utf-8"))
-                        code = data.get("code", "").strip().upper()
-                    except Exception:
-                        pass
-                success = delete_pc_share(code, self.agent_ref)
-                meta = get_pc_shares_meta()
-                total_downloads = sum(s.get("downloads", 0) for s in meta.values())
-                resp = json.dumps({
-                    "ok": success,
-                    "deleted": code,
-                    "total_sent": len(meta),
-                    "total_downloads": total_downloads
-                }).encode("utf-8")
-            self.send_response(200)
-            self.send_cors_headers()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(resp)))
-            self.end_headers()
-            self.wfile.write(resp)
+            delete_all_pc_shares(self.agent_ref)
+            self._json({
+                "ok": True,
+                "message": "All PC shared files deleted",
+                "total_sent": 0,
+                "total_downloads": 0,
+                "shares": []
+            })
+            return
+
+        if path in ("/api/pc-share-delete", "/api/pc-shares/delete"):
+            body = self.rfile.read(content_length) if content_length > 0 else b""
+            code = ""
+            if "?" in self.path:
+                qs = urllib.parse.parse_qs(self.path.split("?")[1])
+                code = qs.get("code", [""])[0].strip().upper()
+            if not code and body:
+                try:
+                    data = json.loads(body.decode("utf-8"))
+                    code = data.get("code", "").strip().upper()
+                except Exception:
+                    pass
+            success = delete_pc_share(code, self.agent_ref)
+            meta = get_pc_shares_meta()
+            total_downloads = sum(s.get("downloads", 0) for s in meta.values())
+            self._json({
+                "ok": success,
+                "deleted": code,
+                "total_sent": len(meta),
+                "total_downloads": total_downloads
+            })
             return
 
         if content_length <= 0 or content_length > 500 * 1024 * 1024:
-            self.send_response(400)
-            self.send_cors_headers()
-            self.end_headers()
-            self.wfile.write(b'{"error": "Invalid content length (max 500MB)"}')
+            self._json({"error": "Invalid content length (max 500MB)"}, status=400)
             return
 
         try:
@@ -578,24 +549,20 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
         except Exception:
             pass
 
-        remaining = content_length
-        chunks = []
-        while remaining > 0:
-            chunk_size = min(remaining, 65536)
-            chunk = self.rfile.read(chunk_size)
-            if not chunk:
+        buf = bytearray(content_length)
+        view = memoryview(buf)
+        got = 0
+        while got < content_length:
+            n = self.rfile.readinto(view[got:got + 65536])
+            if not n:
                 break
-            chunks.append(chunk)
-            remaining -= len(chunk)
-        body = b"".join(chunks)
+            got += n
+        body = bytes(view[:got])
 
         if path == "/upload":
             files = parse_multipart(body, content_type)
             if not files:
-                self.send_response(400)
-                self.send_cors_headers()
-                self.end_headers()
-                self.wfile.write(b'{"error": "No file detected in upload"}')
+                self._json({"error": "No file detected in upload"}, status=400)
                 return
 
             saved_files = []
@@ -618,22 +585,13 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 except Exception:
                     pass
 
-            resp = json.dumps({"ok": True, "files": saved_files}).encode("utf-8")
-            self.send_response(200)
-            self.send_cors_headers()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(resp)))
-            self.end_headers()
-            self.wfile.write(resp)
+            self._json({"ok": True, "files": saved_files})
             return
 
         if path == "/local-print-upload":
             files = parse_multipart(body, content_type)
             if not files:
-                self.send_response(400)
-                self.send_cors_headers()
-                self.end_headers()
-                self.wfile.write(b'{"error": "No file in local print upload"}')
+                self._json({"error": "No file in local print upload"}, status=400)
                 return
 
             f = files[0]
@@ -649,22 +607,13 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
             target_path.write_bytes(f["data"])
             log(f"💻 Local Print Upload: saved '{target_name}' ({len(f['data'])} bytes) to tmp/")
 
-            resp = json.dumps({"ok": True, "file_path": f"local://{target_name}"}).encode("utf-8")
-            self.send_response(200)
-            self.send_cors_headers()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(resp)))
-            self.end_headers()
-            self.wfile.write(resp)
+            self._json({"ok": True, "file_path": f"local://{target_name}"})
             return
 
         if path == "/api/pc-share-upload":
             files = parse_multipart(body, content_type)
             if not files:
-                self.send_response(400)
-                self.send_cors_headers()
-                self.end_headers()
-                self.wfile.write(b'{"error": "No file in share upload"}')
+                self._json({"error": "No file in share upload"}, status=400)
                 return
 
             code = ""
@@ -754,15 +703,6 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 except Exception as db_ex:
                     pass
 
-            GLOBAL_PC_SHARES[code] = {
-                "name": raw_name,
-                "size": len(f["data"]),
-                "url": cloud_download_url or local_download_url,
-                "local_url": local_download_url,
-                "cloud_url": cloud_download_url,
-                "storage": storage_type,
-                "disk_path": str(target_path)
-            }
             # Also record in persistent shares_meta.json
             meta = get_pc_shares_meta()
             meta[code] = {
@@ -781,7 +721,7 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
             save_pc_shares_meta(meta)
             log(f"📤 PC to Mobile Share created: #{code} '{raw_name}' ({len(f['data'])} bytes) [{storage_type.upper()}]")
 
-            resp = json.dumps({
+            self._json({
                 "ok": True,
                 "code": code,
                 "url": cloud_download_url or local_download_url,
@@ -790,13 +730,7 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
                 "storage": storage_type,
                 "name": raw_name,
                 "size": len(f["data"])
-            }).encode("utf-8")
-            self.send_response(200)
-            self.send_cors_headers()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(resp)))
-            self.end_headers()
-            self.wfile.write(resp)
+            })
             return
 
         self.send_error(404, "Endpoint not found")
@@ -1442,26 +1376,26 @@ class PrintAgent:
                 hdc.CreatePrinterDC(self.printer_name)
 
             if ext == ".pdf":
-                pdf = pdfium.PdfDocument(str(file_path))
-                total_pages = len(pdf)
-                pages_to_print = self._parse_page_range(page_range, total_pages)
+                with pdfium.PdfDocument(str(file_path)) as pdf:
+                    total_pages = len(pdf)
+                    pages_to_print = self._parse_page_range(page_range, total_pages)
 
-                log(f"  streaming {len(pages_to_print)} page(s) to printer (mode: {color_mode}, copies: {copies})...")
-                for c in range(copies):
-                    hdc.StartDoc(f"CyberPrint - {file_path.name}")
-                    for p_idx in pages_to_print:
-                        page = pdf[p_idx]
-                        pil_img = page.render(scale=2.0).to_pil()
-                        try:
-                            hdc.StartPage()
-                            self.print_gdi_image(hdc, pil_img, color_mode, orientation)
-                            hdc.EndPage()
-                        finally:
+                    log(f"  streaming {len(pages_to_print)} page(s) to printer (mode: {color_mode}, copies: {copies})...")
+                    for c in range(copies):
+                        hdc.StartDoc(f"CyberPrint - {file_path.name}")
+                        for p_idx in pages_to_print:
+                            page = pdf[p_idx]
+                            pil_img = page.render(scale=2.0).to_pil()
                             try:
-                                pil_img.close()
-                            except Exception:
-                                pass
-                    hdc.EndDoc()
+                                hdc.StartPage()
+                                self.print_gdi_image(hdc, pil_img, color_mode, orientation)
+                                hdc.EndPage()
+                            finally:
+                                try:
+                                    pil_img.close()
+                                except Exception:
+                                    pass
+                        hdc.EndDoc()
 
             elif ext in [".png", ".jpg", ".jpeg", ".bmp"]:
                 log(f"  loading image: {file_path.name}")
@@ -1493,6 +1427,10 @@ class PrintAgent:
                     pass
             win32print.ClosePrinter(hprinter)
 
+    def download_to_file(self, url, dest_path, timeout=60):
+        with urllib.request.urlopen(url, timeout=timeout) as r, open(dest_path, "wb") as out:
+            shutil.copyfileobj(r, out, 64 * 1024)
+
     def process_print(self, job):
         job_id = job["id"]
         code = job_id.replace("-", "")[:6].upper()
@@ -1523,8 +1461,8 @@ class PrintAgent:
                 ext = raw_ext or ".pdf"
                 local_path = self.tmp_dir / f"{job_id}{ext}"
 
-                # Download file
-                urllib.request.urlretrieve(url, str(local_path))
+                # Download file with timeout
+                self.download_to_file(url, local_path)
 
             # Native Print
             self.print_file_native(local_path, job)
@@ -1566,8 +1504,8 @@ class PrintAgent:
             target_name = f"{timestamp}_{safe_name}"
             out_path = self.downloads_dir / target_name
 
-            # Download file into agent/downloads
-            urllib.request.urlretrieve(url, str(out_path))
+            # Download file into agent/downloads with timeout
+            self.download_to_file(url, out_path)
             size_kb = round(out_path.stat().st_size / 1024, 1)
             log(f"  saved to downloads/{target_name} ({size_kb} KB)")
 
@@ -1684,12 +1622,6 @@ class PrintAgent:
 
 
 if __name__ == "__main__":
-    try:
-        with open(PID_FILE, "w", encoding="utf-8") as f:
-            f.write(str(os.getpid()))
-    except Exception:
-        pass
-
     cfg_file = Path(__file__).parent / "config.json"
     agent = PrintAgent(cfg_file)
     agent.run()

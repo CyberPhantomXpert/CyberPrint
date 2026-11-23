@@ -321,7 +321,7 @@ tailwind.config = {
             <button type="button" id="addMoreFileBtn" class="text-xs text-brand-600 hover:text-brand-700 font-extrabold px-2.5 py-1 bg-brand-50 hover:bg-brand-100 rounded-lg transition active:scale-95 flex items-center gap-1">
               <span>➕</span> Aur File Jodein
             </button>
-            <button type="button" onclick="location.reload()" class="text-xs text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded-lg">
+            <button type="button" id="resetQueueBtn" class="text-xs text-slate-400 hover:text-slate-600 font-bold px-2 py-1 rounded-lg">
               Reset
             </button>
           </div>
@@ -508,7 +508,7 @@ tailwind.config = {
       </button>
 
       <div class="text-center">
-        <button type="button" onclick="location.reload()" class="text-xs text-slate-500 hover:text-slate-800 font-medium">
+        <button type="button" id="cancelToStep1Btn" class="text-xs text-slate-500 hover:text-slate-800 font-medium">
           &larr; Cancel karke nayi file chunein
         </button>
       </div>
@@ -818,14 +818,6 @@ tailwind.config = {
   </div>
 
 <!-- External Scripts -->
-<script src="html5-qrcode.min.js"></script>
-<script>
-  if(!window.Html5Qrcode){
-    var s = document.createElement('script');
-    s.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
-    document.head.appendChild(s);
-  }
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
@@ -869,6 +861,34 @@ tailwind.config = {
   var currentBatchJobs = [];
   var $ = function(id){ return document.getElementById(id); };
   var money = function(n){ return '\u20b9' + (n || 0); };
+  function esc(s){
+    return String(s || '').replace(/[&<>"]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+  function reveal(el, cls){
+    if(!el) return;
+    cls = cls || 'token-reveal';
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+  }
+  function ensureQrLib(){
+    if(window.Html5Qrcode) return Promise.resolve();
+    return new Promise(function(resolve, reject){
+      var s = document.createElement('script');
+      s.src = 'html5-qrcode.min.js';
+      s.onload = resolve;
+      s.onerror = function(){
+        var s2 = document.createElement('script');
+        s2.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+        s2.onload = resolve;
+        s2.onerror = reject;
+        document.head.appendChild(s2);
+      };
+      document.head.appendChild(s);
+    });
+  }
 
   // ================= INTERACTIVE 3-TOOL SWITCHER =================
   var currentTool = 'print';
@@ -978,12 +998,8 @@ tailwind.config = {
     if(!modal) return;
     modal.style.display = 'flex';
 
-    if(!window.Html5Qrcode){
-      alert('QR स्कैनर लोड हो रहा है, कृपया 1 सेकंड बाद पुनः प्रयास करें...');
-      return;
-    }
-
     try {
+      await ensureQrLib();
       if(!html5QrCode){
         html5QrCode = new Html5Qrcode("scannerViewport");
       }
@@ -1132,20 +1148,7 @@ tailwind.config = {
     code = (code || '').trim().replace(/^#/, '').toUpperCase();
 
     try {
-      var searchParams = new URLSearchParams(window.location.search);
-      var agentHost = searchParams.get('agent') || (window.location.port === '8085' ? window.location.host : '');
-
-      // Dynamic LAN IP discovery from Supabase agent_status if not explicitly provided
-      if(!agentHost && sb){
-        try {
-          var ra = await sb.from('agent_status').select('note, last_seen').order('last_seen', { ascending: false }).limit(1);
-          if(ra && ra.data && ra.data.length && ra.data[0].note){
-            var m = ra.data[0].note.match(/http:\/\/([0-9.]+):([0-9]+)/);
-            if(m && m[1]) agentHost = m[1] + ':' + (m[2] || '8085');
-          }
-        } catch(e){}
-      }
-      if(!agentHost) agentHost = '127.0.0.1:8085';
+      var agentHost = await resolveAgentHost();
 
       // 1. Try local agent first (Wi-Fi)
       var agentFound = false;
@@ -1166,9 +1169,7 @@ tailwind.config = {
             dlBtn.setAttribute('data-name', aData.file.name);
             iconEl.textContent = getDropFileIcon(aData.file.name);
             card.style.display = 'block';
-            card.classList.remove('token-reveal');
-            void card.offsetWidth;
-            card.classList.add('token-reveal');
+            reveal(card, 'token-reveal');
             agentFound = true;
             return;
           }
@@ -1200,9 +1201,7 @@ tailwind.config = {
             dlBtn.setAttribute('data-name', j.file_name);
             iconEl.textContent = getDropFileIcon(j.file_name);
             card.style.display = 'block';
-            card.classList.remove('token-reveal');
-            void card.offsetWidth;
-            card.classList.add('token-reveal');
+            reveal(card, 'token-reveal');
             return;
           }
 
@@ -1225,9 +1224,7 @@ tailwind.config = {
             dlBtn.setAttribute('data-name', j.file_name);
             iconEl.textContent = getDropFileIcon(j.file_name);
             card.style.display = 'block';
-            card.classList.remove('token-reveal');
-            void card.offsetWidth;
-            card.classList.add('token-reveal');
+            reveal(card, 'token-reveal');
             return;
           }
         }
@@ -1248,8 +1245,7 @@ tailwind.config = {
   function pingShareDownload(){
     if(!currentReceiveCode) return;
     try {
-      var searchParams = new URLSearchParams(window.location.search);
-      var agentHost = searchParams.get('agent') || (window.location.port === '8085' ? window.location.host : '10.202.100.233:8085');
+      var agentHost = cachedAgentHost || (window.location.port === '8085' ? window.location.host : '127.0.0.1:8085');
       fetch('http://' + agentHost + '/api/pc-share-download-ping?code=' + encodeURIComponent(currentReceiveCode), { mode: 'no-cors' }).catch(function(){});
     } catch(e){}
   }
@@ -1624,24 +1620,6 @@ tailwind.config = {
     switchTool('drop', true);
   }
 
-  function setStep(num){
-    ['stp1','stp2','stp3'].forEach(function(id, idx){
-      var el = $(id);
-      if(!el) return;
-      var numSpan = el.querySelector('.step-num');
-      if(idx + 1 === num){
-        el.className = 'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-brand-700 bg-brand-50 font-bold text-xs ring-1 ring-brand-200 transition-all';
-        if(numSpan){ numSpan.className = 'step-num w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[11px] font-bold'; numSpan.textContent = String(num); }
-      } else if(idx + 1 < num){
-        el.className = 'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-emerald-700 bg-emerald-50 font-bold text-xs transition-all';
-        if(numSpan){ numSpan.className = 'step-num w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[11px] font-bold'; numSpan.textContent = '✓'; }
-      } else {
-        el.className = 'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-slate-400 font-medium text-xs transition-all';
-        if(numSpan){ numSpan.className = 'step-num w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[11px]'; numSpan.textContent = String(idx + 1); }
-      }
-    });
-  }
-
   function allowed(f){
     if(f.size > (C.MAX_FILE_MB || 200) * 1024 * 1024) return 'File bahut badi hai (Max ' + (C.MAX_FILE_MB || 200) + ' MB allow hai).';
     if((C.ALLOWED_TYPES || []).indexOf(f.type) === -1) return 'Kewal PDF, JPG ya PNG files support hoti hain.';
@@ -1786,8 +1764,13 @@ tailwind.config = {
       };
     } else if(f.type === 'application/pdf'){
       try {
-        var buf = await f.arrayBuffer();
-        currentPdfDoc = await pdfjsLib.getDocument({data: buf}).promise;
+        if(item.pdfDoc){
+          currentPdfDoc = item.pdfDoc;
+        } else {
+          var buf = await f.arrayBuffer();
+          currentPdfDoc = await pdfjsLib.getDocument({data: buf}).promise;
+          item.pdfDoc = currentPdfDoc;
+        }
         var total = currentPdfDoc.numPages || 1;
 
         if(total > 1){
@@ -1940,11 +1923,12 @@ tailwind.config = {
         continue;
       }
       var pageCount = 1;
+      var loadedPdfDoc = null;
       if(f.type === 'application/pdf'){
         try {
           var buf = await f.arrayBuffer();
-          var pdfDoc = await pdfjsLib.getDocument({data: buf}).promise;
-          pageCount = pdfDoc.numPages || 1;
+          loadedPdfDoc = await pdfjsLib.getDocument({data: buf}).promise;
+          pageCount = loadedPdfDoc.numPages || 1;
         } catch(e){
           pageCount = 1;
         }
@@ -1953,6 +1937,7 @@ tailwind.config = {
       selectedFiles.push({
         id: genUUID(),
         file: f,
+        pdfDoc: loadedPdfDoc,
         name: f.name,
         size: f.size,
         type: f.type,
@@ -1973,10 +1958,7 @@ tailwind.config = {
     $('s1').hidden = true;
     var s2 = $('s2');
     s2.hidden = false;
-    s2.classList.remove('step-enter');
-    void s2.offsetWidth;
-    s2.classList.add('step-enter');
-    setStep(2);
+    reveal(s2, 'step-enter');
     renderFileQueue();
     switchActiveFile(selectedFiles.length - 1);
   }
@@ -2113,12 +2095,8 @@ tailwind.config = {
     if(name) parts.push('pn=' + encodeURIComponent(name));
     if(amount) parts.push('am=' + amount);
     parts.push('cu=INR');
-    if(C.IS_MERCHANT){
-      if(C.MERCHANT_CODE) parts.push('mc=' + C.MERCHANT_CODE);
-      if(note) parts.push('tn=' + encodeURIComponent(note));
-    } else if(!forIntent && note){
-      parts.push('tn=' + encodeURIComponent(note));
-    }
+    if(C.IS_MERCHANT && C.MERCHANT_CODE) parts.push('mc=' + C.MERCHANT_CODE);
+    if(note && (C.IS_MERCHANT || !forIntent)) parts.push('tn=' + encodeURIComponent(note));
     return 'upi://pay?' + parts.join('&');
   }
 
@@ -2435,6 +2413,7 @@ tailwind.config = {
       var batchId = genUUID();
       var code = batchId.replace(/-/g, '').slice(0, 6).toUpperCase();
       var uploadedList = [];
+      var dbTotalAmount = 0;
 
       for(var i = 0; i < selectedFiles.length; i++){
         var item = selectedFiles[i];
@@ -2477,8 +2456,11 @@ tailwind.config = {
           orientation: item.orient,
           page_range: item.pageRange,
           status: 'pending'
-        });
+        }).select('total_price').single();
         if(ins.error) throw ins.error;
+        if(ins.data && typeof ins.data.total_price === 'number'){
+          dbTotalAmount += ins.data.total_price;
+        }
 
         uploadedList.push({
           id: fileId,
@@ -2491,11 +2473,12 @@ tailwind.config = {
       currentJobId = uploadedList[0].id;
       currentBatchJobs = uploadedList;
 
-      var qrLink = upiLink(s.amount, 'Batch#' + code, false);
+      var finalAmount = dbTotalAmount > 0 ? dbTotalAmount : s.amount;
+      var qrLink = upiLink(finalAmount, 'Batch#' + code, false);
 
       $('jobno').textContent = '#' + code;
       $('tokenRef').textContent = '#' + code;
-      $('payamt').textContent = money(s.amount);
+      $('payamt').textContent = money(finalAmount);
       $('payvpa').textContent = C.UPI_ID || '(Not configured)';
 
       renderBatchProgress();
@@ -2518,18 +2501,10 @@ tailwind.config = {
       $('s2').hidden = true;
       var s3 = $('s3');
       s3.hidden = false;
-      s3.classList.remove('step-enter');
-      void s3.offsetWidth;
-      s3.classList.add('step-enter');
+      reveal(s3, 'step-enter');
 
       var tokenBanner = s3.querySelector('.token-banner');
-      if(tokenBanner){
-        tokenBanner.classList.remove('token-reveal');
-        void tokenBanner.offsetWidth;
-        tokenBanner.classList.add('token-reveal');
-      }
-
-      setStep(3);
+      if(tokenBanner) reveal(tokenBanner, 'token-reveal');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       // Start live polling status + load the printer animation
@@ -2565,7 +2540,9 @@ tailwind.config = {
     });
   };
 
-  $('again').onclick = function(){ location.reload(); };
+  if($('again')) $('again').onclick = function(){ location.reload(); };
+  if($('resetQueueBtn')) $('resetQueueBtn').onclick = function(){ location.reload(); };
+  if($('cancelToStep1Btn')) $('cancelToStep1Btn').onclick = function(){ location.reload(); };
 
   // PWA Service Worker & Install Prompt
   if('serviceWorker' in navigator){
@@ -2605,7 +2582,6 @@ tailwind.config = {
     if($('s2')) $('s2').hidden = true;
     if($('s3')) $('s3').hidden = false;
     if($('jobno')) $('jobno').textContent = '#DEMO';
-    setStep(3);
     loadPrintAnim(function(){
       if(demoState === 'printed') setJobState('printed', { page_count: demoPages, copies: demoCopies });
       else if(demoState === 'connect') setJobState('pending', { page_count: demoPages, copies: demoCopies });

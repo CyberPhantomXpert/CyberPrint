@@ -41,6 +41,5 @@ window.CYBERPRINT_CONFIG = {
   PRINT_ANIM_ENABLED: true,
   ANIM_SPEED: 1.6,          // playback multiplier; 1.0 = 6s per page
   SECONDS_PER_SIDE: 3.75,   // keep in step with 6 / ANIM_SPEED for an honest bar
-  PRINT_ANIM_MIN_MS: 2500,  // hold the print loop at least this long
-  FALLBACK_DONE_FRAME: 175  // used only if the asset has no markers
+  PRINT_ANIM_MIN_MS: 2500   // hold the print loop at least this long
 };

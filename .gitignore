@@ -18,5 +18,17 @@ Thumbs.db
 # Sarvam AI local test scripts
 test_sarvam.py
 
+# Review and benchmark artifacts
+build-activity.log
+transcript.json
+usage.json
+feed.json
+craft.json
+capture/
+inbox/
+investigation.cany/
+*.lnk
+SKILL.md
+
 
 
