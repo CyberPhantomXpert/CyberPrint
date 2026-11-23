@@ -783,6 +783,8 @@ class PrintAgent:
         self.printer_name = cfg.get("printer", "").strip()
         self.agent_id = cfg.get("agent_id", "counter-pc").strip()
         self.bucket = cfg.get("bucket", "jobs").strip()
+        self.retain_minutes = int(cfg.get("retain_minutes", 10))
+        self.last_sweep = 0
 
         # If printer is empty, use the system default printer
         if not self.printer_name:
@@ -1545,6 +1547,36 @@ class PrintAgent:
             except Exception:
                 pass
 
+    def sweep_expired(self):
+        cutoff = (datetime.datetime.now(datetime.timezone.utc)
+                  - datetime.timedelta(minutes=self.retain_minutes)).isoformat()
+        rows = self.api_request(
+            "GET",
+            f"/rest/v1/jobs?created_at=lt.{cutoff}&file_path=not.is.null"
+            f"&select=id,file_path,status") or []
+        if not rows:
+            return
+        ids = ",".join(r["id"] for r in rows)
+        paths = [r["file_path"] for r in rows
+                 if r["file_path"] and not r["file_path"].startswith("local://")]
+        if paths:
+            try:
+                self.api_request("DELETE", f"/storage/v1/object/{self.bucket}",
+                                 body={"prefixes": paths})
+            except Exception as e:
+                log(f"  sweep: storage delete failed: {e}")
+        for flt, patch in (
+            ("", {"file_path": None, "file_deleted": True}),
+            ("&status=eq.pending", {"status": "cancelled"}),
+            ("&status=in.(approved,printing)", {"status": "failed",
+                                                "print_error": "file expired before printing"}),
+        ):
+            try:
+                self.api_request("PATCH", f"/rest/v1/jobs?id=in.({ids}){flt}", body=patch)
+            except Exception as e:
+                log(f"  sweep: row update failed: {e}")
+        log(f"  sweep: {len(rows)} expired job(s), {len(paths)} cloud file(s) deleted")
+
     def run(self):
         try:
             with open(PID_FILE, "w", encoding="utf-8") as f:
@@ -1564,6 +1596,9 @@ class PrintAgent:
         while True:
             try:
                 self.heartbeat("idle")
+                if time.time() - self.last_sweep > 300:
+                    self.sweep_expired()
+                    self.last_sweep = time.time()
                 pending = self.get_pending_jobs()
                 if pending:
                     first = pending[0]

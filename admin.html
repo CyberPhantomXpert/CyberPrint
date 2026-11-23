@@ -1030,7 +1030,10 @@ tailwind.config = {
 
     function renderActiveQR(){
       var textToEncode = '';
-      if(pcShareQrType === 'direct'){
+      // local share ka direct URL plain http hai; https portal se browser usse block karta hai.
+      // Isliye local share ke liye hamesha agent ka apna page (same origin) bhejo.
+      var effectiveType = isLocalOnly ? 'web' : pcShareQrType;
+      if(effectiveType === 'direct'){
         textToEncode = item.cloud_url || localDirectUrl;
         if($('pcShareQrTypeDirectBtn')) $('pcShareQrTypeDirectBtn').className = 'text-[10px] font-bold py-1 px-2.5 rounded-lg bg-emerald-600 text-white shadow-xs transition';
         if($('pcShareQrTypeWebBtn')) $('pcShareQrTypeWebBtn').className = 'text-[10px] font-semibold py-1 px-2.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition';

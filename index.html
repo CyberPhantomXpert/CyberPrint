@@ -896,6 +896,7 @@ tailwind.config = {
 
   function switchTool(tool, instant){
     if(tool === currentTool && !instant) return;
+    if(tool === 'drop') detectDropNetworkMode();
     if(isToolAnimating && !instant) return;
 
     var pill = $('toolSliderPill');
@@ -1267,6 +1268,19 @@ tailwind.config = {
       downloadUrl += (downloadUrl.includes('?') ? '&' : '?') + 'download=' + encodeURIComponent(fileName);
     }
 
+    var isCrossScheme = window.location.protocol === 'https:' && /^http:\/\//i.test(downloadUrl);
+    if(isCrossScheme){
+      // fetch/download-attribute browser block karta hai, par top-level navigation allowed hai
+      var go = document.createElement('a');
+      go.href = downloadUrl; go.target = '_self';
+      document.body.appendChild(go); go.click(); go.remove();
+      if(targetBtn){
+        targetBtn.innerHTML = origHTML;
+        targetBtn.classList.remove('pointer-events-none', 'opacity-90');
+      }
+      return;
+    }
+
     try {
       // 1. Fetch file as blob -> Trigger same-origin Blob URL download (Forces mobile browsers to save file to disk!)
       var res = await fetch(downloadUrl);
@@ -1621,7 +1635,7 @@ tailwind.config = {
   }
 
   function allowed(f){
-    if(f.size > (C.MAX_FILE_MB || 200) * 1024 * 1024) return 'File bahut badi hai (Max ' + (C.MAX_FILE_MB || 200) + ' MB allow hai).';
+    if(f.size > (C.MAX_FILE_MB || 50) * 1024 * 1024) return 'File bahut badi hai (Max ' + (C.MAX_FILE_MB || 50) + ' MB allow hai).';
     if((C.ALLOWED_TYPES || []).indexOf(f.type) === -1) return 'Kewal PDF, JPG ya PNG files support hoti hain.';
     return null;
   }
@@ -2413,6 +2427,7 @@ tailwind.config = {
       var batchId = genUUID();
       var code = batchId.replace(/-/g, '').slice(0, 6).toUpperCase();
       var uploadedList = [];
+      var uploadedPaths = [];
       var dbTotalAmount = 0;
 
       for(var i = 0; i < selectedFiles.length; i++){
@@ -2439,6 +2454,7 @@ tailwind.config = {
           path = fileId + '/' + safe;
           var up = await sb.storage.from(C.BUCKET || 'jobs').upload(path, item.file, { contentType: item.type, upsert: false });
           if(up.error) throw up.error;
+          uploadedPaths.push(path);
         }
 
         var ins = await sb.from('jobs').insert({
@@ -2513,6 +2529,9 @@ tailwind.config = {
       pollTimer = setInterval(pollStatus, 2500);
 
     } catch(e){
+      for(var k = 0; k < uploadedPaths.length; k++){
+        try { await sb.storage.from(C.BUCKET || 'jobs').remove([uploadedPaths[k]]); } catch(_){}
+      }
       $('s2err').hidden = false;
       $('s2err').textContent = 'Upload nahi ho saka: ' + (e.message || e);
       btn.disabled = false;
