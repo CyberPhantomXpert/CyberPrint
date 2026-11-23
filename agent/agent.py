@@ -121,12 +121,15 @@ def parse_multipart(data_bytes, content_type_header):
         if idx == -1:
             break
         next_idx = data_bytes.find(delimiter, idx + len(delimiter))
-        part = data_bytes[idx + len(delimiter):next_idx] if next_idx != -1 else data_bytes[idx + len(delimiter):]
+        part_end = next_idx if next_idx != -1 else total_len
+        part = data_bytes[idx + len(delimiter):part_end]
         pos = next_idx if next_idx != -1 else total_len
         if not part or part.startswith(b'--'):
             continue
-        if b'\r\n\r\n' in part:
-            hdr_raw, body = part.split(b'\r\n\r\n', 1)
+        hdr_sep = part.find(b'\r\n\r\n')
+        if hdr_sep != -1:
+            hdr_raw = part[:hdr_sep]
+            body = part[hdr_sep + 4:]
             if body.endswith(b'\r\n'):
                 body = body[:-2]
             hdr_str = hdr_raw.decode('utf-8', errors='ignore')
@@ -563,14 +566,28 @@ class DropHttpHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(resp)
             return
 
-        if content_length <= 0 or content_length > 200 * 1024 * 1024:
+        if content_length <= 0 or content_length > 500 * 1024 * 1024:
             self.send_response(400)
             self.send_cors_headers()
             self.end_headers()
-            self.wfile.write(b'{"error": "Invalid content length (max 200MB)"}')
+            self.wfile.write(b'{"error": "Invalid content length (max 500MB)"}')
             return
 
-        body = self.rfile.read(content_length)
+        try:
+            self.connection.settimeout(300)
+        except Exception:
+            pass
+
+        remaining = content_length
+        chunks = []
+        while remaining > 0:
+            chunk_size = min(remaining, 65536)
+            chunk = self.rfile.read(chunk_size)
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        body = b"".join(chunks)
 
         if path == "/upload":
             files = parse_multipart(body, content_type)

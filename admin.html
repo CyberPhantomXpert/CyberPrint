@@ -422,7 +422,7 @@ tailwind.config = {
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="qrcode.min.js"></script>
-<script src="config.js?v=3"></script>
+<script src="config.js?v=4"></script>
 <script>
 (function(){
   var C = window.CYBERPRINT_CONFIG || {};
@@ -632,7 +632,8 @@ tailwind.config = {
       return base;
     }
     var pBase = (publicBaseUrl || (window.CYBERPRINT_CONFIG && window.CYBERPRINT_CONFIG.PUBLIC_URL) || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
-    return pBase + '/index.html' + (storageMode === 'local' ? '?storage=local&agent=' + lanIp + ':' + lanPort : '');
+    var query = storageMode === 'local' ? ('?storage=local&agent=' + lanIp + ':' + lanPort) : ('?agent=' + lanIp + ':' + lanPort);
+    return pBase + '/index.html' + query;
   }
 
   function getDropToolUrl(){
@@ -640,7 +641,7 @@ tailwind.config = {
       return 'http://' + lanIp + ':' + lanPort + '/index.html?tool=drop';
     }
     var pBase = (publicBaseUrl || (window.CYBERPRINT_CONFIG && window.CYBERPRINT_CONFIG.PUBLIC_URL) || 'https://cyberphantomxpert.github.io/CyberPrint').replace(/\/+$/, '');
-    return pBase + '/index.html?tool=drop';
+    return pBase + '/index.html?tool=drop&agent=' + lanIp + ':' + lanPort;
   }
 
   function updateQRs(){
@@ -1405,8 +1406,13 @@ tailwind.config = {
   function find(id){ return jobs.filter(function(x){ return x.id === id; })[0]; }
 
   async function boot(){
-    var res = await sb.auth.getSession();
-    if(res && res.data && res.data.session) showDash(); else showLogin();
+    try {
+      var res = await sb.auth.getSession();
+      if(res && res.data && res.data.session) showDash(); else showLogin();
+    } catch(err){
+      console.warn('Boot auth check error:', err);
+      showLogin();
+    }
   }
   function showLogin(){ $('login').hidden = false; $('dash').hidden = true; $('logout').hidden = true; $('refresh').hidden = true; }
   function showDash(){ $('login').hidden = true; $('dash').hidden = false; $('logout').hidden = false; $('refresh').hidden = false; updateStorageUI(); load(); if(timer) clearInterval(timer); timer = setInterval(load, 5000); }
@@ -1981,7 +1987,7 @@ tailwind.config = {
   // PWA Service Worker & Install Prompt for Admin Panel
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw.js?v=2').catch(function(){});
+      navigator.serviceWorker.register('sw.js?v=4').catch(function(){});
     });
   }
 

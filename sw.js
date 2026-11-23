@@ -1,10 +1,10 @@
 // CyberPrint Pay - Service Worker for PWA installability
-const CACHE_NAME = 'cyberprint-v3';
+const CACHE_NAME = 'cyberprint-v4';
 const ASSETS = [
   './',
   './index.html',
   './admin.html',
-  './config.js?v=3',
+  './config.js?v=4',
   './manifest.json',
   './manifest-admin.json',
   './icon-192.png',

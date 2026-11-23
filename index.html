@@ -829,7 +829,7 @@ tailwind.config = {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
-<script src="config.js?v=3"></script>
+<script src="config.js?v=4"></script>
 <script>
 (function(){
   var C = window.CYBERPRINT_CONFIG || {};
@@ -840,6 +840,28 @@ tailwind.config = {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
   });
   if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+  var cachedAgentHost = null;
+  async function resolveAgentHost(){
+    if(cachedAgentHost) return cachedAgentHost;
+    var searchParams = new URLSearchParams(window.location.search);
+    var host = searchParams.get('agent');
+    if(!host && window.location.port === '8085'){
+      host = window.location.host;
+    }
+    if(!host && sb){
+      try {
+        var ra = await sb.from('agent_status').select('note, last_seen').order('last_seen', { ascending: false }).limit(1);
+        if(ra && ra.data && ra.data.length && ra.data[0].note){
+          var m = ra.data[0].note.match(/http:\/\/([0-9.]+):([0-9]+)/);
+          if(m && m[1]) host = m[1] + ':' + (m[2] || '8085');
+        }
+      } catch(e){}
+    }
+    if(!host) host = window.location.hostname ? (window.location.hostname + ':8085') : '127.0.0.1:8085';
+    cachedAgentHost = host;
+    return host;
+  }
 
   var selectedFiles = []; // Array of { id, file, name, size, type, pages, copies, mode, paper, orient, from, to, pageRange, effPages }
   var activeFileIndex = 0;
@@ -1354,9 +1376,11 @@ tailwind.config = {
 
   async function detectDropNetworkMode(){
     try {
+      var agentHost = await resolveAgentHost();
+      var testUrl = (window.location.port === '8085') ? '/api/info' : ('http://' + agentHost + '/api/info');
       var controller = new AbortController();
-      var timeoutId = setTimeout(function(){ controller.abort(); }, 1200);
-      var res = await fetch('/api/info', { signal: controller.signal });
+      var timeoutId = setTimeout(function(){ controller.abort(); }, 1500);
+      var res = await fetch(testUrl, { signal: controller.signal, mode: 'cors' });
       clearTimeout(timeoutId);
       if(res.ok){
         dropUploadMode = 'wifi';
@@ -1457,7 +1481,7 @@ tailwind.config = {
     };
   }
 
-  function uploadDropViaWifi(){
+  async function uploadDropViaWifi(){
     dropUploadBtn.disabled = true;
     dropProgressBox.style.display = 'block';
     dropProgressFill.style.width = '0%';
@@ -1469,8 +1493,12 @@ tailwind.config = {
       fd.append('file', f, f.name);
     });
 
+    var agentHost = await resolveAgentHost();
+    var uploadUrl = (window.location.port === '8085') ? '/upload' : ('http://' + agentHost + '/upload');
+
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', '/upload', true);
+    xhr.open('POST', uploadUrl, true);
+    xhr.timeout = 300000; // 5 min for large files
 
     xhr.upload.onprogress = function(e){
       if(e.lengthComputable){
@@ -1492,6 +1520,10 @@ tailwind.config = {
     };
 
     xhr.onerror = function(){
+      uploadDropViaCloud();
+    };
+
+    xhr.ontimeout = function(){
       uploadDropViaCloud();
     };
 
@@ -1611,7 +1643,7 @@ tailwind.config = {
   }
 
   function allowed(f){
-    if(f.size > (C.MAX_FILE_MB || 20) * 1024 * 1024) return 'File bahut badi hai (Max ' + (C.MAX_FILE_MB || 20) + ' MB allow hai).';
+    if(f.size > (C.MAX_FILE_MB || 200) * 1024 * 1024) return 'File bahut badi hai (Max ' + (C.MAX_FILE_MB || 200) + ' MB allow hai).';
     if((C.ALLOWED_TYPES || []).indexOf(f.type) === -1) return 'Kewal PDF, JPG ya PNG files support hoti hain.';
     return null;
   }
@@ -2398,7 +2430,7 @@ tailwind.config = {
     try {
       var params = new URLSearchParams(window.location.search);
       var isLocalStorage = params.get('storage') === 'local';
-      var agentHost = params.get('agent') || (window.location.port === '8085' ? window.location.host : '10.202.100.233:8085');
+      var agentHost = await resolveAgentHost();
 
       var batchId = genUUID();
       var code = batchId.replace(/-/g, '').slice(0, 6).toUpperCase();
@@ -2414,7 +2446,10 @@ tailwind.config = {
         if(isLocalStorage){
           var fd = new FormData();
           fd.append('file', item.file, safe);
-          var upRes = await fetch('http://' + agentHost + '/local-print-upload?id=' + fileId, {
+          var upUrl = (window.location.port === '8085')
+            ? ('/local-print-upload?id=' + fileId)
+            : ('http://' + agentHost + '/local-print-upload?id=' + fileId);
+          var upRes = await fetch(upUrl, {
             method: 'POST',
             body: fd
           });
@@ -2535,7 +2570,7 @@ tailwind.config = {
   // PWA Service Worker & Install Prompt
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw.js?v=2').catch(function(){});
+      navigator.serviceWorker.register('sw.js?v=4').catch(function(){});
     });
   }
 

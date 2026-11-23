@@ -31,7 +31,7 @@ window.CYBERPRINT_CONFIG = {
   RETENTION_MINUTES: 10,
 
   // Upload limits
-  MAX_FILE_MB: 20,
+  MAX_FILE_MB: 200,
   ALLOWED_TYPES: ["application/pdf", "image/jpeg", "image/png"],
 
   // Printer animation on the token screen (step 3).
