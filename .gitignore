@@ -15,9 +15,6 @@ Thumbs.db
 # Environment variables & secrets
 .env
 
-# Sarvam AI local test scripts
-test_sarvam.py
-
 # Review and benchmark artifacts
 build-activity.log
 transcript.json
