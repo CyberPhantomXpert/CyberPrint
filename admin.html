@@ -217,7 +217,7 @@ tailwind.config = {
               <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-base">🖨️</span>
               <div>
                 <div class="text-xs font-extrabold text-white">1. Customer Print &amp; Pay Counter</div>
-                <div class="text-[11px] text-slate-400">Grahak phone se upload &amp; UPI pay karega</div>
+                <div class="text-[11px] text-slate-400">Grahak phone se document upload karega</div>
               </div>
             </div>
             <div id="printToolQR" class="qr-canvas-holder my-2"></div>
@@ -1383,7 +1383,7 @@ tailwind.config = {
           '<b>Kaise Print Karein?</b><br/>' +
           '1. Apne phone camera / Google Lens se QR scan karein.<br/>' +
           '2. Document upload karke B&W ya Color chunein.<br/>' +
-          '3. UPI se pay karein aur counter se print lein!' +
+          '3. Counter se print le kar payment karein.' +
         '</div>' +
         '<div class="price">B&W: \u20b9' + (C.PRICE_BW || 5) + '/page &nbsp;|&nbsp; Color: \u20b9' + (C.PRICE_COLOR || 10) + '/page</div>' +
       '</div>' +
@@ -1523,7 +1523,7 @@ tailwind.config = {
 
     var tiles = [
       { label: 'Incoming Queue', pill: 'Needs Action', pillCls: 'bg-amber-500/10 text-amber-400', val: pendingCount, valCls: pendingCount > 0 ? 'text-amber-400 animate-pulse' : 'text-slate-200', note: 'orders pending' },
-      { label: "Today's Revenue", pill: 'UPI / Cash', pillCls: 'bg-emerald-500/10 text-emerald-400', val: money(rev), valCls: 'text-emerald-400', note: printed.length + ' printed' },
+      { label: "Today's Revenue", pill: 'Cash', pillCls: 'bg-emerald-500/10 text-emerald-400', val: money(rev), valCls: 'text-emerald-400', note: printed.length + ' printed' },
       { label: 'Pages Printed', pill: 'Sheets', pillCls: 'bg-brand-500/10 text-brand-400', val: bwPages + colorPages, valCls: 'text-white', note: '(' + bwPages + ' B&W / ' + colorPages + ' Color)' },
       { label: 'File Drops', pill: 'PC Saved', pillCls: 'bg-purple-500/10 text-purple-400', val: dropJobs.length, valCls: 'text-purple-400', note: 'files received' }
     ];
@@ -1616,7 +1616,7 @@ tailwind.config = {
       '<div class="flex flex-col md:items-end gap-3 shrink-0">' +
         (isDrop
           ? '<div class="text-xs font-bold text-purple-400 uppercase tracking-wider">File Saved in Downloads</div>'
-          : '<div class="text-right"><span class="text-[10px] uppercase font-bold text-slate-400 block">Collect Cash/UPI</span><span class="font-mono text-2xl font-black text-emerald-400">' + money(j.total_price) + '</span></div>') +
+          : '<div class="text-right"><span class="text-[10px] uppercase font-bold text-slate-400 block">Collect Cash</span><span class="font-mono text-2xl font-black text-emerald-400">' + money(j.total_price) + '</span></div>') +
         '<div class="flex items-center gap-2 flex-wrap">' + acts.join('') + '</div>' +
       '</div>' +
     '</div>';

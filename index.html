@@ -529,7 +529,7 @@ tailwind.config = {
         <div class="flex items-center gap-3">
           <div id="trackerSpin" class="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin shrink-0"></div>
           <div class="text-xs font-bold">
-            <span id="trackerMsg">Counter verification ka intezaar hai... (Payment check ho rahi hai)</span>
+            <span id="trackerMsg">Counter verification ka intezaar hai...</span>
           </div>
         </div>
 
@@ -559,40 +559,14 @@ tailwind.config = {
         <div id="batchProgressItems" class="space-y-2"></div>
       </div>
 
-      <!-- UPI Payment Card (QR is optional, behind a button) -->
+      <!-- Payment Info: show amount only -->
       <div class="bg-white border border-slate-200 rounded-3xl p-5 text-center shadow-xs">
-        <div class="text-xs font-extrabold text-slate-800 mb-1">UPI Se Payment Karein</div>
-        <div class="text-[11px] text-slate-500 mb-3">Counter par cash ya UPI &mdash; dono chalega</div>
+        <div class="text-xs font-extrabold text-slate-800 mb-1">Print Ka Kharcha</div>
+        <div class="text-[11px] text-slate-500 mb-3">Counter par operator ko bata dein — cash ya koi bhi tarika</div>
 
         <div class="flex items-center justify-center gap-2">
-          <span class="text-xs text-slate-500 font-medium">Amount to Pay:</span>
+          <span class="text-xs text-slate-500 font-medium">Total Amount:</span>
           <span id="payamt" class="font-mono text-xl font-black text-slate-900">₹0</span>
-        </div>
-
-        <!-- Optional QR: hidden until the customer taps -->
-        <button id="toggleUpiQrBtn" type="button" class="mt-3 w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 active:scale-[0.99] text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2">
-          <span>🔳</span><span id="toggleUpiQrText">UPI QR Dikhao</span>
-        </button>
-
-        <div id="upiQrBox" class="mt-3" hidden>
-          <div class="inline-block bg-white p-3 rounded-2xl border border-slate-200 shadow-inner">
-            <div id="qrimg" class="flex items-center justify-center min-w-[200px] min-h-[200px]"></div>
-          </div>
-          <div class="text-[11px] text-slate-500 mt-2">Google Pay, PhonePe, Paytm ya kisi bhi UPI App se scan karein</div>
-        </div>
-
-        <!-- UPI ID Copy Row -->
-        <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span class="text-slate-500 font-medium">UPI ID:</span>
-          <div class="flex items-center gap-2">
-            <span id="payvpa" class="font-mono font-bold text-slate-700"></span>
-            <button id="copyUpiBtn" type="button" class="text-brand-600 hover:text-brand-700 font-bold bg-brand-50 px-2 py-1 rounded-md text-[11px]">
-              Copy ID
-            </button>
-          </div>
-        </div>
-        <div id="copyNotice" class="text-[10px] text-emerald-600 font-semibold mt-1" style="display:none">
-          UPI ID clipboard mein copy ho gayi!
         </div>
       </div>
 
@@ -600,8 +574,8 @@ tailwind.config = {
       <div class="bg-slate-100/80 border border-slate-200 rounded-2xl p-3.5 flex items-start gap-3">
         <span class="text-xl">🏪</span>
         <div class="text-xs text-slate-600">
-          <b class="text-slate-900 block mb-0.5">Counter QR ya Cash se bhi de sakte hain</b>
-          Dukan ke counter par laga QR scan karein ya Cash de kar Token <b id="tokenRef" class="text-brand-600">#------</b> batayein.
+          <b class="text-slate-900 block mb-0.5">Counter par amount batayein</b>
+          Token <b id="tokenRef" class="text-brand-600">#------</b> counter operator ko dikhayein.
         </div>
       </div>
 
@@ -2101,18 +2075,7 @@ tailwind.config = {
   $('from').oninput = recalc; $('to').oninput = recalc;
   $('paper').onchange = recalc; $('orient').onchange = recalc;
 
-  function upiLink(amount, note, forIntent){
-    var vpa = (C.UPI_ID || '').trim();
-    var name = (C.UPI_NAME || C.SHOP_NAME || '').trim();
-    if(!vpa) return '';
-    var parts = ['pa=' + vpa];
-    if(name) parts.push('pn=' + encodeURIComponent(name));
-    if(amount) parts.push('am=' + amount);
-    parts.push('cu=INR');
-    if(C.IS_MERCHANT && C.MERCHANT_CODE) parts.push('mc=' + C.MERCHANT_CODE);
-    if(note && (C.IS_MERCHANT || !forIntent)) parts.push('tn=' + encodeURIComponent(note));
-    return 'upi://pay?' + parts.join('&');
-  }
+  function upiLink(amount, note, forIntent){ return ''; }  // UPI removed
 
   // ---- Printer animation: two segments driven by job status ----
   var printAnim = null, printAnimLoading = false;
@@ -2490,29 +2453,11 @@ tailwind.config = {
       currentBatchJobs = uploadedList;
 
       var finalAmount = dbTotalAmount > 0 ? dbTotalAmount : s.amount;
-      var qrLink = upiLink(finalAmount, 'Batch#' + code, false);
-
       $('jobno').textContent = '#' + code;
       $('tokenRef').textContent = '#' + code;
       $('payamt').textContent = money(finalAmount);
-      $('payvpa').textContent = C.UPI_ID || '(Not configured)';
 
       renderBatchProgress();
-
-      if(!qrLink){
-        $('toggleUpiQrBtn').hidden = true;
-        $('upiQrBox').hidden = true;
-      } else {
-        $('toggleUpiQrBtn').hidden = false;
-        try {
-          var qr = qrcode(0, 'M');
-          qr.addData(qrLink);
-          qr.make();
-          $('qrimg').innerHTML = qr.createImgTag(4, 8);
-        } catch(err){
-          $('qrimg').innerHTML = '<div class="text-xs text-slate-500 font-medium">QR draw nahi ho saka &mdash; neeche UPI ID copy karein.</div>';
-        }
-      }
 
       $('s2').hidden = true;
       var s3 = $('s3');
@@ -2539,25 +2484,7 @@ tailwind.config = {
     }
   };
 
-  $('toggleUpiQrBtn').onclick = function(){
-    var box = $('upiQrBox'), lbl = $('toggleUpiQrText');
-    var show = box.hidden;
-    box.hidden = !show;
-    if(lbl) lbl.textContent = show ? 'QR Chhupao' : 'UPI QR Dikhao';
-  };
-
-  $('copyUpiBtn').onclick = function(){
-    if(!C.UPI_ID) return;
-    navigator.clipboard.writeText(C.UPI_ID).then(function(){
-      var btn = $('copyUpiBtn');
-      btn.textContent = 'Copied! \u2705';
-      $('copyNotice').style.display = 'block';
-      setTimeout(function(){
-        btn.textContent = 'Copy ID';
-        $('copyNotice').style.display = 'none';
-      }, 3500);
-    });
-  };
+  // UPI handlers removed — payment collection via QR/ID no longer used.
 
   if($('again')) $('again').onclick = function(){ location.reload(); };
   if($('resetQueueBtn')) $('resetQueueBtn').onclick = function(){ location.reload(); };

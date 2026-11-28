@@ -1119,7 +1119,7 @@ class PrintAgent:
         amt_frame = tk.Frame(body, bg="#f0fdf4", padx=10, pady=6, highlightbackground="#86efac", highlightthickness=1)
         amt_frame.pack(fill="x", pady=(0, 10))
 
-        amt_desc = f"Kul {len(jobs_list)} files ka total" if is_batch else "UPI ya Cash check karein"
+        amt_desc = f"Kul {len(jobs_list)} files ka total" if is_batch else "Amount check karein"
         amt_lbl = tk.Label(
             amt_frame, text=f"COLLECT KAREIN : ₹{total_price_str} ({amt_desc})",
             fg="#15803d", bg="#f0fdf4", font=("Segoe UI", 10, "bold")
@@ -1239,7 +1239,7 @@ class PrintAgent:
         print("", flush=True)
         print("=" * 64)
         if is_batch:
-            print(f"  NAYA PRINT BATCH #{code} ({len(jobs_list)} Files) -- kripya payment check karein")
+            print(f"  NAYA PRINT BATCH #{code} ({len(jobs_list)} Files)")
             for idx, j in enumerate(jobs_list, 1):
                 p_range = j.get("page_range")
                 r_txt = f" (pages {p_range})" if p_range else ""
@@ -1247,8 +1247,8 @@ class PrintAgent:
                 f_name = re.sub(r'[\r\n\t]+', ' ', str(j.get("file_name", "document"))).strip()
                 print(f"  [{idx}/{len(jobs_list)}] {f_name}")
                 print(f"       {j.get('page_count')} page{r_txt} | {j.get('copies')} copy | {c_lbl} | {j.get('paper_size')} | ₹{j.get('total_price', 0)}")
-            print(f"  KUL COLLECT : Rs {total_price_str} (UPI ya Cash)")
-            print("  Customer ka payment check karein, phir key dabayein:")
+            print(f"  KUL COLLECT : Rs {total_price_str}")
+            print("  Amount confirm karein, phir key dabayein:")
             print("      Y  = Sabhi Print nikalo (Approve Batch)")
             print("      N  = Sabhi Reject karo (Cancel Batch)")
         else:
@@ -1257,11 +1257,11 @@ class PrintAgent:
             color_lbl = "Rangeen (Color)" if first_job.get("color_mode") == "color" else "Kala-Safed (B&W)"
             raw_name = first_job.get("file_name", "document")
             file_name = re.sub(r'[\r\n\t]+', ' ', str(raw_name)).strip()
-            print(f"  NAYA PRINT JOB #{code}   -- kripya payment check karein")
+            print(f"  NAYA PRINT JOB #{code}")
             print(f"  File    : {file_name}")
             print(f"  Specs   : {first_job.get('page_count')} page{range_text} | {first_job.get('copies')} copy | {color_lbl} | {first_job.get('paper_size')}")
-            print(f"  COLLECT : Rs {total_price_str} (UPI ya Cash)")
-            print("  Customer ka payment check karein, phir key dabayein:")
+            print(f"  COLLECT : Rs {total_price_str}")
+            print("  Amount confirm karein, phir key dabayein:")
             print("      Y  = Print nikalo (Approve)")
             print("      N  = Reject karo (Cancel)")
         print("=" * 64, flush=True)
